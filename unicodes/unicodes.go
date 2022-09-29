@@ -1,4 +1,4 @@
-package chars
+package unicodes
 
 import (
 	"strings"
