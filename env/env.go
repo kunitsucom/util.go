@@ -13,7 +13,7 @@ var ErrEnvironmentVariableIsEmpty = errors.New("environment variable is empty")
 func String(key string) (string, error) {
 	value, found := os.LookupEnv(key)
 	if !found {
-		return "", ErrEnvironmentVariableIsEmpty
+		return "", fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	return value, nil
@@ -40,7 +40,7 @@ func MustString(key string) string {
 func Bool(key string) (bool, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
-		return false, ErrEnvironmentVariableIsEmpty
+		return false, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	value, err := strconv.ParseBool(env)
@@ -72,7 +72,7 @@ func MustBool(key string) bool {
 func Int(key string) (int, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
-		return 0, ErrEnvironmentVariableIsEmpty
+		return 0, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	value, err := strconv.Atoi(env)
@@ -104,7 +104,7 @@ func MustInt(key string) int {
 func Int64(key string) (int64, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
-		return 0, ErrEnvironmentVariableIsEmpty
+		return 0, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	value, err := strconv.ParseInt(env, 10, 64)
@@ -136,7 +136,7 @@ func MustInt64(key string) int64 {
 func Uint64(key string) (uint64, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
-		return 0, ErrEnvironmentVariableIsEmpty
+		return 0, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	value, err := strconv.ParseUint(env, 10, 64)
@@ -168,7 +168,7 @@ func MustUint64(key string) uint64 {
 func Float64(key string) (float64, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
-		return 0, ErrEnvironmentVariableIsEmpty
+		return 0, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	value, err := strconv.ParseFloat(env, 64)
