@@ -31,6 +31,20 @@ func newInt5(i1 int, i2 int, i3 int, i4 int, i5 int, err error) (int, int, int, 
 
 func TestMust(t *testing.T) {
 	t.Parallel()
+	t.Run("failure", func(t *testing.T) {
+		t.Parallel()
+		defer func() {
+			if err := recover(); err == nil {
+				t.Errorf("recover: err == nil")
+			}
+		}()
+
+		must.Must(errSomeError)
+	})
+}
+
+func TestOne(t *testing.T) {
+	t.Parallel()
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		i := must.One(newInt(1, nil))
@@ -52,7 +66,7 @@ func TestMust(t *testing.T) {
 	})
 }
 
-func TestMust2(t *testing.T) {
+func TestTwo(t *testing.T) {
 	t.Parallel()
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
@@ -75,7 +89,7 @@ func TestMust2(t *testing.T) {
 	})
 }
 
-func TestMust3(t *testing.T) {
+func TestThree(t *testing.T) {
 	t.Parallel()
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
@@ -98,7 +112,7 @@ func TestMust3(t *testing.T) {
 	})
 }
 
-func TestMust4(t *testing.T) {
+func TestFour(t *testing.T) {
 	t.Parallel()
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
