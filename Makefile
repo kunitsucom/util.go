@@ -1,4 +1,4 @@
-SHELL    := /usr/bin/env bash
+SHELL    := /usr/bin/env bash -Eeu -o pipefail
 GITROOT  := $(shell git rev-parse --show-toplevel || pwd || echo '.')
 PRE_PUSH := ${GITROOT}/.git/hooks/pre-push
 
