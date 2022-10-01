@@ -2,7 +2,16 @@ package slice
 
 import (
 	"reflect"
+	"sort"
 )
+
+func Sort[T any](source []T, less func(elemA, elemB T) bool) []T {
+	cp := append(make([]T, 0, len(source)), source...)
+	sort.Slice(cp, func(i, j int) bool {
+		return less(cp[i], cp[j])
+	})
+	return cp
+}
 
 func Contains[T comparable](s []T, value T) bool {
 	for _, elem := range s {

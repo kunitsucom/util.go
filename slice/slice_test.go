@@ -9,6 +9,21 @@ import (
 	"github.com/kunitsuinc/util.go/slice"
 )
 
+func TestSort(t *testing.T) {
+	t.Parallel()
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+		expect := []int{0, 1, 2, 3}
+		s := []int{1, 3, 2, 0}
+		actual := slice.Sort(s, func(a, b int) bool {
+			return a < b
+		})
+		if !reflect.DeepEqual(expect, actual) {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+}
+
 func TestContains(t *testing.T) {
 	t.Parallel()
 	t.Run("success", func(t *testing.T) {
