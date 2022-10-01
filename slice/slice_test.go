@@ -194,7 +194,7 @@ func TestEach(t *testing.T) {
 		t.Parallel()
 		expect := []string{"foo0", "foo1", "foo2"}
 		s := []int{0, 1, 2}
-		actual := slice.Generate(s, func(_, value int) string {
+		actual := slice.Select(s, func(_, value int) string {
 			return "foo" + strconv.Itoa(value)
 		})
 		if !reflect.DeepEqual(expect, actual) {

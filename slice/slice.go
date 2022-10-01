@@ -82,8 +82,8 @@ func ToMap[Key comparable, Value any](s []Value, getKey func(index int, value Va
 	return m
 }
 
-func Generate[Source, Generated any](s []Source, generator func(index int, source Source) (generated Generated)) []Generated {
-	gen := make([]Generated, 0, len(s))
+func Select[Source, Selected any](s []Source, generator func(index int, source Source) (selected Selected)) []Selected {
+	gen := make([]Selected, 0, len(s))
 	for idx, e := range s {
 		gen = append(gen, generator(idx, e))
 	}
