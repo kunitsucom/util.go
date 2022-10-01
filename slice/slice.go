@@ -138,3 +138,13 @@ func Uniq[T comparable](source []T) []T {
 
 	return uniq
 }
+
+func Reverse[T any](source []T) []T {
+	rev := make([]T, 0, len(source))
+
+	for i := range source {
+		rev = append(rev, source[len(source)-1-i])
+	}
+
+	return rev
+}

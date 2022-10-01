@@ -310,3 +310,16 @@ func TestUniq(t *testing.T) {
 		}
 	})
 }
+
+func TestReverse(t *testing.T) {
+	t.Parallel()
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+		expect := []string{"3", "2", "1", "0"}
+		s := []string{"0", "1", "2", "3"}
+		actual := slice.Reverse(s)
+		if !reflect.DeepEqual(expect, actual) {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+}
