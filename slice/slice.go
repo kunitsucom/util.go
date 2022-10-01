@@ -64,6 +64,12 @@ func DeepExclude[T any](s []T, exclude T) (excluded []T) {
 	return excluded
 }
 
+func Each[T any](s []T, f func(index int, elem T)) {
+	for idx, e := range s {
+		f(idx, e)
+	}
+}
+
 func Filter[T any](s []T, filter func(index int, elem T) bool) []T {
 	filtered := make([]T, 0, len(s))
 	for idx, e := range s {

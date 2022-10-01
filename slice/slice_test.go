@@ -145,6 +145,22 @@ func TestDeepExclude(t *testing.T) {
 	})
 }
 
+func TestEach(t *testing.T) {
+	t.Parallel()
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+		expect := []int{0, 1, 2}
+		s := []int{1, 2, 3}
+		actual := make([]int, 0)
+		slice.Each(s, func(_, i int) {
+			actual = append(actual, i-1)
+		})
+		if !reflect.DeepEqual(expect, actual) {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+}
+
 func TestFilter(t *testing.T) {
 	t.Parallel()
 	t.Run("success", func(t *testing.T) {
@@ -188,7 +204,7 @@ func TestToMap(t *testing.T) {
 	})
 }
 
-func TestEach(t *testing.T) {
+func TestSelect(t *testing.T) {
 	t.Parallel()
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
