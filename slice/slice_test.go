@@ -281,3 +281,16 @@ func TestSplit(t *testing.T) {
 		}
 	})
 }
+
+func TestUniq(t *testing.T) {
+	t.Parallel()
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+		expect := []string{"1", "2", "3"}
+		s := []string{"1", "2", "3", "2", "3"}
+		actual := slice.Uniq(s)
+		if !reflect.DeepEqual(expect, actual) {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+}

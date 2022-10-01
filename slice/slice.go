@@ -118,3 +118,17 @@ func Split[T any](source []T, size int) [][]T {
 	}
 	return splits
 }
+
+func Uniq[T comparable](source []T) []T {
+	m := make(map[T]bool)
+	uniq := []T{}
+
+	for _, elem := range source {
+		if !m[elem] {
+			m[elem] = true
+			uniq = append(uniq, elem)
+		}
+	}
+
+	return uniq
+}
