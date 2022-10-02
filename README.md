@@ -1,5 +1,6 @@
 # util.go - Go Utilities
 
+[![license](https://img.shields.io/github/license/kunitsuinc/util.go)](LICENSE)
 [![pkg](https://pkg.go.dev/badge/github.com/kunitsuinc/util.go)](https://pkg.go.dev/github.com/kunitsuinc/util.go)
 [![goreportcard](https://goreportcard.com/badge/github.com/kunitsuinc/util.go)](https://goreportcard.com/report/github.com/kunitsuinc/util.go)
 [![workflow](https://github.com/kunitsuinc/util.go/workflows/CI/badge.svg)](https://github.com/kunitsuinc/util.go/tree/main)
