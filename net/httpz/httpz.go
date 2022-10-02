@@ -1,4 +1,4 @@
-package httputil
+package httpz
 
 import (
 	"errors"

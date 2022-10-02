@@ -1,5 +1,5 @@
 // nolint: testpackage
-package httputil
+package httpz
 
 import (
 	"context"

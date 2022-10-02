@@ -1,4 +1,4 @@
-package strconvs
+package strconvz
 
 import (
 	"fmt"

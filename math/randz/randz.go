@@ -1,4 +1,4 @@
-package rands
+package randz
 
 import (
 	"math/rand"

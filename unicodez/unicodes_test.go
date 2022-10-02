@@ -1,9 +1,9 @@
-package unicodes_test
+package unicodez_test
 
 import (
 	"testing"
 
-	"github.com/kunitsuinc/util.go/unicodes"
+	unicodes "github.com/kunitsuinc/util.go/unicodez"
 )
 
 func TestTrimNonGraphic(t *testing.T) {

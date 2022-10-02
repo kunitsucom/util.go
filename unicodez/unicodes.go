@@ -1,4 +1,4 @@
-package unicodes
+package unicodez
 
 import (
 	"strings"
