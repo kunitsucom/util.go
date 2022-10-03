@@ -1,9 +1,5 @@
 package mathz
 
-import (
-	"log"
-)
-
 // nolint: gochecknoglobals
 var float64Pow10 = [...]float64{
 	// NOTE: "1e-323" is min value because condition "1e-324 == 0" returns "true" (only variable case).
@@ -82,9 +78,8 @@ var float64Pow10 = [...]float64{
 }
 
 func IsPow10(f float64) bool {
-	for i, e := range float64Pow10 {
+	for _, e := range float64Pow10 {
 		if f == e {
-			log.Println(i)
 			return true
 		}
 	}
