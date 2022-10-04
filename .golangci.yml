@@ -1,3 +1,9 @@
+run:
+  skip-files:
+    - bytez/internal/bytes/buffer.go
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+
 # https://golangci-lint.run/usage/linters/
 linters:
   enable-all: true
