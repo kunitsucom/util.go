@@ -1,10 +1,13 @@
 package osz_test
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/kunitsuinc/util.go/osz"
 )
+
+var _, callerFile, _, _ = runtime.Caller(1)
 
 func TestExists(t *testing.T) {
 	t.Parallel()
@@ -40,9 +43,30 @@ func TestIsDir(t *testing.T) {
 
 	t.Run("failure", func(t *testing.T) {
 		t.Parallel()
-		for _, path := range []string{"path_not_exist"} {
+		for _, path := range []string{"path_not_exist", callerFile} {
 			if osz.IsDir(path) {
 				t.Errorf("path `%s` should not exist", path)
+			}
+		}
+	})
+}
+
+func TestCheckDir(t *testing.T) {
+	t.Parallel()
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+		for _, path := range []string{".", ".."} {
+			if err := osz.CheckDir(path); err != nil {
+				t.Errorf("err != nil: %v", err)
+			}
+		}
+	})
+
+	t.Run("failure", func(t *testing.T) {
+		t.Parallel()
+		for _, path := range []string{"path_not_exist", callerFile} {
+			if err := osz.CheckDir(path); err == nil {
+				t.Errorf("err == nil")
 			}
 		}
 	})
