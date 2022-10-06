@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/kunitsuinc/util.go/mime"
-	"github.com/kunitsuinc/util.go/test/fixture"
+	"github.com/kunitsuinc/util.go/testz"
 )
 
 func TestDetectContentType(t *testing.T) {
@@ -24,7 +24,7 @@ func TestDetectContentType(t *testing.T) {
 
 	t.Run("failure", func(t *testing.T) {
 		t.Parallel()
-		r := &fixture.Reader{Err: fixture.ErrFixtureError}
+		r := testz.NewReadWriter(0, testz.ErrTestError)
 		if _, err := mime.DetectContentType(r); err == nil {
 			t.Errorf("err == nil")
 		}
