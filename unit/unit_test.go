@@ -59,3 +59,57 @@ func TestEi(t *testing.T) {
 		t.Errorf("expect != actual: %v != %v", expect, actual)
 	}
 }
+
+func TestKiTo(t *testing.T) {
+	t.Parallel()
+	var expect uint64 = 1 << 10
+	actual := unit.KiTo(1)
+	if expect != actual {
+		t.Errorf("expect != actual: %v != %v", expect, actual)
+	}
+}
+
+func TestMiTo(t *testing.T) {
+	t.Parallel()
+	var expect uint64 = 1 << 20
+	actual := unit.MiTo(1)
+	if expect != actual {
+		t.Errorf("expect != actual: %v != %v", expect, actual)
+	}
+}
+
+func TestGiTo(t *testing.T) {
+	t.Parallel()
+	var expect uint64 = 1 << 30
+	actual := unit.GiTo(1)
+	if expect != actual {
+		t.Errorf("expect != actual: %v != %v", expect, actual)
+	}
+}
+
+func TestTiTo(t *testing.T) {
+	t.Parallel()
+	var expect uint64 = 1 << 40
+	actual := unit.TiTo(1)
+	if expect != actual {
+		t.Errorf("expect != actual: %v != %v", expect, actual)
+	}
+}
+
+func TestPiTo(t *testing.T) {
+	t.Parallel()
+	var expect uint64 = 1 << 50
+	actual := unit.PiTo(1)
+	if expect != actual {
+		t.Errorf("expect != actual: %v != %v", expect, actual)
+	}
+}
+
+func TestEiTo(t *testing.T) {
+	t.Parallel()
+	var expect uint64 = 1 << 60
+	actual := unit.EiTo(1)
+	if expect != actual {
+		t.Errorf("expect != actual: %v != %v", expect, actual)
+	}
+}
