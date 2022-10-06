@@ -37,6 +37,7 @@ linters-settings:
     ignoreSigs:
       - func errors.New(text string) error
       - func fmt.Errorf(format string, a ...any) error
+      - func fmt.Errorf(format string, a ...interface{}) error
 
 issues:
   exclude-rules:
