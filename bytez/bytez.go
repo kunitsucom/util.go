@@ -16,8 +16,28 @@ type ReadSeekBuffer struct {
 
 func NewReadSeekBuffer(r io.Reader) *ReadSeekBuffer {
 	return &ReadSeekBuffer{
-		buf: make([]byte, 0, 64),
-		r:   r,
+		buf:       make([]byte, 0, 64),
+		r:         r,
+		completed: false,
+		off:       0,
+	}
+}
+
+func NewReadSeekBufferBytes(buf []byte) *ReadSeekBuffer {
+	return &ReadSeekBuffer{
+		buf:       buf,
+		r:         nil,
+		completed: true,
+		off:       0,
+	}
+}
+
+func NewReadSeekBufferString(buf string) *ReadSeekBuffer {
+	return &ReadSeekBuffer{
+		buf:       []byte(buf),
+		r:         nil,
+		completed: true,
+		off:       0,
 	}
 }
 
@@ -90,4 +110,16 @@ func (b *ReadSeekBuffer) Seek(offset int64, whence int) (newoffset int64, err er
 	}
 
 	return int64(b.off), nil
+}
+
+func (b *ReadSeekBuffer) Bytes() []byte {
+	return b.buf[b.off:]
+}
+
+func (b *ReadSeekBuffer) String() string {
+	if b == nil {
+		// Special case, useful in debugging.
+		return "<nil>"
+	}
+	return string(b.buf[b.off:])
 }
