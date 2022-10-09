@@ -97,9 +97,11 @@ func WithClientIPAddressHeader(header string) Option {
 }
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	r.Header.Set(h.clientIPAddressHeader, XRealIP(r, h.set_real_ip_from, h.real_ip_header, h.real_ip_recursive))
+	xRealIP := XRealIP(r, h.set_real_ip_from, h.real_ip_header, h.real_ip_recursive)
 
-	h.next.ServeHTTP(rw, r)
+	r.Header.Set(h.clientIPAddressHeader, xRealIP)
+
+	h.next.ServeHTTP(rw, r.WithContext(ContextWithXRealIP(r.Context(), xRealIP)))
 }
 
 func remoteIP(remoteAddr string) string {

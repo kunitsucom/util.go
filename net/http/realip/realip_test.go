@@ -22,11 +22,13 @@ func TestNew(t *testing.T) {
 		const header = "X-Test-Real-IP"
 		expect := "33.33.33.33"
 		var actual string
+		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
 		h := realip.New(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				actual = r.Header.Get(header)
+				actualCtx = realip.ContextXRealIP(r.Context())
 			}),
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			realip.HeaderXForwardedFor,
@@ -39,6 +41,9 @@ func TestNew(t *testing.T) {
 
 		h.ServeHTTP(actualResponse, r)
 
+		if expect != actualCtx {
+			t.Errorf("expect != actualCtx: %s", actual)
+		}
 		if expect != actual {
 			t.Errorf("expect != actual: %s", actual)
 		}
@@ -51,11 +56,13 @@ func TestNew(t *testing.T) {
 
 		expect := "33.33.33.33"
 		var actual string
+		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
 		h := realip.New(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				actual = r.Header.Get(realip.HeaderXRealIP)
+				actualCtx = realip.ContextXRealIP(r.Context())
 			}),
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			testHeaderKey,
@@ -67,6 +74,9 @@ func TestNew(t *testing.T) {
 
 		h.ServeHTTP(actualResponse, r)
 
+		if expect != actualCtx {
+			t.Errorf("expect != actualCtx: %s", actual)
+		}
 		if expect != actual {
 			t.Errorf("expect != actual: %s", actual)
 		}
@@ -77,11 +87,13 @@ func TestNew(t *testing.T) {
 
 		expect := "192.0.2.1"
 		var actual string
+		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
 		h := realip.New(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				actual = r.Header.Get(realip.HeaderXRealIP)
+				actualCtx = realip.ContextXRealIP(r.Context())
 			}),
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			realip.HeaderXForwardedFor,
@@ -93,6 +105,9 @@ func TestNew(t *testing.T) {
 
 		h.ServeHTTP(actualResponse, r)
 
+		if expect != actualCtx {
+			t.Errorf("expect != actualCtx: %s", actual)
+		}
 		if expect != actual {
 			t.Errorf("expect != actual: %s", actual)
 		}
@@ -103,11 +118,13 @@ func TestNew(t *testing.T) {
 
 		expect := "10.100.100.100"
 		var actual string
+		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
 		h := realip.New(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				actual = r.Header.Get(realip.HeaderXRealIP)
+				actualCtx = realip.ContextXRealIP(r.Context())
 			}),
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			realip.HeaderXForwardedFor,
@@ -119,6 +136,9 @@ func TestNew(t *testing.T) {
 
 		h.ServeHTTP(actualResponse, r)
 
+		if expect != actualCtx {
+			t.Errorf("expect != actualCtx: %s", actual)
+		}
 		if expect != actual {
 			t.Errorf("expect != actual: %s", actual)
 		}
