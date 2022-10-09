@@ -24,6 +24,21 @@ func TestSort(t *testing.T) {
 	})
 }
 
+func TestCopy(t *testing.T) {
+	t.Parallel()
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+		src := []byte("TestString")
+		dst := slice.Copy(src)
+		dst[0] = byte('t')
+		expect := byte('T')
+		actual := src[0]
+		if expect != actual {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+}
+
 func TestContains(t *testing.T) {
 	t.Parallel()
 	t.Run("success", func(t *testing.T) {

@@ -13,6 +13,12 @@ func Sort[T any](source []T, less func(elemA, elemB T) bool) []T {
 	return cp
 }
 
+func Copy[T any](src []T) (dst []T) {
+	dst = make([]T, len(src))
+	copy(dst, src)
+	return dst
+}
+
 func Contains[T comparable](s []T, value T) bool {
 	for _, elem := range s {
 		if value == elem {
