@@ -1,19 +1,29 @@
-package realip_test
+package httpz_test
 
 import (
 	"bytes"
+	"context"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/kunitsuinc/util.go/net/http/realip"
+	"github.com/kunitsuinc/util.go/net/httpz"
 	"github.com/kunitsuinc/util.go/netz"
 )
 
 const testXForwardedFor = "127.0.0.1, 33.33.33.33, 10.1.1.1, 10.10.10.10, 10.100.100.100"
 
-func TestNew(t *testing.T) {
+func TestContextXRealIP(t *testing.T) {
+	t.Parallel()
+	expect := ""
+	actual := httpz.ContextXRealIP(context.Background())
+	if expect != actual {
+		t.Errorf("expect != actual: %s", actual)
+	}
+}
+
+func TestNewXRealIPHandler(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success()", func(t *testing.T) {
@@ -25,19 +35,19 @@ func TestNew(t *testing.T) {
 		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := realip.New(http.HandlerFunc(
+		h := httpz.NewXRealIPHandler(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				actual = r.Header.Get(header)
-				actualCtx = realip.ContextXRealIP(r.Context())
+				actualCtx = httpz.ContextXRealIP(r.Context())
 			}),
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
-			realip.HeaderXForwardedFor,
+			httpz.HeaderXForwardedFor,
 			true,
-			realip.WithClientIPAddressHeader(header),
+			httpz.WithClientIPAddressHeader(header),
 		)
 
-		r := httptest.NewRequest(http.MethodGet, "http://util.go/net/realip", bytes.NewBufferString("test_request_body"))
-		r.Header.Set(realip.HeaderXForwardedFor, testXForwardedFor)
+		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
+		r.Header.Set(httpz.HeaderXForwardedFor, testXForwardedFor)
 
 		h.ServeHTTP(actualResponse, r)
 
@@ -59,17 +69,17 @@ func TestNew(t *testing.T) {
 		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := realip.New(http.HandlerFunc(
+		h := httpz.NewXRealIPHandler(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
-				actual = r.Header.Get(realip.HeaderXRealIP)
-				actualCtx = realip.ContextXRealIP(r.Context())
+				actual = r.Header.Get(httpz.HeaderXRealIP)
+				actualCtx = httpz.ContextXRealIP(r.Context())
 			}),
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			testHeaderKey,
 			true,
 		)
 
-		r := httptest.NewRequest(http.MethodGet, "http://util.go/net/realip", bytes.NewBufferString("test_request_body"))
+		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(testHeaderKey, testXForwardedFor)
 
 		h.ServeHTTP(actualResponse, r)
@@ -90,18 +100,18 @@ func TestNew(t *testing.T) {
 		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := realip.New(http.HandlerFunc(
+		h := httpz.NewXRealIPHandler(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
-				actual = r.Header.Get(realip.HeaderXRealIP)
-				actualCtx = realip.ContextXRealIP(r.Context())
+				actual = r.Header.Get(httpz.HeaderXRealIP)
+				actualCtx = httpz.ContextXRealIP(r.Context())
 			}),
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
-			realip.HeaderXForwardedFor,
+			httpz.HeaderXForwardedFor,
 			true,
 		)
 
-		r := httptest.NewRequest(http.MethodGet, "http://util.go/net/realip", bytes.NewBufferString("test_request_body"))
-		r.Header.Set(realip.HeaderXForwardedFor, "")
+		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
+		r.Header.Set(httpz.HeaderXForwardedFor, "")
 
 		h.ServeHTTP(actualResponse, r)
 
@@ -121,18 +131,18 @@ func TestNew(t *testing.T) {
 		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := realip.New(http.HandlerFunc(
+		h := httpz.NewXRealIPHandler(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
-				actual = r.Header.Get(realip.HeaderXRealIP)
-				actualCtx = realip.ContextXRealIP(r.Context())
+				actual = r.Header.Get(httpz.HeaderXRealIP)
+				actualCtx = httpz.ContextXRealIP(r.Context())
 			}),
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
-			realip.HeaderXForwardedFor,
+			httpz.HeaderXForwardedFor,
 			false,
 		)
 
-		r := httptest.NewRequest(http.MethodGet, "http://util.go/net/realip", bytes.NewBufferString("test_request_body"))
-		r.Header.Set(realip.HeaderXForwardedFor, testXForwardedFor)
+		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
+		r.Header.Set(httpz.HeaderXForwardedFor, testXForwardedFor)
 
 		h.ServeHTTP(actualResponse, r)
 
