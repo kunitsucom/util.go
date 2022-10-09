@@ -19,17 +19,19 @@ func TestNew(t *testing.T) {
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 
+		const header = "X-Test-Real-IP"
 		expect := "33.33.33.33"
 		var actual string
 		actualResponse := &httptest.ResponseRecorder{}
 
 		h := realip.New(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
-				actual = r.Header.Get(realip.HeaderXRealIP)
+				actual = r.Header.Get(header)
 			}),
-			[]*net.IPNet{netz.PrivateIPClassA},
+			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			realip.HeaderXForwardedFor,
 			true,
+			realip.WithClientIPAddressHeader(header),
 		)
 
 		r := httptest.NewRequest(http.MethodGet, "http://util.go/net/realip", bytes.NewBufferString("test_request_body"))
@@ -55,7 +57,7 @@ func TestNew(t *testing.T) {
 			func(rw http.ResponseWriter, r *http.Request) {
 				actual = r.Header.Get(realip.HeaderXRealIP)
 			}),
-			[]*net.IPNet{netz.PrivateIPClassA},
+			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			testHeaderKey,
 			true,
 		)
@@ -81,7 +83,7 @@ func TestNew(t *testing.T) {
 			func(rw http.ResponseWriter, r *http.Request) {
 				actual = r.Header.Get(realip.HeaderXRealIP)
 			}),
-			[]*net.IPNet{netz.PrivateIPClassA},
+			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			realip.HeaderXForwardedFor,
 			true,
 		)
@@ -107,7 +109,7 @@ func TestNew(t *testing.T) {
 			func(rw http.ResponseWriter, r *http.Request) {
 				actual = r.Header.Get(realip.HeaderXRealIP)
 			}),
-			[]*net.IPNet{netz.PrivateIPClassA},
+			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			realip.HeaderXForwardedFor,
 			false,
 		)
