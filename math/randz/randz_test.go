@@ -52,12 +52,12 @@ func TestRange32(t *testing.T) {
 		rand.Seed(0)
 		expect := []int32{2, 2, 1, 2, 3, 0}
 		actual := []int32{
-			randz.Range32(0, 3),
-			randz.Range32(0, 3),
-			randz.Range32(0, 3),
-			randz.Range32(0, 3),
-			randz.Range32(0, 3),
-			randz.Range32(0, 3),
+			randz.Range31(0, 3),
+			randz.Range31(0, 3),
+			randz.Range31(0, 3),
+			randz.Range31(0, 3),
+			randz.Range31(0, 3),
+			randz.Range31(0, 3),
 		}
 		if !reflect.DeepEqual(expect, actual) {
 			t.Errorf("expect != actual: %v != %v", expect, actual)
@@ -71,12 +71,12 @@ func TestRange32Rand(t *testing.T) {
 		r := rand.New(rand.NewSource(0))
 		expect := []int32{2, 2, 1, 2, 3, 0}
 		actual := []int32{
-			randz.Range32Rand(r, 0, 3),
-			randz.Range32Rand(r, 0, 3),
-			randz.Range32Rand(r, 0, 3),
-			randz.Range32Rand(r, 0, 3),
-			randz.Range32Rand(r, 0, 3),
-			randz.Range32Rand(r, 0, 3),
+			randz.Range31Rand(r, 0, 3),
+			randz.Range31Rand(r, 0, 3),
+			randz.Range31Rand(r, 0, 3),
+			randz.Range31Rand(r, 0, 3),
+			randz.Range31Rand(r, 0, 3),
+			randz.Range31Rand(r, 0, 3),
 		}
 		if !reflect.DeepEqual(expect, actual) {
 			t.Errorf("expect != actual: %v != %v", expect, actual)
@@ -89,12 +89,12 @@ func TestRange64(t *testing.T) {
 		rand.Seed(0)
 		expect := []int64{1, 0, 3, 2, 2, 3}
 		actual := []int64{
-			randz.Range64(0, 3),
-			randz.Range64(0, 3),
-			randz.Range64(0, 3),
-			randz.Range64(0, 3),
-			randz.Range64(0, 3),
-			randz.Range64(0, 3),
+			randz.Range63(0, 3),
+			randz.Range63(0, 3),
+			randz.Range63(0, 3),
+			randz.Range63(0, 3),
+			randz.Range63(0, 3),
+			randz.Range63(0, 3),
 		}
 		if !reflect.DeepEqual(expect, actual) {
 			t.Errorf("expect != actual: %v != %v", expect, actual)
@@ -108,12 +108,12 @@ func TestRange64Rand(t *testing.T) {
 		r := rand.New(rand.NewSource(0))
 		expect := []int64{1, 0, 3, 2, 2, 3}
 		actual := []int64{
-			randz.Range64Rand(r, 0, 3),
-			randz.Range64Rand(r, 0, 3),
-			randz.Range64Rand(r, 0, 3),
-			randz.Range64Rand(r, 0, 3),
-			randz.Range64Rand(r, 0, 3),
-			randz.Range64Rand(r, 0, 3),
+			randz.Range63Rand(r, 0, 3),
+			randz.Range63Rand(r, 0, 3),
+			randz.Range63Rand(r, 0, 3),
+			randz.Range63Rand(r, 0, 3),
+			randz.Range63Rand(r, 0, 3),
+			randz.Range63Rand(r, 0, 3),
 		}
 		if !reflect.DeepEqual(expect, actual) {
 			t.Errorf("expect != actual: %v != %v", expect, actual)
