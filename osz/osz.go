@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-var ErrPathIsNotDirectory = errors.New("path is not directory")
+var ErrPathIsNotDirectory = errors.New("osz: path is not directory")
 
 func Exists(path string) bool {
 	_, err := os.Stat(path)

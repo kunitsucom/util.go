@@ -32,9 +32,9 @@ func NewReadSeekBufferBytes(buf []byte) *ReadSeekBuffer {
 	}
 }
 
-func NewReadSeekBufferString(buf string) *ReadSeekBuffer {
+func NewReadSeekBufferString(s string) *ReadSeekBuffer {
 	return &ReadSeekBuffer{
-		buf:       []byte(buf),
+		buf:       []byte(s),
 		r:         nil,
 		completed: true,
 		off:       0,
@@ -79,10 +79,10 @@ const (
 )
 
 var (
-	ErrOriginalIOReaderHasNotCompletedReading = errors.New("original io.Reader has not completed reading")
-	ErrTooLargeOffset                         = errors.New("too large offset")
-	ErrUnexpectedWhence                       = errors.New("unexpected whence")
-	ErrOffsetExceedsBufferSize                = errors.New("offset exceeds buffer size")
+	ErrOriginalIOReaderHasNotCompletedReading = errors.New("bytez: original io.Reader has not completed reading")
+	ErrTooLargeOffset                         = errors.New("bytez: too large offset")
+	ErrUnexpectedWhence                       = errors.New("bytez: unexpected whence")
+	ErrOffsetExceedsBufferSize                = errors.New("bytez: offset exceeds buffer size")
 )
 
 func (b *ReadSeekBuffer) Seek(offset int64, whence int) (newoffset int64, err error) {

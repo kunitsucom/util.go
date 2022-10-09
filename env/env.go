@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-var ErrEnvironmentVariableIsEmpty = errors.New("environment variable is empty")
+var ErrEnvironmentVariableIsEmpty = errors.New("env: environment variable is empty")
 
 func String(key string) (string, error) {
 	value, found := os.LookupEnv(key)
