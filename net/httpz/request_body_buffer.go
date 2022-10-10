@@ -37,18 +37,18 @@ type RequestBodyBufferHandler struct {
 
 type RequestBodyBufferHandlerOption func(h *RequestBodyBufferHandler)
 
-func WithBufferingSkipLimit(bufferingSkipLimit int64) RequestBodyBufferHandlerOption {
+func WithRequestBodyBufferingSkipLimit(bufferingSkipLimit int64) RequestBodyBufferHandlerOption {
 	return func(h *RequestBodyBufferHandler) {
 		h.bufferingSkipLimit = bufferingSkipLimit
 	}
 }
 
-const DefaultBufferingSkipLimit = 1 << 20 // 1 MiB
+const DefaultRequestBodyBufferingSkipLimit = 1 << 20 // 1 MiB
 
 func NewRequestBodyBufferHandler(next http.Handler, errorHandler func(rw http.ResponseWriter, r *http.Request, err error), opts ...RequestBodyBufferHandlerOption) *RequestBodyBufferHandler {
 	h := &RequestBodyBufferHandler{
 		next:               next,
-		bufferingSkipLimit: DefaultBufferingSkipLimit,
+		bufferingSkipLimit: DefaultRequestBodyBufferingSkipLimit,
 		errorHandler:       errorHandler,
 	}
 

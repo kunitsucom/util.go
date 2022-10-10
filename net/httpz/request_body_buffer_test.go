@@ -95,7 +95,7 @@ func TestNewRequestBodyBufferHandler(t *testing.T) {
 				rw.WriteHeader(http.StatusInternalServerError)
 				_, _ = rw.Write([]byte(err.Error()))
 			},
-			httpz.WithBufferingSkipLimit(1),
+			httpz.WithRequestBodyBufferingSkipLimit(1),
 		)
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("over_limit_string"))
@@ -127,7 +127,7 @@ func TestNewRequestBodyBufferHandler(t *testing.T) {
 				rw.WriteHeader(http.StatusInternalServerError)
 				_, _ = rw.Write([]byte(err.Error()))
 			},
-			httpz.WithBufferingSkipLimit(100),
+			httpz.WithRequestBodyBufferingSkipLimit(100),
 		)
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", testz.NewReadWriter(0, testz.ErrTestError))
