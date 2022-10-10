@@ -56,10 +56,7 @@ func TestNewRequestBodyBufferHandler(t *testing.T) {
 		var ok bool
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := httpz.NewRequestBodyBufferHandler(http.HandlerFunc(
-			func(rw http.ResponseWriter, r *http.Request) {
-				actualBuf, ok = httpz.ContextRequestBodyBuffer(r.Context())
-			}),
+		h := httpz.NewRequestBodyBufferHandler(
 			func(rw http.ResponseWriter, r *http.Request, err error) {
 				rw.WriteHeader(http.StatusInternalServerError)
 				_, _ = rw.Write([]byte(err.Error()))
@@ -67,8 +64,11 @@ func TestNewRequestBodyBufferHandler(t *testing.T) {
 		)
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString(expect))
-		h.ServeHTTP(actualResponse, r)
-
+		h(http.HandlerFunc(
+			func(rw http.ResponseWriter, r *http.Request) {
+				actualBuf, ok = httpz.ContextRequestBodyBuffer(r.Context())
+			})).
+			ServeHTTP(actualResponse, r)
 		if !ok {
 			t.Errorf("!ok")
 		}
@@ -87,10 +87,7 @@ func TestNewRequestBodyBufferHandler(t *testing.T) {
 		var ok bool
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := httpz.NewRequestBodyBufferHandler(http.HandlerFunc(
-			func(rw http.ResponseWriter, r *http.Request) {
-				actualBuf, ok = httpz.ContextRequestBodyBuffer(r.Context())
-			}),
+		h := httpz.NewRequestBodyBufferHandler(
 			func(rw http.ResponseWriter, r *http.Request, err error) {
 				rw.WriteHeader(http.StatusInternalServerError)
 				_, _ = rw.Write([]byte(err.Error()))
@@ -99,7 +96,11 @@ func TestNewRequestBodyBufferHandler(t *testing.T) {
 		)
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("over_limit_string"))
-		h.ServeHTTP(actualResponse, r)
+		h(http.HandlerFunc(
+			func(rw http.ResponseWriter, r *http.Request) {
+				actualBuf, ok = httpz.ContextRequestBodyBuffer(r.Context())
+			})).
+			ServeHTTP(actualResponse, r)
 
 		if ok {
 			t.Errorf("ok")
@@ -119,10 +120,7 @@ func TestNewRequestBodyBufferHandler(t *testing.T) {
 		var ok bool
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := httpz.NewRequestBodyBufferHandler(http.HandlerFunc(
-			func(rw http.ResponseWriter, r *http.Request) {
-				actualBuf, ok = httpz.ContextRequestBodyBuffer(r.Context())
-			}),
+		h := httpz.NewRequestBodyBufferHandler(
 			func(rw http.ResponseWriter, r *http.Request, err error) {
 				rw.WriteHeader(http.StatusInternalServerError)
 				_, _ = rw.Write([]byte(err.Error()))
@@ -131,7 +129,11 @@ func TestNewRequestBodyBufferHandler(t *testing.T) {
 		)
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", testz.NewReadWriter(0, testz.ErrTestError))
-		h.ServeHTTP(actualResponse, r)
+		h(http.HandlerFunc(
+			func(rw http.ResponseWriter, r *http.Request) {
+				actualBuf, ok = httpz.ContextRequestBodyBuffer(r.Context())
+			})).
+			ServeHTTP(actualResponse, r)
 
 		if ok {
 			t.Errorf("ok")

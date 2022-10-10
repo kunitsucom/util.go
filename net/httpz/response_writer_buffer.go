@@ -34,32 +34,28 @@ func (rwb *responseWriterBuffer) Write(p []byte) (int, error) {
 	return n, nil
 }
 
-type responseWriterBufferHandler = func(statusCode int, header http.Header, responseWriterBuffer *bytes.Buffer)
-
 type ResponseWriterBufferHandler struct {
-	next                        http.Handler
-	responseWriterBufferHandler responseWriterBufferHandler
+	responseWriterBufferHandler func(statusCode int, header http.Header, responseWriterBuffer *bytes.Buffer)
 }
 
 type ResponseWriterBufferHandlerOption func(h *ResponseWriterBufferHandler)
 
-func NewResponseWriterBufferHandler(next http.Handler, responseWriterHandler responseWriterBufferHandler, opts ...ResponseWriterBufferHandlerOption) *ResponseWriterBufferHandler {
+func NewResponseWriterBufferHandler(responseWriterBufferHandler func(statusCode int, header http.Header, responseWriterBuffer *bytes.Buffer), opts ...ResponseWriterBufferHandlerOption) func(http.Handler) http.Handler {
 	h := &ResponseWriterBufferHandler{
-		next:                        next,
-		responseWriterBufferHandler: responseWriterHandler,
+		responseWriterBufferHandler: responseWriterBufferHandler,
 	}
 
 	for _, opt := range opts {
 		opt(h)
 	}
 
-	return h
-}
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+			rwb := newResponseWriterBuffer(rw)
 
-func (h *ResponseWriterBufferHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	rwb := newResponseWriterBuffer(rw)
+			next.ServeHTTP(rwb, r)
 
-	h.next.ServeHTTP(rwb, r)
-
-	h.responseWriterBufferHandler(rwb.statusCode, rwb.Header(), rwb.responseWriterBuffer)
+			h.responseWriterBufferHandler(rwb.statusCode, rwb.Header(), rwb.responseWriterBuffer)
+		})
+	}
 }

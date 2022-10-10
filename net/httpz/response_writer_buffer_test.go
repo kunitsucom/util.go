@@ -26,18 +26,16 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 		actualResponse := &httptest.ResponseRecorder{}
 
 		h := httpz.NewResponseWriterBufferHandler(
-			http.HandlerFunc(
-				func(rw http.ResponseWriter, r *http.Request) {
-					rw.WriteHeader(http.StatusOK)
-					rw.Header().Set("Test-Header", "TestString")
-					_, _ = io.Copy(rw, r.Body)
-				}),
 			func(statusCode int, header http.Header, responseWriterBuffer *bytes.Buffer) {
 				actual = fmt.Sprintf("%d %v %s", statusCode, header, responseWriterBuffer)
 			},
 		)
 
-		h.ServeHTTP(
+		h(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+			rw.WriteHeader(http.StatusOK)
+			rw.Header().Set("Test-Header", "TestString")
+			_, _ = io.Copy(rw, r.Body)
+		})).ServeHTTP(
 			actualResponse,
 			httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body")),
 		)
@@ -55,20 +53,19 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 		actualResponse := testz.NewResponseWriter(nil, 0, testz.ErrTestError)
 
 		h := httpz.NewResponseWriterBufferHandler(
-			http.HandlerFunc(
-				func(rw http.ResponseWriter, r *http.Request) {
-					rw.WriteHeader(http.StatusOK)
-					rw.Header().Set("Test-Header", "TestString")
-					_, _ = io.Copy(rw, r.Body)
-				},
-			),
 			func(statusCode int, header http.Header, responseWriterBuffer *bytes.Buffer) {
 				actual = fmt.Sprintf("%d %v %s", statusCode, header, responseWriterBuffer)
 			},
 			ResponseWriterBufferHandlerTestOption,
 		)
 
-		h.ServeHTTP(
+		h(http.HandlerFunc(
+			func(rw http.ResponseWriter, r *http.Request) {
+				rw.WriteHeader(http.StatusOK)
+				rw.Header().Set("Test-Header", "TestString")
+				_, _ = io.Copy(rw, r.Body)
+			},
+		)).ServeHTTP(
 			actualResponse,
 			httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body")),
 		)

@@ -35,11 +35,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := httpz.NewXRealIPHandler(http.HandlerFunc(
-			func(rw http.ResponseWriter, r *http.Request) {
-				actual = r.Header.Get(header)
-				actualCtx = httpz.ContextXRealIP(r.Context())
-			}),
+		h := httpz.NewXRealIPHandler(
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			httpz.HeaderXForwardedFor,
 			true,
@@ -49,7 +45,12 @@ func TestNewXRealIPHandler(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(httpz.HeaderXForwardedFor, testXForwardedFor)
 
-		h.ServeHTTP(actualResponse, r)
+		h(http.HandlerFunc(
+			func(rw http.ResponseWriter, r *http.Request) {
+				actual = r.Header.Get(header)
+				actualCtx = httpz.ContextXRealIP(r.Context())
+			})).
+			ServeHTTP(actualResponse, r)
 
 		if expect != actualCtx {
 			t.Errorf("expect != actualCtx: %s", actual)
@@ -69,11 +70,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := httpz.NewXRealIPHandler(http.HandlerFunc(
-			func(rw http.ResponseWriter, r *http.Request) {
-				actual = r.Header.Get(httpz.HeaderXRealIP)
-				actualCtx = httpz.ContextXRealIP(r.Context())
-			}),
+		h := httpz.NewXRealIPHandler(
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			testHeaderKey,
 			true,
@@ -82,7 +79,12 @@ func TestNewXRealIPHandler(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(testHeaderKey, testXForwardedFor)
 
-		h.ServeHTTP(actualResponse, r)
+		h(http.HandlerFunc(
+			func(rw http.ResponseWriter, r *http.Request) {
+				actual = r.Header.Get(httpz.HeaderXRealIP)
+				actualCtx = httpz.ContextXRealIP(r.Context())
+			})).
+			ServeHTTP(actualResponse, r)
 
 		if expect != actualCtx {
 			t.Errorf("expect != actualCtx: %s", actual)
@@ -100,11 +102,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := httpz.NewXRealIPHandler(http.HandlerFunc(
-			func(rw http.ResponseWriter, r *http.Request) {
-				actual = r.Header.Get(httpz.HeaderXRealIP)
-				actualCtx = httpz.ContextXRealIP(r.Context())
-			}),
+		h := httpz.NewXRealIPHandler(
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			httpz.HeaderXForwardedFor,
 			true,
@@ -113,7 +111,12 @@ func TestNewXRealIPHandler(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(httpz.HeaderXForwardedFor, "")
 
-		h.ServeHTTP(actualResponse, r)
+		h(http.HandlerFunc(
+			func(rw http.ResponseWriter, r *http.Request) {
+				actual = r.Header.Get(httpz.HeaderXRealIP)
+				actualCtx = httpz.ContextXRealIP(r.Context())
+			})).
+			ServeHTTP(actualResponse, r)
 
 		if expect != actualCtx {
 			t.Errorf("expect != actualCtx: %s", actual)
@@ -131,11 +134,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := httpz.NewXRealIPHandler(http.HandlerFunc(
-			func(rw http.ResponseWriter, r *http.Request) {
-				actual = r.Header.Get(httpz.HeaderXRealIP)
-				actualCtx = httpz.ContextXRealIP(r.Context())
-			}),
+		h := httpz.NewXRealIPHandler(
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			httpz.HeaderXForwardedFor,
 			false,
@@ -144,7 +143,12 @@ func TestNewXRealIPHandler(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(httpz.HeaderXForwardedFor, testXForwardedFor)
 
-		h.ServeHTTP(actualResponse, r)
+		h(http.HandlerFunc(
+			func(rw http.ResponseWriter, r *http.Request) {
+				actual = r.Header.Get(httpz.HeaderXRealIP)
+				actualCtx = httpz.ContextXRealIP(r.Context())
+			})).
+			ServeHTTP(actualResponse, r)
 
 		if expect != actualCtx {
 			t.Errorf("expect != actualCtx: %s", actual)
