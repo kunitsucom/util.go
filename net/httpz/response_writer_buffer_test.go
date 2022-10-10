@@ -21,13 +21,13 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 
-		expect := "200 map[Test-Header:[TestString]] test_request_body"
+		expect := "200 map[Test-Header:[TestString]] test_request_body http://util.go/net/httpz"
 		var actual string
 		actualResponse := &httptest.ResponseRecorder{}
 
 		middleware := httpz.NewResponseWriterBufferHandler(
-			func(statusCode int, header http.Header, responseWriterBuffer *bytes.Buffer) {
-				actual = fmt.Sprintf("%d %v %s", statusCode, header, responseWriterBuffer)
+			func(rwb *httpz.ResponseWriterBuffer, r *http.Request) {
+				actual = fmt.Sprintf("%d %v %s %s", rwb.StatusCode, rwb.Header(), rwb.Buffer, r.RequestURI)
 			},
 		).Middleware
 
@@ -48,12 +48,12 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 	t.Run("failure()", func(t *testing.T) {
 		t.Parallel()
 
-		expect := "200 map[Test-Header:[TestString]] test_request_body"
+		expect := "200 map[Test-Header:[TestString]] test_request_body http://util.go/net/httpz"
 		var actual string
 
 		middleware := httpz.NewResponseWriterBufferHandler(
-			func(statusCode int, header http.Header, responseWriterBuffer *bytes.Buffer) {
-				actual = fmt.Sprintf("%d %v %s", statusCode, header, responseWriterBuffer)
+			func(rwb *httpz.ResponseWriterBuffer, r *http.Request) {
+				actual = fmt.Sprintf("%d %v %s %s", rwb.StatusCode, rwb.Header(), rwb.Buffer, r.RequestURI)
 			},
 			ResponseWriterBufferHandlerTestOption,
 		).Middleware
