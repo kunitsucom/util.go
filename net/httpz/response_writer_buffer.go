@@ -40,7 +40,7 @@ type ResponseWriterBufferHandler struct {
 
 type ResponseWriterBufferHandlerOption func(h *ResponseWriterBufferHandler)
 
-func NewResponseWriterBufferHandler(responseWriterBufferHandler func(statusCode int, header http.Header, responseWriterBuffer *bytes.Buffer), opts ...ResponseWriterBufferHandlerOption) func(http.Handler) http.Handler {
+func NewResponseWriterBufferHandler(responseWriterBufferHandler func(statusCode int, header http.Header, responseWriterBuffer *bytes.Buffer), opts ...ResponseWriterBufferHandlerOption) *ResponseWriterBufferHandler {
 	h := &ResponseWriterBufferHandler{
 		responseWriterBufferHandler: responseWriterBufferHandler,
 	}
@@ -49,13 +49,15 @@ func NewResponseWriterBufferHandler(responseWriterBufferHandler func(statusCode 
 		opt(h)
 	}
 
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			rwb := newResponseWriterBuffer(rw)
+	return h
+}
 
-			next.ServeHTTP(rwb, r)
+func (h *ResponseWriterBufferHandler) Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rwb := newResponseWriterBuffer(rw)
 
-			h.responseWriterBufferHandler(rwb.statusCode, rwb.Header(), rwb.responseWriterBuffer)
-		})
-	}
+		next.ServeHTTP(rwb, r)
+
+		h.responseWriterBufferHandler(rwb.statusCode, rwb.Header(), rwb.responseWriterBuffer)
+	})
 }

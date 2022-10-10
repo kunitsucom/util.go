@@ -44,7 +44,7 @@ func WithRequestBodyBufferingSkipLimit(bufferingSkipLimit int64) RequestBodyBuff
 
 const DefaultRequestBodyBufferingSkipLimit = 1 << 20 // 1 MiB
 
-func NewRequestBodyBufferHandler(errorHandler func(rw http.ResponseWriter, r *http.Request, err error), opts ...RequestBodyBufferHandlerOption) func(http.Handler) http.Handler {
+func NewRequestBodyBufferHandler(errorHandler func(rw http.ResponseWriter, r *http.Request, err error), opts ...RequestBodyBufferHandlerOption) *RequestBodyBufferHandler {
 	h := &RequestBodyBufferHandler{
 		bufferingSkipLimit: DefaultRequestBodyBufferingSkipLimit,
 		errorHandler:       errorHandler,
@@ -54,20 +54,22 @@ func NewRequestBodyBufferHandler(errorHandler func(rw http.ResponseWriter, r *ht
 		opt(h)
 	}
 
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			if r.ContentLength < h.bufferingSkipLimit {
-				buf, err := RequestBodyBuffer(r)
-				if err != nil {
-					h.errorHandler(rw, r, err)
-					return
-				}
+	return h
+}
 
-				next.ServeHTTP(rw, r.WithContext(ContextWithRequestBodyBuffer(r.Context(), buf)))
+func (h *RequestBodyBufferHandler) Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		if r.ContentLength < h.bufferingSkipLimit {
+			buf, err := RequestBodyBuffer(r)
+			if err != nil {
+				h.errorHandler(rw, r, err)
 				return
 			}
 
-			next.ServeHTTP(rw, r)
-		})
-	}
+			next.ServeHTTP(rw, r.WithContext(ContextWithRequestBodyBuffer(r.Context(), buf)))
+			return
+		}
+
+		next.ServeHTTP(rw, r)
+	})
 }

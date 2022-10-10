@@ -35,17 +35,17 @@ func TestNewXRealIPHandler(t *testing.T) {
 		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := httpz.NewXRealIPHandler(
+		middleware := httpz.NewXRealIPHandler(
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			httpz.HeaderXForwardedFor,
 			true,
 			httpz.WithClientIPAddressHeader(header),
-		)
+		).Middleware
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(httpz.HeaderXForwardedFor, testXForwardedFor)
 
-		h(http.HandlerFunc(
+		middleware(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				actual = r.Header.Get(header)
 				actualCtx = httpz.ContextXRealIP(r.Context())
@@ -70,16 +70,16 @@ func TestNewXRealIPHandler(t *testing.T) {
 		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := httpz.NewXRealIPHandler(
+		middleware := httpz.NewXRealIPHandler(
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			testHeaderKey,
 			true,
-		)
+		).Middleware
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(testHeaderKey, testXForwardedFor)
 
-		h(http.HandlerFunc(
+		middleware(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				actual = r.Header.Get(httpz.HeaderXRealIP)
 				actualCtx = httpz.ContextXRealIP(r.Context())
@@ -102,16 +102,16 @@ func TestNewXRealIPHandler(t *testing.T) {
 		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := httpz.NewXRealIPHandler(
+		middleware := httpz.NewXRealIPHandler(
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			httpz.HeaderXForwardedFor,
 			true,
-		)
+		).Middleware
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(httpz.HeaderXForwardedFor, "")
 
-		h(http.HandlerFunc(
+		middleware(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				actual = r.Header.Get(httpz.HeaderXRealIP)
 				actualCtx = httpz.ContextXRealIP(r.Context())
@@ -134,16 +134,16 @@ func TestNewXRealIPHandler(t *testing.T) {
 		var actualCtx string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := httpz.NewXRealIPHandler(
+		middleware := httpz.NewXRealIPHandler(
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			httpz.HeaderXForwardedFor,
 			false,
-		)
+		).Middleware
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(httpz.HeaderXForwardedFor, testXForwardedFor)
 
-		h(http.HandlerFunc(
+		middleware(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				actual = r.Header.Get(httpz.HeaderXRealIP)
 				actualCtx = httpz.ContextXRealIP(r.Context())

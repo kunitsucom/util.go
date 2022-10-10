@@ -25,13 +25,13 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 		var actual string
 		actualResponse := &httptest.ResponseRecorder{}
 
-		h := httpz.NewResponseWriterBufferHandler(
+		middleware := httpz.NewResponseWriterBufferHandler(
 			func(statusCode int, header http.Header, responseWriterBuffer *bytes.Buffer) {
 				actual = fmt.Sprintf("%d %v %s", statusCode, header, responseWriterBuffer)
 			},
-		)
+		).Middleware
 
-		h(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		middleware(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			rw.WriteHeader(http.StatusOK)
 			rw.Header().Set("Test-Header", "TestString")
 			_, _ = io.Copy(rw, r.Body)
@@ -50,23 +50,22 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 
 		expect := "200 map[Test-Header:[TestString]] test_request_body"
 		var actual string
-		actualResponse := testz.NewResponseWriter(nil, 0, testz.ErrTestError)
 
-		h := httpz.NewResponseWriterBufferHandler(
+		middleware := httpz.NewResponseWriterBufferHandler(
 			func(statusCode int, header http.Header, responseWriterBuffer *bytes.Buffer) {
 				actual = fmt.Sprintf("%d %v %s", statusCode, header, responseWriterBuffer)
 			},
 			ResponseWriterBufferHandlerTestOption,
-		)
+		).Middleware
 
-		h(http.HandlerFunc(
+		middleware(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				rw.WriteHeader(http.StatusOK)
 				rw.Header().Set("Test-Header", "TestString")
 				_, _ = io.Copy(rw, r.Body)
 			},
 		)).ServeHTTP(
-			actualResponse,
+			testz.NewResponseWriter(bytes.NewBuffer(nil), nil, 0, testz.ErrTestError),
 			httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body")),
 		)
 

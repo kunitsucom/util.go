@@ -86,7 +86,7 @@ type XRealIPHandlerOption func(h *XRealIPHandler)
 //
 // *realip.Handler set <ClientIP> to X-Real-IP header.
 // nolint: revive,stylecheck
-func NewXRealIPHandler(set_real_ip_from []*net.IPNet, real_ip_header string, real_ip_recursive bool, opts ...XRealIPHandlerOption) func(http.Handler) http.Handler {
+func NewXRealIPHandler(set_real_ip_from []*net.IPNet, real_ip_header string, real_ip_recursive bool, opts ...XRealIPHandlerOption) *XRealIPHandler {
 	h := &XRealIPHandler{
 		set_real_ip_from:      set_real_ip_from,
 		real_ip_header:        real_ip_header,
@@ -98,15 +98,17 @@ func NewXRealIPHandler(set_real_ip_from []*net.IPNet, real_ip_header string, rea
 		opt(h)
 	}
 
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			xRealIP := XRealIP(r, h.set_real_ip_from, h.real_ip_header, h.real_ip_recursive)
+	return h
+}
 
-			r.Header.Set(h.clientIPAddressHeader, xRealIP)
+func (h *XRealIPHandler) Middleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		xRealIP := XRealIP(r, h.set_real_ip_from, h.real_ip_header, h.real_ip_recursive)
 
-			next.ServeHTTP(rw, r.WithContext(ContextWithXRealIP(r.Context(), xRealIP)))
-		})
-	}
+		r.Header.Set(h.clientIPAddressHeader, xRealIP)
+
+		next.ServeHTTP(rw, r.WithContext(ContextWithXRealIP(r.Context(), xRealIP)))
+	})
 }
 
 func WithClientIPAddressHeader(header string) XRealIPHandlerOption {
