@@ -304,6 +304,82 @@ func TestMustInt64(t *testing.T) {
 	})
 }
 
+func TestUint(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		const expect = 100000000000
+		t.Setenv(TEST_ENV_KEY, strconv.FormatUint(expect, 10))
+		actual, err := env.Uint(TEST_ENV_KEY)
+		if err != nil {
+			t.Errorf("env.Env: %v", err)
+		}
+		if expect != actual {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure(env-not-set)", func(t *testing.T) {
+		const expect = 0
+		actual, err := env.Uint(TEST_ENV_KEY)
+		if err == nil {
+			t.Errorf("env.Env: err == nil")
+		}
+		if expect != actual {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure(fail-to-atoi)", func(t *testing.T) {
+		const expect = 0
+		t.Setenv(TEST_ENV_KEY, "test string")
+		actual, err := env.Uint(TEST_ENV_KEY)
+		if err == nil {
+			t.Errorf("env.Env: err == nil")
+		}
+		if expect != actual {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+}
+
+func TestUintOrDefault(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		const expect = 100000000000
+		t.Setenv(TEST_ENV_KEY, strconv.FormatUint(expect, 10))
+		actual := env.UintOrDefault(TEST_ENV_KEY, 1)
+		if expect != actual {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("success(default)", func(t *testing.T) {
+		const expect = 100000000000
+		actual := env.UintOrDefault(TEST_ENV_KEY, expect)
+		if expect != actual {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+}
+
+func TestMustUint(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		const expect = 100000000000
+		t.Setenv(TEST_ENV_KEY, strconv.FormatUint(expect, 10))
+		actual := env.MustUint(TEST_ENV_KEY)
+		if expect != actual {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure", func(t *testing.T) {
+		defer func() {
+			if err := recover(); err == nil {
+				t.Errorf("recover: err == nil")
+			}
+		}()
+		_ = env.MustUint(TEST_ENV_KEY)
+	})
+}
+
 func TestUint64(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		const expect = 100000000000
