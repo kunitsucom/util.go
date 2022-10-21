@@ -9,20 +9,27 @@ import (
 
 type ResponseWriterBuffer struct {
 	http.ResponseWriter
-	StatusCode int
-	Buffer     *bytes.Buffer
+
+	Buffer *bytes.Buffer
+
+	statusCode int
 }
 
 func newResponseWriterBuffer(rw http.ResponseWriter) *ResponseWriterBuffer {
 	return &ResponseWriterBuffer{
 		ResponseWriter: rw,
 		Buffer:         bytes.NewBuffer(nil),
+		statusCode:     http.StatusOK,
 	}
 }
 
-func (rwb *ResponseWriterBuffer) WriteHeader(status int) {
-	rwb.StatusCode = status
-	rwb.ResponseWriter.WriteHeader(status)
+func (rwb *ResponseWriterBuffer) WriteHeader(statusCode int) {
+	rwb.statusCode = statusCode
+	rwb.ResponseWriter.WriteHeader(statusCode)
+}
+
+func (rwb *ResponseWriterBuffer) StatusCode() int {
+	return rwb.statusCode
 }
 
 func (rwb *ResponseWriterBuffer) Write(p []byte) (int, error) {

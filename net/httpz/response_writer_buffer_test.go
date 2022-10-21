@@ -27,7 +27,7 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 
 		middleware := httpz.NewResponseWriterBufferHandler(
 			func(rwb *httpz.ResponseWriterBuffer, r *http.Request) {
-				actual = fmt.Sprintf("%d %v %s %s", rwb.StatusCode, rwb.Header(), rwb.Buffer, r.RequestURI)
+				actual = fmt.Sprintf("%d %v %s %s", rwb.StatusCode(), rwb.Header(), rwb.Buffer, r.RequestURI)
 			},
 		).Middleware
 
@@ -53,7 +53,7 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 
 		middleware := httpz.NewResponseWriterBufferHandler(
 			func(rwb *httpz.ResponseWriterBuffer, r *http.Request) {
-				actual = fmt.Sprintf("%d %v %s %s", rwb.StatusCode, rwb.Header(), rwb.Buffer, r.RequestURI)
+				actual = fmt.Sprintf("%d %v %s %s", rwb.StatusCode(), rwb.Header(), rwb.Buffer, r.RequestURI)
 			},
 			ResponseWriterBufferHandlerTestOption,
 		).Middleware
