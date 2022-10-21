@@ -11,6 +11,13 @@ help: githooks ## display this help documents
 githooks:
 	@[[ -f "${PRE_PUSH}" ]] || cp -ai "${GITROOT}/.githooks/pre-push" "${PRE_PUSH}"
 
+.PHONY: setup
+setup:  ## Setup tools for development
+	# direnv
+	./.bin/direnv allow
+	# golangci-lint
+	./.bin/golangci-lint --version
+
 .PHONY: lint
 lint:  ## Run golangci-lint after go mod tidy
 	# tidy
