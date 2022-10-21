@@ -20,9 +20,12 @@ func NewFlagEnvSet(name string, errorHandling flag.ErrorHandling) *FlagEnvSet {
 // CommandLine is the default set of command-line flags, parsed from os.Args.
 // The top-level functions such as BoolVar, Arg, and so on are wrappers for the
 // methods of CommandLine.
+//
 // nolint: gochecknoglobals
 var CommandLine = NewFlagEnvSet(os.Args[0], flag.ExitOnError)
 
+//
+// Bool.
 //
 
 func (s *FlagEnvSet) BoolVar(p *bool, name string, environ string, value bool, usage string) {
@@ -42,6 +45,8 @@ func Bool(name string, environ string, value bool, usage string) *bool {
 }
 
 //
+// Int
+//
 
 func (s *FlagEnvSet) IntVar(p *int, name string, environ string, value int, usage string) {
 	s.FlagSet.IntVar(p, name, env.IntOrDefault(environ, value), usage)
@@ -59,6 +64,8 @@ func Int(name string, environ string, value int, usage string) *int {
 	return CommandLine.FlagSet.Int(name, env.IntOrDefault(environ, value), usage)
 }
 
+//
+// Int64
 //
 
 func (s *FlagEnvSet) Int64Var(p *int64, name string, environ string, value int64, usage string) {
@@ -78,6 +85,8 @@ func Int64(name string, environ string, value int64, usage string) *int64 {
 }
 
 //
+// Uint
+//
 
 func (s *FlagEnvSet) UintVar(p *uint, name string, environ string, value uint, usage string) {
 	s.FlagSet.UintVar(p, name, env.UintOrDefault(environ, value), usage)
@@ -95,6 +104,8 @@ func Uint(name string, environ string, value uint, usage string) *uint {
 	return CommandLine.FlagSet.Uint(name, env.UintOrDefault(environ, value), usage)
 }
 
+//
+// Uint64
 //
 
 func (s *FlagEnvSet) Uint64Var(p *uint64, name string, environ string, value uint64, usage string) {
@@ -114,6 +125,8 @@ func Uint64(name string, environ string, value uint64, usage string) *uint64 {
 }
 
 //
+// String
+//
 
 func (s *FlagEnvSet) StringVar(p *string, name string, environ string, value string, usage string) {
 	s.FlagSet.StringVar(p, name, env.StringOrDefault(environ, value), usage)
@@ -132,6 +145,8 @@ func String(name string, environ string, value string, usage string) *string {
 }
 
 //
+// Float64
+//
 
 func (s *FlagEnvSet) Float64Var(p *float64, name string, environ string, value float64, usage string) {
 	s.FlagSet.Float64Var(p, name, env.Float64OrDefault(environ, value), usage)
@@ -149,6 +164,8 @@ func Float64(name string, environ string, value float64, usage string) *float64 
 	return CommandLine.FlagSet.Float64(name, env.Float64OrDefault(environ, value), usage)
 }
 
+//
+// Duration (Second)
 //
 
 func (s *FlagEnvSet) SecondVar(p *time.Duration, name string, environ string, value time.Duration, usage string) {
