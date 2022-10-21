@@ -19,12 +19,14 @@ setup:  ## Setup tools for development
 	./.bin/golangci-lint --version
 
 .PHONY: lint
-lint:  ## Run golangci-lint after go mod tidy
+lint:  ## Run secretlint, go mod tidy, golangci-lint
+	# ref. https://github.com/secretlint/secretlint
+	docker run -v `pwd`:`pwd` -w `pwd` --rm secretlint/secretlint secretlint "**/*"
 	# tidy
 	go mod tidy
 	git diff --exit-code go.mod go.sum
 	# lint
-	# cf. https://golangci-lint.run/usage/linters/
+	# ref. https://golangci-lint.run/usage/linters/
 	./.bin/golangci-lint run --fix --sort-results
 	git diff --exit-code
 
