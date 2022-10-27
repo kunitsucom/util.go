@@ -1,6 +1,6 @@
 run:
   skip-files:
-    - bytez/internal/bytes/buffer.go
+    - cmd/sandbox/main.go
   modules-download-mode: readonly
   allow-parallel-runners: true
 
@@ -8,14 +8,14 @@ run:
 linters:
   enable-all: true
   disable:
-    - godox # unnecessary
     - exhaustruct # https://github.com/GaijinEntertainment/go-exhaustruct
     - exhaustivestruct # https://github.com/mbilski/exhaustivestruct
+    - gci # unnecessary
+    - godox # unnecessary
     - golint # deprecated https://github.com/golang/lint
     - gomnd # https://github.com/tommy-muehle/go-mnd
     - ifshort # for readability
     - interfacer # deprecated https://github.com/mvdan/interfacer
-    - ireturn # Too many false negatives.
     - lll # unnecessary
     - maligned # deprecated https://github.com/mdempsky/maligned
     - nlreturn # ignore "return with no blank line before"
@@ -26,6 +26,8 @@ linters:
     - wsl # ignore "declarations should never be cuddled"
 
 linters-settings:
+  goimports:
+    local-prefixes: "github.com/kunitsuinc/certcounter"
   # varnamelen:
   #   ignore-decls:
   #     - l *Logger
