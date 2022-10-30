@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kunitsuinc/util.go/math/randz"
+	randz "github.com/kunitsuinc/util.go/math/rand"
 )
 
 func TestRange(t *testing.T) {

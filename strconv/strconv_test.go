@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/kunitsuinc/util.go/strconvz"
+	strconvz "github.com/kunitsuinc/util.go/strconv"
 )
 
 func TestAtoi64(t *testing.T) {

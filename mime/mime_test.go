@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/kunitsuinc/util.go/mime"
-	"github.com/kunitsuinc/util.go/testz"
+	testz "github.com/kunitsuinc/util.go/test"
 )
 
 func TestDetectContentType(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kunitsuinc/util.go/runtimez"
+	runtimez "github.com/kunitsuinc/util.go/runtime"
 )
 
 func TestMemStatsTicker(t *testing.T) {

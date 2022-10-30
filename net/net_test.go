@@ -4,7 +4,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/kunitsuinc/util.go/netz"
+	netz "github.com/kunitsuinc/util.go/net"
 )
 
 func TestIPNetSet_Contains(t *testing.T) {

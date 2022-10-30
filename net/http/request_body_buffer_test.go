@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/kunitsuinc/util.go/net/httpz"
-	"github.com/kunitsuinc/util.go/testz"
+	httpz "github.com/kunitsuinc/util.go/net/http"
+	testz "github.com/kunitsuinc/util.go/test"
 )
 
 func TestRequestBodyBuffer(t *testing.T) {

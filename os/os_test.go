@@ -4,7 +4,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/kunitsuinc/util.go/osz"
+	osz "github.com/kunitsuinc/util.go/os"
 )
 
 var _, callerFile, _, _ = runtime.Caller(1)

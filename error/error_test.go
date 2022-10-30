@@ -3,8 +3,8 @@ package errorz_test
 import (
 	"testing"
 
-	"github.com/kunitsuinc/util.go/errorz"
-	"github.com/kunitsuinc/util.go/testz"
+	errorz "github.com/kunitsuinc/util.go/error"
+	testz "github.com/kunitsuinc/util.go/test"
 )
 
 func TestContains(t *testing.T) {

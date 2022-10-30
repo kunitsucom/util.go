@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/kunitsuinc/util.go/net/httpz"
-	"github.com/kunitsuinc/util.go/netz"
+	netz "github.com/kunitsuinc/util.go/net"
+	httpz "github.com/kunitsuinc/util.go/net/http"
 )
 
 const testXForwardedFor = "127.0.0.1, 33.33.33.33, 10.1.1.1, 10.10.10.10, 10.100.100.100"

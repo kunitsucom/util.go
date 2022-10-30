@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/kunitsuinc/util.go/netz"
+	netz "github.com/kunitsuinc/util.go/net"
 )
 
 const (

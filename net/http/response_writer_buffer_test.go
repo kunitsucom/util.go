@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/kunitsuinc/util.go/net/httpz"
-	"github.com/kunitsuinc/util.go/testz"
+	httpz "github.com/kunitsuinc/util.go/net/http"
+	testz "github.com/kunitsuinc/util.go/test"
 )
 
 func ResponseWriterBufferHandlerTestOption(h *httpz.ResponseWriterBufferHandler) {

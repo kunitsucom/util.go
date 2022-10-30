@@ -3,7 +3,7 @@ package mathz_test
 import (
 	"testing"
 
-	"github.com/kunitsuinc/util.go/mathz"
+	mathz "github.com/kunitsuinc/util.go/math"
 )
 
 func TestIsPow10(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/kunitsuinc/util.go/contextz"
+	contextz "github.com/kunitsuinc/util.go/context"
 )
 
 func TestWithSignalChannel(t *testing.T) {
