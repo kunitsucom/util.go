@@ -23,8 +23,12 @@ githooks:
 	@[[ -f "${PRE_PUSH}" ]] || cp -aiv "${GITROOT}/.githooks/pre-push" "${PRE_PUSH}"
 
 .PHONY: clean
-clean:  ## Clean up chace, etc
+clean:  ## Clean up cache, etc
+	# go build cache
+	go env GOCACHE
 	go clean -x -cache -testcache -modcache -fuzzcache
+	# golangci-lint cache
+	golangci-lint cache status
 	golangci-lint cache clean
 
 .PHONY: lint
