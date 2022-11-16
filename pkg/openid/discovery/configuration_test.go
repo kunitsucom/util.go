@@ -22,7 +22,7 @@ func TestProviderConfigurationDocumentURL(t *testing.T) {
 
 	t.Run("check(discovery.Google)", func(t *testing.T) {
 		t.Parallel()
-		r, err := http.Get(discovery.Google.String())
+		r, err := http.Get(discovery.Google)
 		if err != nil {
 			t.Logf("🤔: http.Get: %v", err)
 			return
@@ -167,8 +167,8 @@ func TestGetProviderConfiguration(t *testing.T) {
 	})
 	urlBase := fmt.Sprintf("http://%s", s.Listener.Addr())
 
-	successURL := discovery.ProviderConfigurationURL(must.One(url.JoinPath(urlBase, "/success", discovery.ProviderConfigurationPath)))
-	failureURL := discovery.ProviderConfigurationURL(must.One(url.JoinPath(urlBase, "/failure", discovery.ProviderConfigurationPath)))
+	successURL := must.One(url.JoinPath(urlBase, "/success", discovery.ProviderConfigurationPath))
+	failureURL := must.One(url.JoinPath(urlBase, "/failure", discovery.ProviderConfigurationPath))
 
 	// success
 	t.Run("success()", func(t *testing.T) {

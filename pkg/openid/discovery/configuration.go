@@ -9,9 +9,7 @@ import (
 	"time"
 )
 
-type ProviderConfigurationURL string
-
-func (pcf ProviderConfigurationURL) String() string { return string(pcf) }
+type ProviderConfigurationURL = string
 
 const (
 	Google ProviderConfigurationURL = "https://accounts.google.com/.well-known/openid-configuration"
@@ -138,7 +136,7 @@ func (d *Discovery) _GetProviderConfiguration(ctx context.Context, providerConfi
 		return d.cacheMap[providerConfigurationURL].ProviderConfigurationResponse, nil
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, providerConfigurationURL.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, providerConfigurationURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
 	}
