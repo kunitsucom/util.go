@@ -33,16 +33,16 @@ func TestRetryer_Condition(t *testing.T) {
 		fmt.Fprintln(os.Stdout, buf.String())
 	})
 
-	t.Run("success()", func(t *testing.T) {
+	t.Run("success(constant)", func(t *testing.T) {
 		t.Parallel()
 
 		const maxRetries = 20
-		r := retry.New(retry.NewConfig(1*time.Microsecond, 999*time.Microsecond, retry.WithMaxRetries(maxRetries)))
+		r := retry.New(retry.NewConfig(10*time.Microsecond, 10*time.Microsecond, retry.WithMaxRetries(maxRetries)))
 		buf := bytes.NewBuffer(nil)
 		for r.Retry() {
 			fmt.Fprintf(buf, "retries=%d/%d retryAfter=%s; ", r.Retries(), maxRetries, r.RetryAfter())
 		}
-		const expect = `retries=0/20 retryAfter=1µs; retries=1/20 retryAfter=2µs; retries=2/20 retryAfter=4µs; retries=3/20 retryAfter=8µs; retries=4/20 retryAfter=16µs; retries=5/20 retryAfter=32µs; retries=6/20 retryAfter=64µs; retries=7/20 retryAfter=128µs; retries=8/20 retryAfter=256µs; retries=9/20 retryAfter=512µs; retries=10/20 retryAfter=999µs; retries=11/20 retryAfter=999µs; retries=12/20 retryAfter=999µs; retries=13/20 retryAfter=999µs; retries=14/20 retryAfter=999µs; retries=15/20 retryAfter=999µs; retries=16/20 retryAfter=999µs; retries=17/20 retryAfter=999µs; retries=18/20 retryAfter=999µs; retries=19/20 retryAfter=999µs; retries=20/20 retryAfter=999µs; `
+		const expect = `retries=0/20 retryAfter=10µs; retries=1/20 retryAfter=10µs; retries=2/20 retryAfter=10µs; retries=3/20 retryAfter=10µs; retries=4/20 retryAfter=10µs; retries=5/20 retryAfter=10µs; retries=6/20 retryAfter=10µs; retries=7/20 retryAfter=10µs; retries=8/20 retryAfter=10µs; retries=9/20 retryAfter=10µs; retries=10/20 retryAfter=10µs; retries=11/20 retryAfter=10µs; retries=12/20 retryAfter=10µs; retries=13/20 retryAfter=10µs; retries=14/20 retryAfter=10µs; retries=15/20 retryAfter=10µs; retries=16/20 retryAfter=10µs; retries=17/20 retryAfter=10µs; retries=18/20 retryAfter=10µs; retries=19/20 retryAfter=10µs; retries=20/20 retryAfter=10µs; `
 		actual := buf.String()
 		if expect != actual {
 			t.Errorf("expect != actual")

@@ -109,28 +109,34 @@ func (c *Config) Build() *Retryer {
 
 // New returns *retry.Retryer. *retry.Retryer provides methods to facilitate retry execution.
 //
-// Is used as follows:
+// Is used as follows ( https://go.dev/play/p/nIWIWq-ib6b ):
 //
-//	c := retry.NewConfig(1*time.Second, 10*time.Second, retry.WithMaxRetries(5))
+//	c := retry.NewConfig(10*time.Millisecond, 500*time.Millisecond, retry.WithMaxRetries(10))
 //	r := retry.New(c)
+//
 //	for r.Retry() {
 //		if r.Retries() == 0 {
-//			log.Printf("FIRST! time=%s retries=%d retryAfter=%s", time.Now(), r.Retries(), r.RetryAfter())
+//			fmt.Printf("FIRSTTRY! time=%s retries=%d retryAfter=%s\n", time.Now(), r.Retries(), r.RetryAfter())
 //			continue
 //		}
-//		log.Printf("RETRYING! time=%s retries=%d retryAfter=%s", time.Now(), r.Retries(), r.RetryAfter())
+//		fmt.Printf("RETRYING! time=%s retries=%d retryAfter=%s\n", time.Now(), r.Retries(), r.RetryAfter())
 //	}
-//	log.Printf("COMPLETE! time=%s retries=%d error=%v", time.Now(), r.Retries(), r.Err())
+//	fmt.Printf("COMPLETE! time=%s retries=%d error=%v\n", time.Now(), r.Retries(), r.Err())
 //
 // Then, yields the following results:
 //
-//	2022/11/16 19:59:17 FIRST! time=2022-11-16 19:59:17.880404 +0900 JST m=+0.002133084 retries=0 retryAfter=1s
-//	2022/11/16 19:59:18 RETRYING! time=2022-11-16 19:59:18.881926 +0900 JST m=+1.003646793 retries=1 retryAfter=2s
-//	2022/11/16 19:59:20 RETRYING! time=2022-11-16 19:59:20.883498 +0900 JST m=+3.005201043 retries=2 retryAfter=4s
-//	2022/11/16 19:59:24 RETRYING! time=2022-11-16 19:59:24.884014 +0900 JST m=+7.005681376 retries=3 retryAfter=8s
-//	2022/11/16 19:59:32 RETRYING! time=2022-11-16 19:59:32.885557 +0900 JST m=+15.007154668 retries=4 retryAfter=10s
-//	2022/11/16 19:59:42 RETRYING! time=2022-11-16 19:59:42.886954 +0900 JST m=+25.008463293 retries=5 retryAfter=10s
-//	2022/11/16 19:59:42 COMPLETE! time=2022-11-16 19:59:42.887136 +0900 JST m=+25.008645501 retries=5 error=retry: reached max retries
+//	FIRSTTRY! time=2009-11-10 23:00:00 +0000 UTC m=+0.000000001 retries=0 retryAfter=10ms
+//	RETRYING! time=2009-11-10 23:00:00.01 +0000 UTC m=+0.010000001 retries=1 retryAfter=20ms
+//	RETRYING! time=2009-11-10 23:00:00.03 +0000 UTC m=+0.030000001 retries=2 retryAfter=40ms
+//	RETRYING! time=2009-11-10 23:00:00.07 +0000 UTC m=+0.070000001 retries=3 retryAfter=80ms
+//	RETRYING! time=2009-11-10 23:00:00.15 +0000 UTC m=+0.150000001 retries=4 retryAfter=160ms
+//	RETRYING! time=2009-11-10 23:00:00.31 +0000 UTC m=+0.310000001 retries=5 retryAfter=320ms
+//	RETRYING! time=2009-11-10 23:00:00.63 +0000 UTC m=+0.630000001 retries=6 retryAfter=500ms
+//	RETRYING! time=2009-11-10 23:00:01.13 +0000 UTC m=+1.130000001 retries=7 retryAfter=500ms
+//	RETRYING! time=2009-11-10 23:00:01.63 +0000 UTC m=+1.630000001 retries=8 retryAfter=500ms
+//	RETRYING! time=2009-11-10 23:00:02.13 +0000 UTC m=+2.130000001 retries=9 retryAfter=500ms
+//	RETRYING! time=2009-11-10 23:00:02.63 +0000 UTC m=+2.630000001 retries=10 retryAfter=500ms
+//	COMPLETE! time=2009-11-10 23:00:02.63 +0000 UTC m=+2.630000001 retries=10 error=retry: reached max retries
 //
 // If the maximum count of attempts is not given via retry.WithMaxRetries(),
 // *retry.Retryer that retry.New() returned will retry infinitely many times.
