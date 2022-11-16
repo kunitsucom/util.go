@@ -3,6 +3,7 @@ package retry
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -186,13 +187,12 @@ func (r *Retryer) Err() (reason error) {
 	return r.reason
 }
 
-func (r *Retryer) Retry() bool {
-	return r.RetryWithContext(context.Background())
-}
+var (
+	ErrReachedMaxRetries = errors.New("retry: reached max retries")
+	ErrUnretryableError  = errors.New("retry: unretryable error")
+)
 
-var ErrReachedMaxRetries = errors.New("retry: reached max retries")
-
-func (r *Retryer) RetryWithContext(ctx context.Context) bool {
+func (r *Retryer) Retry(ctx context.Context) bool {
 	if 0 <= r.config.maxRetries && r.config.maxRetries <= r.Retries() {
 		r.reason = ErrReachedMaxRetries
 		return false
@@ -206,4 +206,48 @@ func (r *Retryer) RetryWithContext(ctx context.Context) bool {
 		r.increment()
 		return true
 	}
+}
+
+type doConfig struct {
+	unretryableErrors     []error
+	retryableErrorHandler func(ctx context.Context, r *Retryer, err error)
+}
+
+type DoOption func(c *doConfig)
+
+func WithUnretryableErrors(errs []error) DoOption {
+	return func(c *doConfig) {
+		c.unretryableErrors = errs
+	}
+}
+
+func WithRetryableErrorHandler(f func(ctx context.Context, r *Retryer, err error)) DoOption {
+	return func(c *doConfig) {
+		c.retryableErrorHandler = f
+	}
+}
+
+func (r *Retryer) Do(ctx context.Context, do func(ctx context.Context) error, opts ...DoOption) (err error) {
+	c := &doConfig{}
+
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	for r.Retry(ctx) {
+		err = do(ctx)
+		if errors.Is(err, nil) {
+			return nil
+		}
+		for _, unretryableError := range c.unretryableErrors {
+			if errors.Is(err, unretryableError) {
+				return fmt.Errorf("%v: %w", ErrUnretryableError, err)
+			}
+		}
+		if c.retryableErrorHandler != nil {
+			c.retryableErrorHandler(ctx, r, err)
+		}
+	}
+
+	return fmt.Errorf("%v: %w", r.Err(), err)
 }
