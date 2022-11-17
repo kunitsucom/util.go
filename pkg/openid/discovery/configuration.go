@@ -64,10 +64,10 @@ type ProviderConfigurationCache struct {
 }
 
 func (d ProviderConfigurationCache) Expired() bool {
-	return d._Expired(time.Now())
+	return d.expired(time.Now())
 }
 
-func (d ProviderConfigurationCache) _Expired(now time.Time) bool {
+func (d ProviderConfigurationCache) expired(now time.Time) bool {
 	return d.ExpirationTime.Before(now)
 }
 
@@ -120,10 +120,10 @@ func WithUseCache(useCache bool) GetProviderConfigurationOption {
 }
 
 func (d *Discovery) GetProviderConfiguration(ctx context.Context, providerConfigurationURL ProviderConfigurationURL, opts ...GetProviderConfigurationOption) (*ProviderConfigurationResponse, error) {
-	return d._GetProviderConfiguration(ctx, providerConfigurationURL, time.Now(), opts...)
+	return d.getProviderConfiguration(ctx, providerConfigurationURL, time.Now(), opts...)
 }
 
-func (d *Discovery) _GetProviderConfiguration(ctx context.Context, providerConfigurationURL ProviderConfigurationURL, now time.Time, opts ...GetProviderConfigurationOption) (*ProviderConfigurationResponse, error) {
+func (d *Discovery) getProviderConfiguration(ctx context.Context, providerConfigurationURL ProviderConfigurationURL, now time.Time, opts ...GetProviderConfigurationOption) (*ProviderConfigurationResponse, error) {
 	d.cacheSync.Lock()
 	defer d.cacheSync.Unlock()
 
