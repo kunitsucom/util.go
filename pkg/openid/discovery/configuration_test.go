@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"path"
 	"strings"
 	"testing"
 	"time"
@@ -17,7 +16,7 @@ import (
 	"github.com/kunitsuinc/util.go/pkg/openid/discovery"
 )
 
-func TestProviderConfigurationDocumentURL(t *testing.T) {
+func TestDocumentURL(t *testing.T) {
 	t.Parallel()
 
 	t.Run("check(discovery.Google)", func(t *testing.T) {
@@ -145,20 +144,20 @@ const testMetadata = `{
 }
 `
 
-func TestGetProviderConfiguration(t *testing.T) {
+func TestDiscovery_GetDocument(t *testing.T) {
 	t.Parallel()
 
 	testDiscovery := discovery.New(discovery.WithCache(true), discovery.WithCacheTTL(1*time.Minute))
 
 	// prepare
 	mux := http.NewServeMux()
-	mux.HandleFunc(path.Join("/success", discovery.ProviderConfigurationPath), func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/success/.well-known/openid-configuration", func(w http.ResponseWriter, r *http.Request) {
 		if _, err := io.WriteString(w, testMetadata); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	})
-	mux.HandleFunc(path.Join("/failure", discovery.ProviderConfigurationPath), func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/failure/.well-known/openid-configuration", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = io.WriteString(w, "<!DOCTYPE html>")
 	})
 	s := httptest.NewServer(mux)
@@ -167,44 +166,44 @@ func TestGetProviderConfiguration(t *testing.T) {
 	})
 	urlBase := fmt.Sprintf("http://%s", s.Listener.Addr())
 
-	successURL := must.One(url.JoinPath(urlBase, "/success", discovery.ProviderConfigurationPath))
-	failureURL := must.One(url.JoinPath(urlBase, "/failure", discovery.ProviderConfigurationPath))
+	successURL := must.One(url.JoinPath(urlBase, "/success/.well-known/openid-configuration"))
+	failureURL := must.One(url.JoinPath(urlBase, "/failure/.well-known/openid-configuration"))
 
 	// success
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
-		providerConfiguration, err := discovery.GetProviderConfiguration(context.Background(), successURL)
+		document, err := discovery.GetDocument(context.Background(), successURL)
 		if err != nil {
 			t.Errorf("❌: discovery.GetProviderConfiguration: err != nil: %v", err)
 		}
 		// use cache
-		if _, err := discovery.GetProviderConfiguration(context.Background(), successURL); err != nil {
+		if _, err := discovery.GetDocument(context.Background(), successURL); err != nil {
 			t.Errorf("❌: discovery.GetProviderConfiguration: err != nil: %v", err)
 		}
 		// not use cache
-		if _, err := discovery.GetProviderConfiguration(context.Background(), successURL, discovery.WithUseCache(false)); err != nil {
+		if _, err := discovery.GetDocument(context.Background(), successURL, discovery.WithUseCache(false)); err != nil {
 			t.Errorf("❌: discovery.GetProviderConfiguration: err != nil: %v", err)
 		}
 		const AuthorizationEndpoint = `https://server.example.com/connect/authorize`
-		if providerConfiguration.AuthorizationEndpoint != AuthorizationEndpoint {
-			t.Errorf("❌: providerConfiguration.AuthorizationEndpoint != %s", AuthorizationEndpoint)
+		if document.AuthorizationEndpoint != AuthorizationEndpoint {
+			t.Errorf("❌: document.AuthorizationEndpoint != %s", AuthorizationEndpoint)
 		}
-		t.Logf("✅: *ProviderConfigurationResponse: %v", providerConfiguration)
+		t.Logf("✅: *Document: %v", document)
 	})
 
 	// failure
 	t.Run("failure(url)", func(t *testing.T) {
 		t.Parallel()
-		targetURL := discovery.ProviderConfigurationURL("http://%%")
-		providerConfiguration, err := testDiscovery.GetProviderConfiguration(context.Background(), targetURL)
+		targetURL := "http://%%"
+		document, err := testDiscovery.GetDocument(context.Background(), targetURL)
 		if err == nil {
-			t.Errorf("❌: testDiscovery.GetProviderConfiguration: err == nil")
+			t.Errorf("❌: testDiscovery.GetDocument: err == nil")
 		}
 		const expect = `invalid URL escape "%%"`
 		if err != nil && !strings.Contains(err.Error(), expect) {
-			t.Errorf("❌: testDiscovery.GetProviderConfiguration: %s: not contains `%s`: %v", targetURL, expect, err)
+			t.Errorf("❌: testDiscovery.GetDocument: %s: not contains `%s`: %v", targetURL, expect, err)
 		}
-		t.Logf("✅: *ProviderConfigurationResponse: %v", providerConfiguration)
+		t.Logf("✅: *Document: %v", document)
 	})
 
 	t.Run("failure(ctx)", func(t *testing.T) {
@@ -212,28 +211,28 @@ func TestGetProviderConfiguration(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 		targetURL := successURL
-		providerConfiguration, err := testDiscovery.GetProviderConfiguration(ctx, targetURL)
+		document, err := testDiscovery.GetDocument(ctx, targetURL)
 		if err == nil {
-			t.Errorf("❌: testDiscovery.GetProviderConfiguration: err == nil")
+			t.Errorf("❌: testDiscovery.GetDocument: err == nil")
 		}
 		const expect = `context canceled`
 		if err != nil && !strings.Contains(err.Error(), expect) {
-			t.Errorf("❌: testDiscovery.GetProviderConfiguration: %s: not contains `%s`: %v", targetURL, expect, err)
+			t.Errorf("❌: testDiscovery.GetDocument: %s: not contains `%s`: %v", targetURL, expect, err)
 		}
-		t.Logf("✅: *ProviderConfigurationResponse: %v", providerConfiguration)
+		t.Logf("✅: *Document: %v", document)
 	})
 
 	t.Run("failure(Decode)", func(t *testing.T) {
 		t.Parallel()
 		targetURL := failureURL
-		providerConfiguration, err := testDiscovery.GetProviderConfiguration(context.Background(), failureURL)
+		document, err := testDiscovery.GetDocument(context.Background(), failureURL)
 		if err == nil {
-			t.Errorf("❌: testDiscovery.GetProviderConfiguration: err == nil")
+			t.Errorf("❌: testDiscovery.GetDocument: err == nil")
 		}
 		const expect = `invalid character '<' looking for beginning of value`
 		if err != nil && !strings.Contains(err.Error(), expect) {
-			t.Errorf("❌: testDiscovery.GetProviderConfiguration: %s: not contains `%s`: %v", targetURL, expect, err)
+			t.Errorf("❌: testDiscovery.GetDocument: %s: not contains `%s`: %v", targetURL, expect, err)
 		}
-		t.Logf("✅: *ProviderConfigurationResponse: %v", providerConfiguration)
+		t.Logf("✅: *Document: %v", document)
 	})
 }
