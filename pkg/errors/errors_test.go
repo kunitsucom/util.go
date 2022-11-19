@@ -3,7 +3,7 @@ package errorz_test
 import (
 	"testing"
 
-	errorz "github.com/kunitsuinc/util.go/pkg/error"
+	errorz "github.com/kunitsuinc/util.go/pkg/errors"
 	testz "github.com/kunitsuinc/util.go/pkg/test"
 )
 
