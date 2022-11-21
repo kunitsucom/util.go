@@ -12,7 +12,7 @@ import (
 
 // ref. JSON Web Key (JWK) https://www.rfc-editor.org/rfc/rfc7517
 
-type JwksURI = string
+type JWKsURI = string
 
 // ref. JWK Set Format https://www.rfc-editor.org/rfc/rfc7517#section-5
 // ref. https://openid-foundation-japan.github.io/rfc7517.ja.html#JWKSet
@@ -58,7 +58,7 @@ type Client struct { //nolint:revive
 	urlcache *urlcache.Client[*JWKSet]
 }
 
-func NewClient(opts ...NewOption) *Client {
+func NewClient(opts ...ClientOption) *Client {
 	d := &Client{
 		urlcache: urlcache.NewClient[*JWKSet](http.DefaultClient),
 	}
@@ -70,15 +70,15 @@ func NewClient(opts ...NewOption) *Client {
 	return d
 }
 
-type NewOption func(*Client)
+type ClientOption func(*Client)
 
-func WithURLCacheClient(client *urlcache.Client[*JWKSet]) NewOption {
+func WithURLCacheClient(client *urlcache.Client[*JWKSet]) ClientOption {
 	return func(d *Client) {
 		d.urlcache = client
 	}
 }
 
-func (d *Client) GetJWKSet(ctx context.Context, jwksURI JwksURI) (*JWKSet, error) {
+func (d *Client) GetJWKSet(ctx context.Context, jwksURI JWKsURI) (*JWKSet, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, jwksURI, nil)
 	if err != nil {
 		return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
@@ -103,7 +103,7 @@ var (
 	Default = NewClient()
 )
 
-func GetJWKSet(ctx context.Context, jwksURI JwksURI) (*JWKSet, error) {
+func GetJWKSet(ctx context.Context, jwksURI JWKsURI) (*JWKSet, error) {
 	return Default.GetJWKSet(ctx, jwksURI)
 }
 

@@ -5,23 +5,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"sync"
-	"time"
+
+	"github.com/kunitsuinc/util.go/pkg/net/http/urlcache"
 )
 
 const (
-	Google DocumentURL = "https://accounts.google.com/.well-known/openid-configuration"
+	Google OpenIDProviderMetadataURL = "https://accounts.google.com/.well-known/openid-configuration"
 
 	DocumentURLPath = "/.well-known/openid-configuration"
 )
 
 type (
-	DocumentURL = string
+	OpenIDProviderMetadataURL = string
 
 	// https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationResponse
 	//
 	//nolint:tagliatelle
-	Document struct { //nolint:revive
+	OpenIDProviderMetadata struct { //nolint:revive
 		Issuer                                     string   `json:"issuer"`
 		AuthorizationEndpoint                      string   `json:"authorization_endpoint"`
 		TokenEndpoint                              string   `json:"token_endpoint,omitempty"`
@@ -58,111 +58,50 @@ type (
 		OPPolicyURI                                string   `json:"op_policy_uri,omitempty"`
 		OPTosURI                                   string   `json:"op_tos_uri,omitempty"`
 	}
-
-	DocumentCache struct {
-		*Document
-		ExpirationTime time.Time
-	}
 )
 
-func (c DocumentCache) Expired() bool {
-	return c.expired(time.Now())
+type Client struct {
+	urlcache *urlcache.Client[*OpenIDProviderMetadata]
 }
 
-func (c DocumentCache) expired(now time.Time) bool {
-	return c.ExpirationTime.Before(now)
-}
-
-type Discovery struct {
-	doNotUseCache bool
-	cacheTTL      time.Duration
-	cacheMap      map[DocumentURL]DocumentCache
-	cacheSync     *sync.Mutex
-}
-
-func New(opts ...NewDiscoveryOption) *Discovery {
-	d := &Discovery{
-		doNotUseCache: false,
-		cacheTTL:      2 * time.Minute,
-		cacheMap:      make(map[DocumentURL]DocumentCache),
-		cacheSync:     new(sync.Mutex),
+func New(opts ...ClientOption) *Client {
+	c := &Client{
+		urlcache: urlcache.NewClient[*OpenIDProviderMetadata](http.DefaultClient),
 	}
 
 	for _, opt := range opts {
-		opt(d)
+		opt(c)
 	}
 
-	return d
+	return c
 }
 
-type NewDiscoveryOption func(*Discovery)
+type ClientOption func(*Client)
 
-func WithCache(useCache bool) NewDiscoveryOption {
-	return func(d *Discovery) {
-		d.doNotUseCache = !useCache
-	}
-}
-
-func WithCacheTTL(ttl time.Duration) NewDiscoveryOption {
-	return func(d *Discovery) {
-		d.cacheTTL = ttl
+func WithURLCacheClient(client *urlcache.Client[*OpenIDProviderMetadata]) ClientOption {
+	return func(d *Client) {
+		d.urlcache = client
 	}
 }
 
-type GetDocumentOption func(*getDocumentOption)
-
-type getDocumentOption struct {
-	DoNotUseCache bool
-}
-
-func WithUseCache(useCache bool) GetDocumentOption {
-	return func(opt *getDocumentOption) {
-		opt.DoNotUseCache = !useCache
-	}
-}
-
-func (d *Discovery) GetDocument(ctx context.Context, discoveryDocumentURL DocumentURL, opts ...GetDocumentOption) (*Document, error) {
-	return d.getDocument(ctx, discoveryDocumentURL, time.Now(), opts...)
-}
-
-func (d *Discovery) getDocument(ctx context.Context, discoveryDocumentURL DocumentURL, now time.Time, opts ...GetDocumentOption) (*Document, error) {
-	d.cacheSync.Lock()
-	defer d.cacheSync.Unlock()
-
-	opt := new(getDocumentOption)
-	for _, f := range opts {
-		f(opt)
-	}
-
-	if !d.doNotUseCache && !opt.DoNotUseCache && !d.cacheMap[discoveryDocumentURL].Expired() {
-		return d.cacheMap[discoveryDocumentURL].Document, nil
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, discoveryDocumentURL, nil)
+func (d *Client) GetOpenIDProviderMetadata(ctx context.Context, openIDProviderMetadataURL OpenIDProviderMetadataURL) (*OpenIDProviderMetadata, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, openIDProviderMetadataURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
 	}
 
-	client := new(http.Client)
-	res, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("client.Do: %w", err)
-	}
-	defer res.Body.Close()
-
-	r := new(Document)
-	if err := json.NewDecoder(res.Body).Decode(r); err != nil {
-		return nil, fmt.Errorf("(*json.Decoder).Decode(*discovery.Document): %w", err)
-	}
-
-	if !d.doNotUseCache && !opt.DoNotUseCache {
-		d.cacheMap[discoveryDocumentURL] = DocumentCache{
-			Document:       r,
-			ExpirationTime: now.Add(d.cacheTTL),
+	resp, err := d.urlcache.Do(req, func(resp *http.Response) bool { return 200 <= resp.StatusCode && resp.StatusCode < 300 }, func(resp *http.Response) (*OpenIDProviderMetadata, error) {
+		r := new(OpenIDProviderMetadata)
+		if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
+			return nil, fmt.Errorf("(*json.Decoder).Decode(*discovery.JWKSet): %w", err)
 		}
+		return r, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("(*urlcache.Client).Do: %w", err)
 	}
 
-	return r, nil
+	return resp, nil
 }
 
 //nolint:gochecknoglobals
@@ -170,6 +109,6 @@ var (
 	Default = New()
 )
 
-func GetDocument(ctx context.Context, discoveryDocumentURL DocumentURL, opts ...GetDocumentOption) (*Document, error) {
-	return Default.GetDocument(ctx, discoveryDocumentURL, opts...)
+func GetOpenIDProviderMetadata(ctx context.Context, openIDProviderMetadataURL OpenIDProviderMetadataURL) (*OpenIDProviderMetadata, error) {
+	return Default.GetOpenIDProviderMetadata(ctx, openIDProviderMetadataURL)
 }
