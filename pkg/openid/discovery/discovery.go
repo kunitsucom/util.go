@@ -10,18 +10,18 @@ import (
 )
 
 const (
-	Google OpenIDProviderMetadataURL = "https://accounts.google.com/.well-known/openid-configuration"
+	Google ProviderMetadataURL = "https://accounts.google.com/.well-known/openid-configuration"
 
-	DocumentURLPath = "/.well-known/openid-configuration"
+	ProviderMetadataURLPath = "/.well-known/openid-configuration"
 )
 
 type (
-	OpenIDProviderMetadataURL = string
+	ProviderMetadataURL = string
 
-	// https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationResponse
+	// https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
 	//
 	//nolint:tagliatelle
-	OpenIDProviderMetadata struct { //nolint:revive
+	ProviderMetadata struct { //nolint:revive
 		Issuer                                     string   `json:"issuer"`
 		AuthorizationEndpoint                      string   `json:"authorization_endpoint"`
 		TokenEndpoint                              string   `json:"token_endpoint,omitempty"`
@@ -61,12 +61,12 @@ type (
 )
 
 type Client struct {
-	urlcache *urlcache.Client[*OpenIDProviderMetadata]
+	urlcache *urlcache.Client[*ProviderMetadata]
 }
 
 func New(opts ...ClientOption) *Client {
 	c := &Client{
-		urlcache: urlcache.NewClient[*OpenIDProviderMetadata](http.DefaultClient),
+		urlcache: urlcache.NewClient[*ProviderMetadata](http.DefaultClient),
 	}
 
 	for _, opt := range opts {
@@ -78,20 +78,20 @@ func New(opts ...ClientOption) *Client {
 
 type ClientOption func(*Client)
 
-func WithURLCacheClient(client *urlcache.Client[*OpenIDProviderMetadata]) ClientOption {
+func WithURLCacheClient(client *urlcache.Client[*ProviderMetadata]) ClientOption {
 	return func(d *Client) {
 		d.urlcache = client
 	}
 }
 
-func (d *Client) GetOpenIDProviderMetadata(ctx context.Context, openIDProviderMetadataURL OpenIDProviderMetadataURL) (*OpenIDProviderMetadata, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, openIDProviderMetadataURL, nil)
+func (d *Client) GetProviderMetadata(ctx context.Context, providerMetadataURL ProviderMetadataURL) (*ProviderMetadata, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, providerMetadataURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
 	}
 
-	resp, err := d.urlcache.Do(req, func(resp *http.Response) bool { return 200 <= resp.StatusCode && resp.StatusCode < 300 }, func(resp *http.Response) (*OpenIDProviderMetadata, error) {
-		r := new(OpenIDProviderMetadata)
+	resp, err := d.urlcache.Do(req, func(resp *http.Response) bool { return 200 <= resp.StatusCode && resp.StatusCode < 300 }, func(resp *http.Response) (*ProviderMetadata, error) {
+		r := new(ProviderMetadata)
 		if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
 			return nil, fmt.Errorf("(*json.Decoder).Decode(*discovery.JWKSet): %w", err)
 		}
@@ -109,6 +109,6 @@ var (
 	Default = New()
 )
 
-func GetOpenIDProviderMetadata(ctx context.Context, openIDProviderMetadataURL OpenIDProviderMetadataURL) (*OpenIDProviderMetadata, error) {
-	return Default.GetOpenIDProviderMetadata(ctx, openIDProviderMetadataURL)
+func GetProviderMetadata(ctx context.Context, providerMetadataURL ProviderMetadataURL) (*ProviderMetadata, error) {
+	return Default.GetProviderMetadata(ctx, providerMetadataURL)
 }

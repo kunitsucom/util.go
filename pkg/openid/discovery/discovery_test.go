@@ -147,7 +147,7 @@ const testMetadata = `{
 func TestDiscovery_GetDocument(t *testing.T) {
 	t.Parallel()
 
-	testDiscovery := discovery.New(discovery.WithURLCacheClient(urlcache.NewClient[*discovery.OpenIDProviderMetadata](http.DefaultClient)))
+	testDiscovery := discovery.New(discovery.WithURLCacheClient(urlcache.NewClient[*discovery.ProviderMetadata](http.DefaultClient)))
 
 	// prepare
 	mux := http.NewServeMux()
@@ -172,16 +172,16 @@ func TestDiscovery_GetDocument(t *testing.T) {
 	// success
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
-		document, err := discovery.GetOpenIDProviderMetadata(context.Background(), successURL)
+		document, err := discovery.GetProviderMetadata(context.Background(), successURL)
 		if err != nil {
 			t.Errorf("❌: discovery.GetProviderConfiguration: err != nil: %v", err)
 		}
 		// use cache
-		if _, err := discovery.GetOpenIDProviderMetadata(context.Background(), successURL); err != nil {
+		if _, err := discovery.GetProviderMetadata(context.Background(), successURL); err != nil {
 			t.Errorf("❌: discovery.GetProviderConfiguration: err != nil: %v", err)
 		}
 		// not use cache
-		if _, err := discovery.GetOpenIDProviderMetadata(context.Background(), successURL); err != nil {
+		if _, err := discovery.GetProviderMetadata(context.Background(), successURL); err != nil {
 			t.Errorf("❌: discovery.GetProviderConfiguration: err != nil: %v", err)
 		}
 		const AuthorizationEndpoint = `https://server.example.com/connect/authorize`
@@ -195,7 +195,7 @@ func TestDiscovery_GetDocument(t *testing.T) {
 	t.Run("failure(url)", func(t *testing.T) {
 		t.Parallel()
 		targetURL := "http://%%"
-		document, err := testDiscovery.GetOpenIDProviderMetadata(context.Background(), targetURL)
+		document, err := testDiscovery.GetProviderMetadata(context.Background(), targetURL)
 		if err == nil {
 			t.Errorf("❌: testDiscovery.GetDocument: err == nil")
 		}
@@ -211,7 +211,7 @@ func TestDiscovery_GetDocument(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 		targetURL := successURL
-		document, err := testDiscovery.GetOpenIDProviderMetadata(ctx, targetURL)
+		document, err := testDiscovery.GetProviderMetadata(ctx, targetURL)
 		if err == nil {
 			t.Errorf("❌: testDiscovery.GetDocument: err == nil")
 		}
@@ -225,7 +225,7 @@ func TestDiscovery_GetDocument(t *testing.T) {
 	t.Run("failure(Decode)", func(t *testing.T) {
 		t.Parallel()
 		targetURL := failureURL
-		document, err := testDiscovery.GetOpenIDProviderMetadata(context.Background(), failureURL)
+		document, err := testDiscovery.GetProviderMetadata(context.Background(), failureURL)
 		if err == nil {
 			t.Errorf("❌: testDiscovery.GetDocument: err == nil")
 		}
