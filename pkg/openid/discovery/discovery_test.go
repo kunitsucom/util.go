@@ -7,12 +7,10 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"strings"
 	"testing"
 
-	"github.com/kunitsuinc/util.go/pkg/must"
-	"github.com/kunitsuinc/util.go/pkg/net/http/urlcache"
+	"github.com/kunitsuinc/util.go/pkg/cache"
 	"github.com/kunitsuinc/util.go/pkg/openid/discovery"
 )
 
@@ -147,7 +145,7 @@ const testMetadata = `{
 func TestDiscovery_GetDocument(t *testing.T) {
 	t.Parallel()
 
-	testDiscovery := discovery.New(discovery.WithURLCacheClient(urlcache.NewClient[*discovery.ProviderMetadata](http.DefaultClient)))
+	testDiscovery := discovery.New(discovery.WithCacheStore(cache.NewStore[*discovery.ProviderMetadata]()), discovery.WithHTTPClient(http.DefaultClient))
 
 	// prepare
 	mux := http.NewServeMux()
@@ -160,14 +158,17 @@ func TestDiscovery_GetDocument(t *testing.T) {
 	mux.HandleFunc("/failure/.well-known/openid-configuration", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = io.WriteString(w, "<!DOCTYPE html>")
 	})
+	mux.HandleFunc("/failure/400", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = io.WriteString(w, http.StatusText(http.StatusBadRequest))
+	})
 	s := httptest.NewServer(mux)
 	t.Cleanup(func() {
 		_ = s.Config.Shutdown(context.Background())
 	})
-	urlBase := fmt.Sprintf("http://%s", s.Listener.Addr())
-
-	successURL := must.One(url.JoinPath(urlBase, "/success/.well-known/openid-configuration"))
-	failureURL := must.One(url.JoinPath(urlBase, "/failure/.well-known/openid-configuration"))
+	successURL := fmt.Sprintf("http://%s/success/.well-known/openid-configuration", s.Listener.Addr())
+	failureURL := fmt.Sprintf("http://%s/failure/.well-known/openid-configuration", s.Listener.Addr())
+	badRequestURL := fmt.Sprintf("http://%s/failure/400", s.Listener.Addr())
 
 	// success
 	t.Run("success()", func(t *testing.T) {
@@ -201,7 +202,7 @@ func TestDiscovery_GetDocument(t *testing.T) {
 		}
 		const expect = `invalid URL escape "%%"`
 		if err != nil && !strings.Contains(err.Error(), expect) {
-			t.Errorf("❌: testDiscovery.GetDocument: %s: not contains `%s`: %v", targetURL, expect, err)
+			t.Errorf("❌: testDiscovery.GetDocument: %s: error(%s) != error(%v)", targetURL, expect, err)
 		}
 		t.Logf("✅: *Document: %v", document)
 	})
@@ -217,7 +218,21 @@ func TestDiscovery_GetDocument(t *testing.T) {
 		}
 		const expect = `context canceled`
 		if err != nil && !strings.Contains(err.Error(), expect) {
-			t.Errorf("❌: testDiscovery.GetDocument: %s: not contains `%s`: %v", targetURL, expect, err)
+			t.Errorf("❌: testDiscovery.GetDocument: %s: error(%s) != error(%v)", targetURL, expect, err)
+		}
+		t.Logf("✅: *Document: %v", document)
+	})
+
+	t.Run("failure(400)", func(t *testing.T) {
+		t.Parallel()
+		targetURL := badRequestURL
+		document, err := testDiscovery.GetProviderMetadata(context.Background(), badRequestURL)
+		if err == nil {
+			t.Errorf("❌: testDiscovery.GetDocument: err == nil")
+		}
+		const expect = `code=400 body="Bad Request": discovery: response is not cacheable`
+		if err != nil && !strings.Contains(err.Error(), expect) {
+			t.Errorf("❌: testDiscovery.GetDocument: %s: error(%s) != error(%v)", targetURL, expect, err)
 		}
 		t.Logf("✅: *Document: %v", document)
 	})
@@ -231,7 +246,7 @@ func TestDiscovery_GetDocument(t *testing.T) {
 		}
 		const expect = `invalid character '<' looking for beginning of value`
 		if err != nil && !strings.Contains(err.Error(), expect) {
-			t.Errorf("❌: testDiscovery.GetDocument: %s: not contains `%s`: %v", targetURL, expect, err)
+			t.Errorf("❌: testDiscovery.GetDocument: %s: error(%s) != error(%v)", targetURL, expect, err)
 		}
 		t.Logf("✅: *Document: %v", document)
 	})

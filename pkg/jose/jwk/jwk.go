@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 
-	"github.com/kunitsuinc/util.go/pkg/net/http/urlcache"
+	"github.com/kunitsuinc/util.go/pkg/cache"
+	"github.com/kunitsuinc/util.go/pkg/slice"
 )
 
 // ref. JSON Web Key (JWK) https://www.rfc-editor.org/rfc/rfc7517
@@ -55,12 +57,14 @@ type JSONWebKey struct {
 }
 
 type Client struct { //nolint:revive
-	urlcache *urlcache.Client[*JWKSet]
+	client     *http.Client
+	cacheStore *cache.Store[*JWKSet]
 }
 
 func NewClient(opts ...ClientOption) *Client {
 	d := &Client{
-		urlcache: urlcache.NewClient[*JWKSet](http.DefaultClient),
+		client:     http.DefaultClient,
+		cacheStore: cache.NewStore[*JWKSet](),
 	}
 
 	for _, opt := range opts {
@@ -72,30 +76,46 @@ func NewClient(opts ...ClientOption) *Client {
 
 type ClientOption func(*Client)
 
-func WithURLCacheClient(client *urlcache.Client[*JWKSet]) ClientOption {
+func WithHTTPClient(client *http.Client) ClientOption {
 	return func(d *Client) {
-		d.urlcache = client
+		d.client = client
 	}
 }
 
-func (d *Client) GetJWKSet(ctx context.Context, jwksURI JWKsURI) (*JWKSet, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, jwksURI, nil)
-	if err != nil {
-		return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
+func WithCacheStore(store *cache.Store[*JWKSet]) ClientOption {
+	return func(d *Client) {
+		d.cacheStore = store
 	}
+}
 
-	resp, err := d.urlcache.Do(req, func(resp *http.Response) bool { return 200 <= resp.StatusCode && resp.StatusCode < 300 }, func(resp *http.Response) (*JWKSet, error) {
+var ErrResponseIsNotCacheable = errors.New("jwk: response is not cacheable")
+
+func (d *Client) GetJWKSet(ctx context.Context, jwksURI JWKsURI) (*JWKSet, error) {
+	return d.cacheStore.GetOrSet(jwksURI, func() (*JWKSet, error) { //nolint:wrapcheck
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, jwksURI, nil)
+		if err != nil {
+			return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
+		}
+
+		resp, err := d.client.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("(*http.Client).Do: %w", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
+			body, _ := io.ReadAll(resp.Body)
+			bodyCutOff := slice.CutOff(body, 100)
+			return nil, fmt.Errorf("code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
+		}
+
 		r := new(JWKSet)
 		if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
 			return nil, fmt.Errorf("(*json.Decoder).Decode(*discovery.JWKSet): %w", err)
 		}
+
 		return r, nil
 	})
-	if err != nil {
-		return nil, fmt.Errorf("(*urlcache.Client).Do: %w", err)
-	}
-
-	return resp, nil
 }
 
 //nolint:gochecknoglobals

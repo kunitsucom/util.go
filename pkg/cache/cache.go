@@ -22,7 +22,7 @@ type Store[T interface{}] struct {
 
 type StoreOption[T interface{}] func(*Store[T])
 
-func New[T interface{}](opts ...StoreOption[T]) *Store[T] {
+func NewStore[T interface{}](opts ...StoreOption[T]) *Store[T] {
 	c := &Store[T]{
 		defaultTTL: 1 * time.Minute,
 		cacheMap:   make(map[string]cache[T]),
@@ -40,15 +40,19 @@ func WithDefaultTTL[T interface{}](ttl time.Duration) StoreOption[T] {
 	return func(s *Store[T]) { s.defaultTTL = ttl }
 }
 
-func (c *Store[T]) GetOrSet(key string, setter func() (T, error)) (T, error) { //nolint:ireturn
-	return c.GetOrSetWithTTL(key, setter, c.defaultTTL)
+// GetOrSet gets cache value T, or set the value T that returns getValue.
+// If getValue does not return err, cache the value T.
+func (c *Store[T]) GetOrSet(key string, getValue func() (T, error)) (T, error) { //nolint:ireturn
+	return c.GetOrSetWithTTL(key, getValue, c.defaultTTL)
 }
 
-func (c *Store[T]) GetOrSetWithTTL(key string, setter func() (T, error), ttl time.Duration) (T, error) { //nolint:ireturn
-	return c.getOrSet(key, setter, ttl, time.Now())
+// GetOrSet gets cache value T, or set the value T that returns getValue with TTL.
+// If getValue does not return err, cache the value T.
+func (c *Store[T]) GetOrSetWithTTL(key string, getValue func() (T, error), ttl time.Duration) (T, error) { //nolint:ireturn
+	return c.getOrSet(key, getValue, ttl, time.Now())
 }
 
-func (c *Store[T]) getOrSet(key string, setter func() (T, error), ttl time.Duration, now time.Time) (T, error) { //nolint:ireturn
+func (c *Store[T]) getOrSet(key string, getValue func() (T, error), ttl time.Duration, now time.Time) (T, error) { //nolint:ireturn
 	c.cacheMutex.Lock()
 	defer c.cacheMutex.Unlock()
 
@@ -56,7 +60,7 @@ func (c *Store[T]) getOrSet(key string, setter func() (T, error), ttl time.Durat
 		return c.cacheMap[key].value, nil
 	}
 
-	value, err := setter()
+	value, err := getValue()
 	if err != nil {
 		var zero T
 		return zero, err

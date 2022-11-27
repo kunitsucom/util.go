@@ -163,3 +163,11 @@ func Reverse[T any](source []T) []T {
 
 	return rev
 }
+
+func CutOff[T any](source []T, length int) []T {
+	if length >= len(source) {
+		return source
+	}
+
+	return source[:length]
+}

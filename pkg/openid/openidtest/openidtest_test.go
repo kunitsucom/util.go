@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/kunitsuinc/util.go/pkg/jwk"
+	"github.com/kunitsuinc/util.go/pkg/jose/jwk"
 	"github.com/kunitsuinc/util.go/pkg/must"
 	"github.com/kunitsuinc/util.go/pkg/openid/discovery"
 	"github.com/kunitsuinc/util.go/pkg/openid/openidtest"

@@ -353,3 +353,34 @@ func TestReverse(t *testing.T) {
 		}
 	})
 }
+
+func TestCutOff(t *testing.T) {
+	t.Parallel()
+	t.Run("success(more)", func(t *testing.T) {
+		t.Parallel()
+		expect := []string{"0", "1", "2"}
+		s := []string{"0", "1", "2", "3"}
+		actual := slice.CutOff(s, 3)
+		if !reflect.DeepEqual(expect, actual) {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+	t.Run("success(equal)", func(t *testing.T) {
+		t.Parallel()
+		expect := []string{"0", "1", "2", "3"}
+		s := []string{"0", "1", "2", "3"}
+		actual := slice.CutOff(s, 4)
+		if !reflect.DeepEqual(expect, actual) {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+	t.Run("success(less)", func(t *testing.T) {
+		t.Parallel()
+		expect := []string{"0", "1", "2", "3"}
+		s := []string{"0", "1", "2", "3"}
+		actual := slice.CutOff(s, 5)
+		if !reflect.DeepEqual(expect, actual) {
+			t.Errorf("expect != actual: %v != %v", expect, actual)
+		}
+	})
+}

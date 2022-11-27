@@ -3,10 +3,13 @@ package discovery
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 
-	"github.com/kunitsuinc/util.go/pkg/net/http/urlcache"
+	"github.com/kunitsuinc/util.go/pkg/cache"
+	"github.com/kunitsuinc/util.go/pkg/slice"
 )
 
 const (
@@ -61,12 +64,14 @@ type (
 )
 
 type Client struct {
-	urlcache *urlcache.Client[*ProviderMetadata]
+	client     *http.Client
+	cacheStore *cache.Store[*ProviderMetadata]
 }
 
 func New(opts ...ClientOption) *Client {
 	c := &Client{
-		urlcache: urlcache.NewClient[*ProviderMetadata](http.DefaultClient),
+		client:     http.DefaultClient,
+		cacheStore: cache.NewStore[*ProviderMetadata](),
 	}
 
 	for _, opt := range opts {
@@ -78,30 +83,46 @@ func New(opts ...ClientOption) *Client {
 
 type ClientOption func(*Client)
 
-func WithURLCacheClient(client *urlcache.Client[*ProviderMetadata]) ClientOption {
+func WithHTTPClient(client *http.Client) ClientOption {
 	return func(d *Client) {
-		d.urlcache = client
+		d.client = client
 	}
 }
 
-func (d *Client) GetProviderMetadata(ctx context.Context, providerMetadataURL ProviderMetadataURL) (*ProviderMetadata, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, providerMetadataURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
+func WithCacheStore(store *cache.Store[*ProviderMetadata]) ClientOption {
+	return func(d *Client) {
+		d.cacheStore = store
 	}
+}
 
-	resp, err := d.urlcache.Do(req, func(resp *http.Response) bool { return 200 <= resp.StatusCode && resp.StatusCode < 300 }, func(resp *http.Response) (*ProviderMetadata, error) {
+var ErrResponseIsNotCacheable = errors.New("discovery: response is not cacheable")
+
+func (d *Client) GetProviderMetadata(ctx context.Context, providerMetadataURL ProviderMetadataURL) (*ProviderMetadata, error) {
+	return d.cacheStore.GetOrSet(providerMetadataURL, func() (*ProviderMetadata, error) { //nolint:wrapcheck
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, providerMetadataURL, nil)
+		if err != nil {
+			return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
+		}
+
+		resp, err := d.client.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("(*http.Client).Do: %w", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
+			body, _ := io.ReadAll(resp.Body)
+			bodyCutOff := slice.CutOff(body, 100)
+			return nil, fmt.Errorf("code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
+		}
+
 		r := new(ProviderMetadata)
 		if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
 			return nil, fmt.Errorf("(*json.Decoder).Decode(*discovery.JWKSet): %w", err)
 		}
+
 		return r, nil
 	})
-	if err != nil {
-		return nil, fmt.Errorf("(*urlcache.Client).Do: %w", err)
-	}
-
-	return resp, nil
 }
 
 //nolint:gochecknoglobals

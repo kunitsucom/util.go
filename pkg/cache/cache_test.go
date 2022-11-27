@@ -11,7 +11,7 @@ func TestStore_GetOrSet(t *testing.T) {
 	t.Parallel()
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
-		store := cache.New[string]()
+		store := cache.NewStore[string]()
 		const key = "test_key"
 		const value = "test value"
 		zero, err := store.GetOrSet(key, func() (string, error) { return value, io.ErrUnexpectedEOF })
@@ -39,7 +39,7 @@ func TestStore_GetOrSet(t *testing.T) {
 
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
-		store := cache.New(cache.WithDefaultTTL[string](0))
+		store := cache.NewStore(cache.WithDefaultTTL[string](0))
 		const key = "test_key"
 		const value = "test value"
 		got, err := store.GetOrSet(key, func() (string, error) { return value, nil })

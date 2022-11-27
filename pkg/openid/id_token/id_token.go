@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/kunitsuinc/util.go/pkg/jose"
-	"github.com/kunitsuinc/util.go/pkg/jwk"
+	"github.com/kunitsuinc/util.go/pkg/jose/jwk"
 	"github.com/kunitsuinc/util.go/pkg/openid/discovery"
 )
 
