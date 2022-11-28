@@ -1,5 +1,7 @@
 package jose
 
+// JSON Web Signature (JWS)
+
 // ref. JOSE Header https://datatracker.ietf.org/doc/html/rfc7515#section-4
 type Header struct {
 	// ref. https://datatracker.ietf.org/doc/html/rfc7515#section-4.1.1

@@ -82,9 +82,9 @@ func (c *Client) Verify(id_token string) error { //nolint:revive,stylecheck
 	headerBase64, payloadBase64, signatureBase64 := s[0], s[1], s[2]
 	fmt.Printf("%s: [DEBUG]: %s %s %s\n", time.Now(), headerBase64, payloadBase64, signatureBase64) //nolint:forbidigo
 
-	headerBytes, err := base64.RawStdEncoding.DecodeString(headerBase64)
+	headerBytes, err := base64.RawURLEncoding.DecodeString(headerBase64)
 	if err != nil {
-		return fmt.Errorf("base64.RawStdEncoding.DecodeString: %w", err)
+		return fmt.Errorf("base64.RawURLEncoding.DecodeString: %w", err)
 	}
 	header := new(Header)
 	if err := json.NewDecoder(bytes.NewReader(headerBytes)).Decode(header); err != nil {
@@ -92,9 +92,9 @@ func (c *Client) Verify(id_token string) error { //nolint:revive,stylecheck
 	}
 	fmt.Printf("%s: [DEBUG]: (*json.Decoder).Decode: %#v\n", time.Now(), header) //nolint:forbidigo
 
-	payloadBytes, err := base64.RawStdEncoding.DecodeString(payloadBase64)
+	payloadBytes, err := base64.RawURLEncoding.DecodeString(payloadBase64)
 	if err != nil {
-		return fmt.Errorf("base64.RawStdEncoding.DecodeString: %w", err)
+		return fmt.Errorf("base64.RawURLEncoding.DecodeString: %w", err)
 	}
 	payload := new(Claims)
 	if err := json.NewDecoder(bytes.NewReader(payloadBytes)).Decode(payload); err != nil {

@@ -102,8 +102,8 @@ func StartOpenIDProvider() (
 				PublicKeyUse: "sig",
 				KeyID:        "TestKeyID",
 				Algorithm:    "RS256",
-				N:            base64.RawStdEncoding.EncodeToString(pub.N.Bytes()),
-				E:            base64.RawStdEncoding.EncodeToString([]byte(strconv.FormatInt(int64(pub.E), 10))),
+				N:            base64.RawURLEncoding.EncodeToString(pub.N.Bytes()),
+				E:            base64.RawURLEncoding.EncodeToString([]byte(strconv.FormatInt(int64(pub.E), 10))),
 			},
 		},
 	}
