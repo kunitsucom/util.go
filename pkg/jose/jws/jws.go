@@ -3,6 +3,7 @@ package jws
 import (
 	"bytes"
 	"crypto"
+	"crypto/ecdsa"
 	"crypto/hmac"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -12,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"hash"
+	"math/big"
 	"strings"
 
 	"github.com/kunitsuinc/util.go/pkg/jose"
@@ -80,6 +82,36 @@ func Verify(token string, key crypto.PublicKey) error { //nolint:funlen,cyclop
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
 		return nil
+	case jwa.ES256.String():
+		if err := verifyES(key, crypto.SHA256, jwsSigningInput, 32, signature); err != nil {
+			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
+		}
+		return nil
+	case jwa.ES384.String():
+		if err := verifyES(key, crypto.SHA384, jwsSigningInput, 48, signature); err != nil {
+			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
+		}
+		return nil
+	case jwa.ES512.String():
+		if err := verifyES(key, crypto.SHA512, jwsSigningInput, 66, signature); err != nil {
+			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
+		}
+		return nil
+	case jwa.PS256.String():
+		if err := verifyPS(key, sha256.New, jwsSigningInput, crypto.SHA256, signature, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthAuto}); err != nil {
+			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
+		}
+		return nil
+	case jwa.PS384.String():
+		if err := verifyPS(key, sha512.New384, jwsSigningInput, crypto.SHA384, signature, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthAuto}); err != nil {
+			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
+		}
+		return nil
+	case jwa.PS512.String():
+		if err := verifyPS(key, sha512.New, jwsSigningInput, crypto.SHA512, signature, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthAuto}); err != nil {
+			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
+		}
+		return nil
 	case jwa.None.String():
 		return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, ErrAlgorithmNoneIsNotSupported)
 	}
@@ -109,6 +141,37 @@ func verifyRS(key crypto.PublicKey, hashNewFunc func() hash.Hash, jwsSigningInpu
 	h := hashNewFunc()
 	h.Write([]byte(jwsSigningInput))
 	if err := rsa.VerifyPKCS1v15(pub, cryptoHash, h.Sum(nil), signature); err != nil {
+		return fmt.Errorf("rsa.VerifyPKCS1v15: %w", err)
+	}
+	return nil
+}
+
+func verifyES(key crypto.PublicKey, cryptoHash crypto.Hash, jwsSigningInput string, keySize int, signature []byte) error {
+	pub, ok := key.(*ecdsa.PublicKey)
+	if !ok {
+		return ErrInvalidKeyReceived
+	}
+	if len(signature) != 2*keySize {
+		return fmt.Errorf("len(signature) != 2*keySize: %d != %d: %w", len(signature), 2*keySize, ErrInvalidKeyReceived)
+	}
+	h := cryptoHash.New()
+	h.Write([]byte(jwsSigningInput))
+	r := big.NewInt(0).SetBytes(signature[:keySize])
+	s := big.NewInt(0).SetBytes(signature[keySize:])
+	if !ecdsa.Verify(pub, h.Sum(nil), r, s) {
+		return ErrFailedToVerifySignature
+	}
+	return nil
+}
+
+func verifyPS(key crypto.PublicKey, hashNewFunc func() hash.Hash, jwsSigningInput string, cryptoHash crypto.Hash, signature []byte, opts *rsa.PSSOptions) error {
+	pub, ok := key.(*rsa.PublicKey)
+	if !ok {
+		return ErrInvalidKeyReceived
+	}
+	h := hashNewFunc()
+	h.Write([]byte(jwsSigningInput))
+	if err := rsa.VerifyPSS(pub, cryptoHash, h.Sum(nil), signature, opts); err != nil {
 		return fmt.Errorf("rsa.VerifyPKCS1v15: %w", err)
 	}
 	return nil
