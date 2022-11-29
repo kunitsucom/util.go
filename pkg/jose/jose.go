@@ -1,8 +1,9 @@
 package jose
 
-// JSON Web Signature (JWS)
-
-// ref. JOSE Header https://datatracker.ietf.org/doc/html/rfc7515#section-4
+// Header
+//
+//   - ref. JOSE Header - JSON Web Signature (JWS) https://datatracker.ietf.org/doc/html/rfc7515#section-4
+//   - ref. JOSE Header - JSON Web Token (JWT)     https://datatracker.ietf.org/doc/html/rfc7519#section-5
 type Header struct {
 	// ref. https://datatracker.ietf.org/doc/html/rfc7515#section-4.1.1
 	Algorithm string `json:"alg"`

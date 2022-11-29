@@ -15,8 +15,6 @@ import (
 	"github.com/kunitsuinc/util.go/pkg/openid/discovery"
 )
 
-type Header jose.Header
-
 // NOTE: ref. https://openid.net/specs/openid-connect-core-1_0.html#IDToken
 // NOTE: ref. http://openid-foundation-japan.github.io/openid-connect-core-1_0.ja.html#IDToken
 type Claims struct {
@@ -86,7 +84,7 @@ func (c *Client) Verify(id_token string) error { //nolint:revive,stylecheck
 	if err != nil {
 		return fmt.Errorf("base64.RawURLEncoding.DecodeString: %w", err)
 	}
-	header := new(Header)
+	header := new(jose.Header)
 	if err := json.NewDecoder(bytes.NewReader(headerBytes)).Decode(header); err != nil {
 		return fmt.Errorf("(*json.Decoder).Decode: %w", err)
 	}
