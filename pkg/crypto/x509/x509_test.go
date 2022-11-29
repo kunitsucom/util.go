@@ -43,7 +43,7 @@ func TestParseRSAPublicKeyPEM(t *testing.T) {
 	t.Run("failure(x509z.ErrPublicKeyTypeMismatch)", func(t *testing.T) {
 		t.Parallel()
 		_, err := x509z.ParseRSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey256BitPEM))
-		if !errors.Is(err, x509z.ErrPublicKeyTypeMismatch) {
+		if !errors.Is(err, x509z.ErrKeyTypeMismatch) {
 			t.Errorf("err != x509z.ErrPublicKeyTypeMismatch: %v", err)
 		}
 	})
@@ -83,7 +83,7 @@ func TestParseECDSAPublicKeyPEM(t *testing.T) {
 	t.Run("failure(x509z.ErrPublicKeyTypeMismatch)", func(t *testing.T) {
 		t.Parallel()
 		_, err := x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM))
-		if !errors.Is(err, x509z.ErrPublicKeyTypeMismatch) {
+		if !errors.Is(err, x509z.ErrKeyTypeMismatch) {
 			t.Errorf("err != x509z.ErrPublicKeyTypeMismatch: %v", err)
 		}
 	})

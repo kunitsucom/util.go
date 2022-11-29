@@ -1,5 +1,13 @@
 package jose
 
+import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"fmt"
+)
+
 // Header
 //
 //   - ref. JOSE Header - JSON Web Signature (JWS) https://datatracker.ietf.org/doc/html/rfc7515#section-4
@@ -29,5 +37,38 @@ type Header struct {
 	Critical string `json:"crit,omitempty"`
 
 	// ref. https://datatracker.ietf.org/doc/html/rfc7515#section-4.3
-	PrivateHeaderParameters map[string]string `json:"-"`
+	PrivateHeaderParameters map[string]interface{} `json:"-"`
+}
+
+var ErrInvalidJSON = errors.New("invalid JSON")
+
+func (h *Header) encode() (string, error) {
+	b, err := json.Marshal(h)
+	if err != nil {
+		return "", fmt.Errorf("json.Marshal: %w", err)
+	}
+
+	if len(h.PrivateHeaderParameters) == 0 {
+		return base64.RawURLEncoding.EncodeToString(b), nil
+	}
+
+	privateHeaderParameters, err := json.Marshal(h.PrivateHeaderParameters)
+	if err != nil {
+		return "", fmt.Errorf("invalid private header parameters: %v: %w", h.PrivateHeaderParameters, err)
+	}
+
+	if !bytes.HasSuffix(b, []byte{'}'}) {
+		return "", fmt.Errorf("%s: %w", b, ErrInvalidJSON)
+	}
+	if !bytes.HasPrefix(privateHeaderParameters, []byte{'{'}) {
+		return "", fmt.Errorf("%s: %w", privateHeaderParameters, ErrInvalidJSON)
+	}
+
+	b[len(b)-1] = ','
+	b = append(b, privateHeaderParameters[1:]...)
+	return base64.RawURLEncoding.EncodeToString(b), nil
+}
+
+func (h *Header) Encode() (string, error) {
+	return h.encode()
 }

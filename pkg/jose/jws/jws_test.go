@@ -1,9 +1,11 @@
 package jws_test
 
 import (
+	"bytes"
 	"crypto"
 	"crypto/rsa"
 	"errors"
+	"math/big"
 	"strings"
 	"testing"
 
@@ -13,7 +15,7 @@ import (
 	testz "github.com/kunitsuinc/util.go/pkg/test"
 )
 
-type testCase struct {
+type testCaseVerify struct {
 	JWT           string
 	Header        string
 	Payload       string
@@ -21,13 +23,13 @@ type testCase struct {
 	ResultHandler func(t *testing.T, err error)
 }
 
-var testCases = map[string]testCase{
+var testCasesVerify = map[string]testCaseVerify{
 	"failure(jws.ErrInvalidTokenReceived)": {
 		JWT: ``,
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidTokenReceived) {
-				t.Errorf("err != jws.ErrInvalidTokenReceived: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidTokenReceived: %v", t.Name(), err)
 			}
 		},
 	},
@@ -37,7 +39,7 @@ var testCases = map[string]testCase{
 			t.Helper()
 			const expect = `illegal base64 data at input byte`
 			if err == nil || !strings.Contains(err.Error(), expect) {
-				t.Errorf("err != %s: %v", expect, err)
+				t.Errorf("%s: err != %s: %v", t.Name(), expect, err)
 			}
 		},
 	},
@@ -47,7 +49,7 @@ var testCases = map[string]testCase{
 			t.Helper()
 			const expect = `unexpected end of JSON input`
 			if err == nil || !strings.Contains(err.Error(), expect) {
-				t.Errorf("err != %s: %v", expect, err)
+				t.Errorf("%s: err != %s: %v", t.Name(), expect, err)
 			}
 		},
 	},
@@ -60,7 +62,7 @@ var testCases = map[string]testCase{
 			t.Helper()
 			const expect = `illegal base64 data at input byte`
 			if err == nil || !strings.Contains(err.Error(), expect) {
-				t.Errorf("err != %s: %v", expect, err)
+				t.Errorf("%s: err != %s: %v", t.Name(), expect, err)
 			}
 		},
 	},
@@ -72,7 +74,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, nil) {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
 			}
 		},
 	},
@@ -84,7 +86,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
-				t.Errorf("err != jws.ErrInvalidKeyReceived: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
 			}
 		},
 	},
@@ -96,7 +98,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrFailedToVerifySignature) {
-				t.Errorf("err != jws.ErrFailedToVerifySignature: %v", err)
+				t.Errorf("%s: err != jws.ErrFailedToVerifySignature: %v", t.Name(), err)
 			}
 		},
 	},
@@ -108,7 +110,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, nil) {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
 			}
 		},
 	},
@@ -120,7 +122,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrFailedToVerifySignature) {
-				t.Errorf("err != jws.ErrFailedToVerifySignature: %v", err)
+				t.Errorf("%s: err != jws.ErrFailedToVerifySignature: %v", t.Name(), err)
 			}
 		},
 	},
@@ -132,7 +134,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, nil) {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
 			}
 		},
 	},
@@ -144,7 +146,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrFailedToVerifySignature) {
-				t.Errorf("err != jws.ErrFailedToVerifySignature: %v", err)
+				t.Errorf("%s: err != jws.ErrFailedToVerifySignature: %v", t.Name(), err)
 			}
 		},
 	},
@@ -156,7 +158,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, nil) {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
 			}
 		},
 	},
@@ -168,7 +170,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
-				t.Errorf("err != jws.ErrInvalidKeyReceived: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
 			}
 		},
 	},
@@ -180,7 +182,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, rsa.ErrVerification) {
-				t.Errorf("err != rsa.ErrVerification: %v", err)
+				t.Errorf("%s: err != rsa.ErrVerification: %v", t.Name(), err)
 			}
 		},
 	},
@@ -192,7 +194,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, nil) {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
 			}
 		},
 	},
@@ -204,7 +206,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
-				t.Errorf("err != jws.ErrInvalidKeyReceived: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
 			}
 		},
 	},
@@ -216,7 +218,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, nil) {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
 			}
 		},
 	},
@@ -228,7 +230,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
-				t.Errorf("err != jws.ErrInvalidKeyReceived: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
 			}
 		},
 	},
@@ -240,7 +242,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, nil) {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
 			}
 		},
 	},
@@ -252,7 +254,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
-				t.Errorf("err != jws.ErrInvalidKeyReceived: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
 			}
 		},
 	},
@@ -264,7 +266,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
-				t.Errorf("err != jws.ErrInvalidKeyReceived: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
 			}
 		},
 	},
@@ -276,7 +278,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrFailedToVerifySignature) {
-				t.Errorf("err != jws.ErrFailedToVerifySignature: %v", err)
+				t.Errorf("%s: err != jws.ErrFailedToVerifySignature: %v", t.Name(), err)
 			}
 		},
 	},
@@ -288,7 +290,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, nil) {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
 			}
 		},
 	},
@@ -300,7 +302,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
-				t.Errorf("err != jws.ErrInvalidKeyReceived: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
 			}
 		},
 	},
@@ -312,7 +314,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, nil) {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
 			}
 		},
 	},
@@ -324,7 +326,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
-				t.Errorf("err != jws.ErrInvalidKeyReceived: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
 			}
 		},
 	},
@@ -336,7 +338,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, nil) {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
 			}
 		},
 	},
@@ -348,7 +350,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
-				t.Errorf("err != jws.ErrInvalidKeyReceived: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
 			}
 		},
 	},
@@ -360,7 +362,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, rsa.ErrVerification) {
-				t.Errorf("err != rsa.ErrVerification: %v", err)
+				t.Errorf("%s: err != rsa.ErrVerification: %v", t.Name(), err)
 			}
 		},
 	},
@@ -372,7 +374,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, nil) {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
 			}
 		},
 	},
@@ -384,7 +386,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
-				t.Errorf("err != jws.ErrInvalidKeyReceived: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
 			}
 		},
 	},
@@ -396,7 +398,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, nil) {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
 			}
 		},
 	},
@@ -408,7 +410,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
-				t.Errorf("err != jws.ErrInvalidKeyReceived: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
 			}
 		},
 	},
@@ -419,7 +421,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrInvalidAlgorithm) {
-				t.Errorf("err != jws.ErrInvalidAlgorithm: %v", err)
+				t.Errorf("%s: err != jws.ErrInvalidAlgorithm: %v", t.Name(), err)
 			}
 		},
 	},
@@ -430,7 +432,7 @@ var testCases = map[string]testCase{
 		ResultHandler: func(t *testing.T, err error) {
 			t.Helper()
 			if !errors.Is(err, jws.ErrAlgorithmNoneIsNotSupported) {
-				t.Errorf("err != jws.ErrAlgorithmNoneIsNotSupported: %v", err)
+				t.Errorf("%s: err != jws.ErrAlgorithmNoneIsNotSupported: %v", t.Name(), err)
 			}
 		},
 	},
@@ -439,11 +441,223 @@ var testCases = map[string]testCase{
 func TestVerify(t *testing.T) {
 	t.Parallel()
 
-	for testName, testCase := range testCases {
+	for testName, testCase := range testCasesVerify {
 		t, k, v := t, testName, testCase
 		t.Run(k, func(t *testing.T) {
 			t.Parallel()
 			v.ResultHandler(t, jws.Verify(v.JWT, v.Key))
+		})
+	}
+}
+
+type testCaseSign struct {
+	Alg           string
+	SigningInput  string
+	Key           crypto.PrivateKey
+	Signature     []byte
+	ResultHandler func(t *testing.T, err error)
+}
+
+var testCasesSign = map[string]testCaseSign{
+	"success(HS256)": {
+		Alg:          "HS256",
+		SigningInput: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ",
+		Key:          []byte(`your-256-bit-secret`),
+		Signature:    []byte("SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"),
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if err != nil {
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
+			}
+		},
+	},
+	"failure(HS256,jws.ErrInvalidKeyReceived)": {
+		Alg:          "HS256",
+		SigningInput: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ",
+		Key:          0,
+		Signature:    nil,
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
+			}
+		},
+	},
+	"success(HS384)": {
+		Alg:          "HS384",
+		SigningInput: "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ",
+		Key:          []byte(`your-384-bit-secret`),
+		Signature:    []byte("8aMsJp4VGY_Ia2s9iWrS8jARCggx0FDRn2FehblXyvGYRrVVbu3LkKKqx_MEuDjQ"),
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if err != nil {
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
+			}
+		},
+	},
+	"failure(HS384,jws.ErrInvalidKeyReceived)": {
+		Alg:          "HS384",
+		SigningInput: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ",
+		Key:          0,
+		Signature:    nil,
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
+			}
+		},
+	},
+	"success(HS512)": {
+		Alg:          "HS512",
+		SigningInput: "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ",
+		Key:          []byte(`your-512-bit-secret`),
+		Signature:    []byte("_MRZSQUbU6G_jPvXIlFsWSU-PKT203EdcU388r5EWxSxg8QpB3AmEGSo2fBfMYsOaxvzos6ehRm4CYO1MrdwUg"),
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if err != nil {
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
+			}
+		},
+	},
+	"failure(HS512,jws.ErrInvalidKeyReceived)": {
+		Alg:          "HS512",
+		SigningInput: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ",
+		Key:          0,
+		Signature:    nil,
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
+			}
+		},
+	},
+	"success(RS256)": {
+		Alg:          "RS256",
+		SigningInput: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
+		Key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+		Signature:    []byte("NHVaYe26MbtOYhSKkoKYdFVomg4i8ZJd8_-RU8VNbftc4TSMb4bXP3l3YlNWACwyXPGffz5aXHc6lty1Y2t4SWRqGteragsVdZufDn5BlnJl9pdR_kdVFUsra2rWKEofkZeIC4yWytE58sMIihvo9H1ScmmVwBcQP6XETqYd0aSHp1gOa9RdUPDvoXQ5oqygTqVtxaDr6wUFKrKItgBMzWIdNZ6y7O9E0DhEPTbE9rfBo6KTFsHAZnMg4k68CDp2woYIaXbmYTWcvbzIuHO7_37GT79XdIwkm95QJ7hYC9RiwrV7mesbY4PAahERJawntho0my942XheVLmGwLMBkQ"),
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if err != nil {
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
+			}
+		},
+	},
+	"failure(RS256,rsa.SignPKCS1v15)": {
+		Alg:          "RS256",
+		SigningInput: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
+		Key: &rsa.PrivateKey{
+			PublicKey: *must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM))),
+			D:         big.NewInt(0),
+			Primes:    []*big.Int{big.NewInt(0), big.NewInt(0)},
+		},
+		Signature: nil,
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			const expect = "rsa: internal error"
+			if err == nil || !strings.Contains(err.Error(), expect) {
+				t.Errorf("%s: expect(%v) != actual(%v)", t.Name(), expect, err)
+			}
+		},
+	},
+	"failure(RS256,jws.ErrInvalidKeyReceived)": {
+		Alg:          "RS256",
+		SigningInput: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
+		Key:          0,
+		Signature:    nil,
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
+			}
+		},
+	},
+	"success(RS384)": {
+		Alg:          "RS384",
+		SigningInput: "eyJhbGciOiJSUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
+		Key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+		Signature:    []byte("o1hC1xYbJolSyh0-bOY230w22zEQSk5TiBfc-OCvtpI2JtYlW-23-8B48NpATozzMHn0j3rE0xVUldxShzy0xeJ7vYAccVXu2Gs9rnTVqouc-UZu_wJHkZiKBL67j8_61L6SXswzPAQu4kVDwAefGf5hyYBUM-80vYZwWPEpLI8K4yCBsF6I9N1yQaZAJmkMp_Iw371Menae4Mp4JusvBJS-s6LrmG2QbiZaFaxVJiW8KlUkWyUCns8-qFl5OMeYlgGFsyvvSHvXCzQrsEXqyCdS4tQJd73ayYA4SPtCb9clz76N1zE5WsV4Z0BYrxeb77oA7jJhh994RAPzCG0hmQ"),
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if err != nil {
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
+			}
+		},
+	},
+	"failure(RS384,jws.ErrInvalidKeyReceived)": {
+		Alg:          "RS384",
+		SigningInput: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
+		Key:          0,
+		Signature:    nil,
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
+			}
+		},
+	},
+	"success(RS512)": {
+		Alg:          "RS512",
+		SigningInput: "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
+		Key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+		Signature:    []byte("jYW04zLDHfR1v7xdrW3lCGZrMIsVe0vWCfVkN2DRns2c3MN-mcp_-RE6TN9umSBYoNV-mnb31wFf8iun3fB6aDS6m_OXAiURVEKrPFNGlR38JSHUtsFzqTOj-wFrJZN4RwvZnNGSMvK3wzzUriZqmiNLsG8lktlEn6KA4kYVaM61_NpmPHWAjGExWv7cjHYupcjMSmR8uMTwN5UuAwgW6FRstCJEfoxwb0WKiyoaSlDuIiHZJ0cyGhhEmmAPiCwtPAwGeaL1yZMcp0p82cpTQ5Qb-7CtRov3N4DcOHgWYk6LomPR5j5cCkePAz87duqyzSMpCB0mCOuE3CU2VMtGeQ"),
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if err != nil {
+				t.Errorf("%s: err != nil: %v", t.Name(), err)
+			}
+		},
+	},
+	"failure(RS512,jws.ErrInvalidKeyReceived)": {
+		Alg:          "RS512",
+		SigningInput: "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
+		Key:          0,
+		Signature:    nil,
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if !errors.Is(err, jws.ErrInvalidKeyReceived) {
+				t.Errorf("%s: err != jws.ErrInvalidKeyReceived: %v", t.Name(), err)
+			}
+		},
+	},
+	"failure(jws.ErrAlgorithmNoneIsNotSupported)": {
+		Alg:          "none",
+		SigningInput: "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
+		Key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+		Signature:    nil,
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if !errors.Is(err, jws.ErrAlgorithmNoneIsNotSupported) {
+				t.Errorf("%s: err != jws.ErrAlgorithmNoneIsNotSupported: %v", t.Name(), err)
+			}
+		},
+	},
+	"failure(jws.ErrInvalidAlgorithm)": {
+		Alg:          "invalid",
+		SigningInput: "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
+		Key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+		Signature:    nil,
+		ResultHandler: func(t *testing.T, err error) {
+			t.Helper()
+			if !errors.Is(err, jws.ErrInvalidAlgorithm) {
+				t.Errorf("%s: err != jws.ErrInvalidAlgorithm: %v", t.Name(), err)
+			}
+		},
+	},
+}
+
+func TestSign(t *testing.T) {
+	t.Parallel()
+
+	for testName, testCase := range testCasesSign {
+		t, k, v := t, testName, testCase
+		t.Run(k, func(t *testing.T) {
+			t.Parallel()
+			actual, err := jws.Sign(v.Alg, v.SigningInput, v.Key)
+			if !bytes.Equal(v.Signature, actual) {
+				t.Errorf("%s: expect != actual: (%s) != (%s)", t.Name(), v.Signature, actual)
+			}
+			v.ResultHandler(t, err)
 		})
 	}
 }
