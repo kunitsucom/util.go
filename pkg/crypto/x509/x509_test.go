@@ -30,7 +30,7 @@ func TestParseRSAPublicKeyPEM(t *testing.T) {
 
 	t.Run("failure(x509.ParsePKIXPublicKey)", func(t *testing.T) {
 		t.Parallel()
-		_, err := x509z.ParseRSAPublicKeyPEM([]byte("-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC7VJTUt9Us8cKj\n-----END PRIVATE KEY-----\n"))
+		_, err := x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPrivateKeyInvalidPEM))
 		if err == nil {
 			t.Errorf("err == nil: %v", err)
 		}
@@ -70,7 +70,7 @@ func TestParseECDSAPublicKeyPEM(t *testing.T) {
 
 	t.Run("failure(x509.ParsePKIXPublicKey)", func(t *testing.T) {
 		t.Parallel()
-		_, err := x509z.ParseECDSAPublicKeyPEM([]byte("-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC7VJTUt9Us8cKj\n-----END PRIVATE KEY-----\n"))
+		_, err := x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestRSAPrivateKeyInvalidPEM))
 		if err == nil {
 			t.Errorf("err == nil: %v", err)
 		}

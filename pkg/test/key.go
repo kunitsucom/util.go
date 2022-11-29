@@ -1,7 +1,7 @@
 package testz
 
 /*
-// secretlint-disable @secretlint/secretlint-rule-privatekey.
+// secretlint-disable @secretlint/secretlint-rule-privatekey
 */
 
 const TestRSAPrivateKey2048BitPEM = `-----BEGIN PRIVATE KEY-----
@@ -31,6 +31,10 @@ et6INsK0oG8XVGXSpQvQh3RUYekCZQkBBFcpqWpbIEsCgYAnM3DQf3FJoSnXaMhr
 VBIovic5l0xFkEHskAjFTevO86Fsz1C2aSeRKSqGFoOQ0tmJzBEs1R6KqnHInicD
 TQrKhArgLXX4v3CddjfTRJkFWDbE/CkvKZNOrcf1nhaGCPspRJj2KUkj1Fhl9Cnc
 dn/RsYEONbwQSjIfMPkvxF+8HQ==
+-----END PRIVATE KEY-----`
+
+const TestRSAPrivateKeyInvalidPEM = `-----BEGIN PRIVATE KEY-----
+MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQC7VJTUt9Us8cKj
 -----END PRIVATE KEY-----`
 
 const TestRSAPublicKey2048BitPEM = `-----BEGIN PUBLIC KEY-----
