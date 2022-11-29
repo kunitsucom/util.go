@@ -29,7 +29,6 @@ var (
 	ErrInvalidAlgorithm            = errors.New(`jws: invalid algorithm`)
 )
 
-// memo: https://cs.opensource.google/go/x/oauth2/+/refs/tags/v0.2.0:jws/jws.go;l=167
 func Verify(token string, key crypto.PublicKey) error { //nolint:funlen,cyclop
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
@@ -52,6 +51,7 @@ func Verify(token string, key crypto.PublicKey) error { //nolint:funlen,cyclop
 		return fmt.Errorf("base64.RawURLEncoding.DecodeString: signature: %w", err)
 	}
 
+	// "alg" (Algorithm) Header Parameter Values for JWS - JSON Web Algorithms (JWA) ref. https://datatracker.ietf.org/doc/html/rfc7518#section-3.1
 	switch header.Algorithm {
 	case jwa.HS256.String():
 		if err := verifyHS(signature, signingInput, key, sha256.New); err != nil {
@@ -141,8 +141,8 @@ func verifyES(signature []byte, signingInput string, key crypto.PublicKey, crypt
 	if !ok {
 		return ErrInvalidKeyReceived
 	}
-	if len(signature) != 2*keySize {
-		return fmt.Errorf("len(signature) != 2*keySize: %d != %d: %w", len(signature), 2*keySize, ErrInvalidKeyReceived)
+	if len(signature) != keySize*2 {
+		return fmt.Errorf("len(signature)=(%d) != keySize*2=(%d): %w", len(signature), 2*keySize, ErrInvalidKeyReceived)
 	}
 	h := cryptoHash.New()
 	h.Write([]byte(signingInput))
@@ -168,6 +168,7 @@ func verifyPS(signature []byte, signingInput string, key crypto.PublicKey, hashN
 }
 
 func Sign(alg, signingInput string, key crypto.PrivateKey) (signature []byte, err error) { //nolint:funlen,cyclop
+	// "alg" (Algorithm) Header Parameter Values for JWS - JSON Web Algorithms (JWA) ref. https://datatracker.ietf.org/doc/html/rfc7518#section-3.1
 	switch alg {
 	case jwa.HS256.String():
 		signature, err = signHS(signingInput, key, sha256.New)
@@ -196,6 +197,36 @@ func Sign(alg, signingInput string, key crypto.PrivateKey) (signature []byte, er
 		}
 	case jwa.RS512.String():
 		signature, err = signRS(signingInput, key, sha512.New, crypto.SHA512)
+		if err != nil {
+			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
+		}
+	case jwa.ES256.String():
+		signature, err = signES(signingInput, key, crypto.SHA256, 32)
+		if err != nil {
+			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
+		}
+	case jwa.ES384.String():
+		signature, err = signES(signingInput, key, crypto.SHA384, 48)
+		if err != nil {
+			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
+		}
+	case jwa.ES512.String():
+		signature, err = signES(signingInput, key, crypto.SHA512, 66)
+		if err != nil {
+			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
+		}
+	case jwa.PS256.String():
+		signature, err = signPS(signingInput, key, crypto.SHA256)
+		if err != nil {
+			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
+		}
+	case jwa.PS384.String():
+		signature, err = signPS(signingInput, key, crypto.SHA384)
+		if err != nil {
+			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
+		}
+	case jwa.PS512.String():
+		signature, err = signPS(signingInput, key, crypto.SHA512)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
@@ -229,6 +260,49 @@ func signRS(signingInput string, key crypto.PrivateKey, hashNewFunc func() hash.
 	signature, err = rsa.SignPKCS1v15(rand.Reader, priv, cryptoHash, h.Sum(nil))
 	if err != nil {
 		return nil, fmt.Errorf("rsa.SignPKCS1v15: %w", err)
+	}
+	return []byte(base64.RawURLEncoding.EncodeToString(signature)), nil
+}
+
+func signES(signingInput string, key crypto.PrivateKey, cryptoHash crypto.Hash, keySize int) (signature []byte, err error) {
+	priv, ok := key.(*ecdsa.PrivateKey)
+	if !ok {
+		return nil, ErrInvalidKeyReceived
+	}
+
+	h := cryptoHash.New()
+	h.Write([]byte(signingInput))
+	r, s, err := ecdsa.Sign(rand.Reader, priv, h.Sum(nil))
+	if err != nil {
+		return nil, fmt.Errorf("ecdsa.Sign: %w", err)
+	}
+
+	rBytes := r.Bytes()
+	rBytesPadded := make([]byte, keySize)
+	copy(rBytesPadded[keySize-len(rBytes):], rBytes)
+
+	sBytes := s.Bytes()
+	sBytesPadded := make([]byte, keySize)
+	copy(sBytesPadded[keySize-len(sBytes):], sBytes)
+
+	var rawSignature []byte
+	rawSignature = append(rawSignature, rBytesPadded...)
+	rawSignature = append(rawSignature, sBytesPadded...)
+
+	return []byte(base64.RawURLEncoding.EncodeToString(rawSignature)), nil
+}
+
+func signPS(signingInput string, key crypto.PrivateKey, cryptoHash crypto.Hash) (signature []byte, err error) {
+	priv, ok := key.(*rsa.PrivateKey)
+	if !ok {
+		return nil, ErrInvalidKeyReceived
+	}
+
+	h := cryptoHash.New()
+	h.Write([]byte(signingInput))
+	signature, err = rsa.SignPSS(rand.Reader, priv, cryptoHash, h.Sum(nil), &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash})
+	if err != nil {
+		return nil, fmt.Errorf("rsa.SignPSS: %w", err)
 	}
 	return []byte(base64.RawURLEncoding.EncodeToString(signature)), nil
 }
