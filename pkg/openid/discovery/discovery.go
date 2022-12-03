@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/kunitsuinc/util.go/pkg/cache"
-	"github.com/kunitsuinc/util.go/pkg/slice"
+	slicez "github.com/kunitsuinc/util.go/pkg/slices"
 )
 
 const (
@@ -112,7 +112,7 @@ func (d *Client) GetProviderMetadata(ctx context.Context, providerMetadataURL Pr
 
 		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
 			body, _ := io.ReadAll(resp.Body)
-			bodyCutOff := slice.CutOff(body, 100)
+			bodyCutOff := slicez.CutOff(body, 100)
 			return nil, fmt.Errorf("code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
 		}
 
