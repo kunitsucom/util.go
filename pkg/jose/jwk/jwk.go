@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/kunitsuinc/util.go/pkg/cache"
-	"github.com/kunitsuinc/util.go/pkg/slice"
+	slicez "github.com/kunitsuinc/util.go/pkg/slices"
 )
 
 // ref. JSON Web Key (JWK) https://datatracker.ietf.org/doc/html/rfc7517
@@ -130,10 +130,10 @@ type Client struct { //nolint:revive
 	cacheStore *cache.Store[*JWKSet]
 }
 
-func NewClient(opts ...ClientOption) *Client {
+func NewClient(ctx context.Context, opts ...ClientOption) *Client {
 	d := &Client{
 		client:     http.DefaultClient,
-		cacheStore: cache.NewStore[*JWKSet](),
+		cacheStore: cache.NewStore[*JWKSet](ctx),
 	}
 
 	for _, opt := range opts {
@@ -174,7 +174,7 @@ func (d *Client) GetJWKSet(ctx context.Context, jwksURI JWKSetURI) (*JWKSet, err
 
 		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
 			body, _ := io.ReadAll(resp.Body)
-			bodyCutOff := slice.CutOff(body, 100)
+			bodyCutOff := slicez.CutOff(body, 100)
 			return nil, fmt.Errorf("code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
 		}
 
@@ -189,7 +189,7 @@ func (d *Client) GetJWKSet(ctx context.Context, jwksURI JWKSetURI) (*JWKSet, err
 
 //nolint:gochecknoglobals
 var (
-	Default = NewClient()
+	Default = NewClient(context.Background())
 )
 
 func GetJWKSet(ctx context.Context, jwksURI JWKSetURI) (*JWKSet, error) {

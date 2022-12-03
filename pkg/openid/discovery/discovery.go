@@ -68,10 +68,10 @@ type Client struct {
 	cacheStore *cache.Store[*ProviderMetadata]
 }
 
-func New(opts ...ClientOption) *Client {
+func New(ctx context.Context, opts ...ClientOption) *Client {
 	c := &Client{
 		client:     http.DefaultClient,
-		cacheStore: cache.NewStore[*ProviderMetadata](),
+		cacheStore: cache.NewStore[*ProviderMetadata](ctx),
 	}
 
 	for _, opt := range opts {
@@ -127,7 +127,7 @@ func (d *Client) GetProviderMetadata(ctx context.Context, providerMetadataURL Pr
 
 //nolint:gochecknoglobals
 var (
-	Default = New()
+	Default = New(context.Background())
 )
 
 func GetProviderMetadata(ctx context.Context, providerMetadataURL ProviderMetadataURL) (*ProviderMetadata, error) {

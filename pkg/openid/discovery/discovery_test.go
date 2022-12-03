@@ -145,7 +145,7 @@ const testMetadata = `{
 func TestDiscovery_GetDocument(t *testing.T) {
 	t.Parallel()
 
-	testDiscovery := discovery.New(discovery.WithCacheStore(cache.NewStore[*discovery.ProviderMetadata]()), discovery.WithHTTPClient(http.DefaultClient))
+	testDiscovery := discovery.New(context.Background(), discovery.WithCacheStore(cache.NewStore[*discovery.ProviderMetadata](context.Background())), discovery.WithHTTPClient(http.DefaultClient))
 
 	// prepare
 	mux := http.NewServeMux()

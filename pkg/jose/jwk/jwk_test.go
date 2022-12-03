@@ -63,7 +63,7 @@ func TestClient_GetJSONWebKey(t *testing.T) {
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 
-		c := jwk.NewClient(jwk.WithCacheStore(cache.NewStore[*jwk.JWKSet]()), jwk.WithHTTPClient(http.DefaultClient))
+		c := jwk.NewClient(context.Background(), jwk.WithCacheStore(cache.NewStore[*jwk.JWKSet](context.Background())), jwk.WithHTTPClient(http.DefaultClient))
 		jwks1, err := c.GetJWKSet(context.Background(), jwksURI)
 		if err != nil {
 			t.Errorf("err != nil: %v", err)
@@ -92,7 +92,7 @@ func TestClient_GetJSONWebKey(t *testing.T) {
 	t.Run("failure(req)", func(t *testing.T) {
 		t.Parallel()
 
-		c := jwk.NewClient()
+		c := jwk.NewClient(context.Background())
 		_, err := c.GetJWKSet(context.Background(), "http://%%")
 		if err == nil {
 			t.Errorf("err == nil")
@@ -106,7 +106,7 @@ func TestClient_GetJSONWebKey(t *testing.T) {
 	t.Run("failure(400)", func(t *testing.T) {
 		t.Parallel()
 
-		c := jwk.NewClient()
+		c := jwk.NewClient(context.Background())
 		_, err := c.GetJWKSet(context.Background(), badRequestURI)
 		if err == nil {
 			t.Errorf("err == nil")
@@ -120,7 +120,7 @@ func TestClient_GetJSONWebKey(t *testing.T) {
 	t.Run("failure(*json.Decoder)", func(t *testing.T) {
 		t.Parallel()
 
-		c := jwk.NewClient()
+		c := jwk.NewClient(context.Background())
 		_, err := c.GetJWKSet(context.Background(), invalidURI)
 		if err == nil {
 			t.Errorf("err == nil")
@@ -134,7 +134,7 @@ func TestClient_GetJSONWebKey(t *testing.T) {
 	t.Run("failure(ctx)", func(t *testing.T) {
 		t.Parallel()
 
-		c := jwk.NewClient()
+		c := jwk.NewClient(context.Background())
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 		_, err := c.GetJWKSet(ctx, jwksURI)

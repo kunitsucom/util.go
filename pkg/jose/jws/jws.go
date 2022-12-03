@@ -29,7 +29,7 @@ var (
 	ErrInvalidAlgorithm            = errors.New(`jws: invalid algorithm`)
 )
 
-func Verify(token string, key crypto.PublicKey) error { //nolint:funlen,cyclop
+func VerifySignature(token string, key crypto.PublicKey) error { //nolint:funlen,cyclop
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
 		return ErrInvalidTokenReceived
@@ -53,55 +53,55 @@ func Verify(token string, key crypto.PublicKey) error { //nolint:funlen,cyclop
 
 	// "alg" (Algorithm) Header Parameter Values for JWS - JSON Web Algorithms (JWA) ref. https://datatracker.ietf.org/doc/html/rfc7518#section-3.1
 	switch header.Algorithm {
-	case jwa.HS256.String():
+	case jwa.HS256:
 		if err := verifyHS(signature, signingInput, key, sha256.New); err != nil {
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
-	case jwa.HS384.String():
+	case jwa.HS384:
 		if err := verifyHS(signature, signingInput, key, sha512.New384); err != nil {
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
-	case jwa.HS512.String():
+	case jwa.HS512:
 		if err := verifyHS(signature, signingInput, key, sha512.New); err != nil {
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
-	case jwa.RS256.String():
+	case jwa.RS256:
 		if err := verifyRS(signature, signingInput, key, sha256.New, crypto.SHA256); err != nil {
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
-	case jwa.RS384.String():
+	case jwa.RS384:
 		if err := verifyRS(signature, signingInput, key, sha512.New384, crypto.SHA384); err != nil {
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
-	case jwa.RS512.String():
+	case jwa.RS512:
 		if err := verifyRS(signature, signingInput, key, sha512.New, crypto.SHA512); err != nil {
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
-	case jwa.ES256.String():
+	case jwa.ES256:
 		if err := verifyES(signature, signingInput, key, crypto.SHA256, 32); err != nil {
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
-	case jwa.ES384.String():
+	case jwa.ES384:
 		if err := verifyES(signature, signingInput, key, crypto.SHA384, 48); err != nil {
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
-	case jwa.ES512.String():
+	case jwa.ES512:
 		if err := verifyES(signature, signingInput, key, crypto.SHA512, 66); err != nil {
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
-	case jwa.PS256.String():
+	case jwa.PS256:
 		if err := verifyPS(signature, signingInput, key, sha256.New, crypto.SHA256, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthAuto}); err != nil {
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
-	case jwa.PS384.String():
+	case jwa.PS384:
 		if err := verifyPS(signature, signingInput, key, sha512.New384, crypto.SHA384, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthAuto}); err != nil {
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
-	case jwa.PS512.String():
+	case jwa.PS512:
 		if err := verifyPS(signature, signingInput, key, sha512.New, crypto.SHA512, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthAuto}); err != nil {
 			return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, err)
 		}
-	case jwa.None.String():
+	case jwa.None:
 		return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, ErrAlgorithmNoneIsNotSupported)
 	default:
 		return fmt.Errorf("alg=%s: key=%T: %w", header.Algorithm, key, ErrInvalidAlgorithm)
@@ -167,70 +167,70 @@ func verifyPS(signature []byte, signingInput string, key crypto.PublicKey, hashN
 	return nil
 }
 
-func Sign(alg, signingInput string, key crypto.PrivateKey) (signature []byte, err error) { //nolint:funlen,cyclop
+func Sign(alg jwa.Algorithm, signingInput string, key crypto.PrivateKey) (signature []byte, err error) { //nolint:funlen,cyclop
 	// "alg" (Algorithm) Header Parameter Values for JWS - JSON Web Algorithms (JWA) ref. https://datatracker.ietf.org/doc/html/rfc7518#section-3.1
 	switch alg {
-	case jwa.HS256.String():
+	case jwa.HS256:
 		signature, err = signHS(signingInput, key, sha256.New)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
-	case jwa.HS384.String():
+	case jwa.HS384:
 		signature, err = signHS(signingInput, key, sha512.New384)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
-	case jwa.HS512.String():
+	case jwa.HS512:
 		signature, err = signHS(signingInput, key, sha512.New)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
-	case jwa.RS256.String():
+	case jwa.RS256:
 		signature, err = signRS(signingInput, key, sha256.New, crypto.SHA256)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
-	case jwa.RS384.String():
+	case jwa.RS384:
 		signature, err = signRS(signingInput, key, sha512.New384, crypto.SHA384)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
-	case jwa.RS512.String():
+	case jwa.RS512:
 		signature, err = signRS(signingInput, key, sha512.New, crypto.SHA512)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
-	case jwa.ES256.String():
+	case jwa.ES256:
 		signature, err = signES(signingInput, key, crypto.SHA256, 32)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
-	case jwa.ES384.String():
+	case jwa.ES384:
 		signature, err = signES(signingInput, key, crypto.SHA384, 48)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
-	case jwa.ES512.String():
+	case jwa.ES512:
 		signature, err = signES(signingInput, key, crypto.SHA512, 66)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
-	case jwa.PS256.String():
+	case jwa.PS256:
 		signature, err = signPS(signingInput, key, crypto.SHA256)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
-	case jwa.PS384.String():
+	case jwa.PS384:
 		signature, err = signPS(signingInput, key, crypto.SHA384)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
-	case jwa.PS512.String():
+	case jwa.PS512:
 		signature, err = signPS(signingInput, key, crypto.SHA512)
 		if err != nil {
 			return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, err)
 		}
-	case jwa.None.String():
+	case jwa.None:
 		return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, ErrAlgorithmNoneIsNotSupported)
 	default:
 		return nil, fmt.Errorf("alg=%s: key=%T: %w", alg, key, ErrInvalidAlgorithm)
