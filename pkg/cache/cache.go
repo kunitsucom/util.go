@@ -18,6 +18,7 @@ type Store[T interface{}] struct {
 	defaultTTL time.Duration
 	cacheMap   map[string]cache[T]
 	cacheMutex sync.Mutex
+	ticker     *time.Ticker
 }
 
 type StoreOption[T interface{}] func(*Store[T])
@@ -27,7 +28,26 @@ func NewStore[T interface{}](opts ...StoreOption[T]) *Store[T] {
 		defaultTTL: 1 * time.Minute,
 		cacheMap:   make(map[string]cache[T]),
 		cacheMutex: sync.Mutex{},
+		ticker:     time.NewTicker(1 * time.Second),
 	}
+
+	go func() {
+		for {
+			<-c.ticker.C
+			now := time.Now()
+			keys := make([]string, 0)
+			for k, v := range c.cacheMap {
+				if v.expired(now) {
+					keys = append(keys, k)
+				}
+			}
+			c.cacheMutex.Lock()
+			for _, k := range keys {
+				c.Delete(k)
+			}
+			c.cacheMutex.Unlock()
+		}
+	}()
 
 	for _, opt := range opts {
 		opt(c)
@@ -72,4 +92,16 @@ func (c *Store[T]) getOrSet(key string, getValue func() (T, error), ttl time.Dur
 	}
 
 	return c.cacheMap[key].value, nil
+}
+
+func (c *Store[T]) Delete(key string) {
+	delete(c.cacheMap, key)
+}
+
+func (c *Store[T]) Reset(d time.Duration) {
+	c.ticker.Reset(d)
+}
+
+func (c *Store[T]) Stop() {
+	c.ticker.Stop()
 }
