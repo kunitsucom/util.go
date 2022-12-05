@@ -1,7 +1,5 @@
 package jwa
 
-//go:generate stringer -linecomment -type Algorithm
-
 // Algorithm
 //
 // 3.1.  "alg" (Algorithm) Header Parameter Values for JWS
