@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
+	"sync/atomic"
 	"syscall"
 	"testing"
 	"time"
@@ -18,16 +20,21 @@ func TestServer_Serve(t *testing.T) {
 	t.Run("success(signal)", func(t *testing.T) {
 		t.Parallel()
 		signalChannel := make(chan os.Signal, 1)
-		testChan := make(chan error, 999)
+		testMu, testNotCalled := sync.Mutex{}, uint64(0)
+		testChan := make(chan error, 1)
 		s := server.New(
 			[]server.Serve{func(errorChannel chan error) {
 				errorChannel <- <-testChan
 				log.Printf("shutdown: %s", t.Name())
 			}},
 			func(ctx context.Context) error {
-				log.Printf("starting shutdown: %s", t.Name())
-				testChan <- nil
-				time.Sleep(100 * time.Millisecond)
+				testMu.Lock()
+				defer testMu.Unlock()
+				if atomic.LoadUint64(&testNotCalled) == 0 {
+					atomic.AddUint64(&testNotCalled, 1)
+					log.Printf("starting shutdown: %s", t.Name())
+					testChan <- nil
+				}
 				return nil
 			},
 			server.WithSignalChannel(signalChannel),
@@ -45,7 +52,8 @@ func TestServer_Serve(t *testing.T) {
 	t.Run("failure(signal)", func(t *testing.T) {
 		t.Parallel()
 		signalChannel := make(chan os.Signal, 1)
-		testChan := make(chan error, 999)
+		testMu, testNotCalled := sync.Mutex{}, uint64(0)
+		testChan := make(chan error, 1)
 		s := server.New(
 			[]server.Serve{func(errorChannel chan error) {
 				<-testChan
@@ -53,9 +61,13 @@ func TestServer_Serve(t *testing.T) {
 				log.Printf("shutdown: %s", t.Name())
 			}},
 			func(ctx context.Context) error {
-				log.Printf("starting shutdown: %s", t.Name())
-				testChan <- nil
-				time.Sleep(100 * time.Millisecond)
+				testMu.Lock()
+				defer testMu.Unlock()
+				if atomic.LoadUint64(&testNotCalled) == 0 {
+					atomic.AddUint64(&testNotCalled, 1)
+					log.Printf("starting shutdown: %s", t.Name())
+					testChan <- nil
+				}
 				return http.ErrServerClosed
 			},
 			server.WithSignalChannel(signalChannel),
@@ -73,16 +85,21 @@ func TestServer_Serve(t *testing.T) {
 
 	t.Run("success(ctx)", func(t *testing.T) {
 		t.Parallel()
-		testChan := make(chan error, 999)
+		testMu, testNotCalled := sync.Mutex{}, uint64(0)
+		testChan := make(chan error, 1)
 		s := server.New(
 			[]server.Serve{func(errorChannel chan error) {
 				errorChannel <- <-testChan
 				log.Printf("shutdown: %s", t.Name())
 			}},
 			func(ctx context.Context) error {
-				log.Printf("starting shutdown: %s", t.Name())
-				testChan <- nil
-				time.Sleep(100 * time.Millisecond)
+				testMu.Lock()
+				defer testMu.Unlock()
+				if atomic.LoadUint64(&testNotCalled) == 0 {
+					atomic.AddUint64(&testNotCalled, 1)
+					log.Printf("starting shutdown: %s", t.Name())
+					testChan <- nil
+				}
 				return nil
 			},
 			server.WithShutdownContext(context.Background()),
@@ -98,15 +115,20 @@ func TestServer_Serve(t *testing.T) {
 
 	t.Run("failure(ctx)", func(t *testing.T) {
 		t.Parallel()
-		testChan := make(chan error, 999)
+		testMu, testNotCalled := sync.Mutex{}, uint64(0)
+		testChan := make(chan error, 1)
 		s := server.New(
 			[]server.Serve{func(errorChannel chan error) {
 				errorChannel <- <-testChan
 			}},
 			func(ctx context.Context) error {
-				log.Printf("starting shutdown: %s", t.Name())
-				testChan <- nil
-				time.Sleep(100 * time.Millisecond)
+				testMu.Lock()
+				defer testMu.Unlock()
+				if atomic.LoadUint64(&testNotCalled) == 0 {
+					atomic.AddUint64(&testNotCalled, 1)
+					log.Printf("starting shutdown: %s", t.Name())
+					testChan <- nil
+				}
 				return http.ErrServerClosed
 			},
 			server.WithShutdownErrorHandler(func(err error) { log.Println("shutdown error:", err) }),
