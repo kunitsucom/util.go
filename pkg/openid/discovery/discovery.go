@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/kunitsuinc/util.go/pkg/cache"
 	slicez "github.com/kunitsuinc/util.go/pkg/slices"
@@ -71,7 +72,7 @@ type Client struct {
 func New(ctx context.Context, opts ...ClientOption) *Client {
 	c := &Client{
 		client:     http.DefaultClient,
-		cacheStore: cache.NewStore[*ProviderMetadata](ctx),
+		cacheStore: cache.NewStore(ctx, cache.WithDefaultTTL[*ProviderMetadata](10*time.Minute)),
 	}
 
 	for _, opt := range opts {

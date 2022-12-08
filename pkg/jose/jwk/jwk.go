@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/kunitsuinc/util.go/pkg/cache"
 	slicez "github.com/kunitsuinc/util.go/pkg/slices"
@@ -133,7 +134,7 @@ type Client struct { //nolint:revive
 func NewClient(ctx context.Context, opts ...ClientOption) *Client {
 	d := &Client{
 		client:     http.DefaultClient,
-		cacheStore: cache.NewStore[*JWKSet](ctx),
+		cacheStore: cache.NewStore(ctx, cache.WithDefaultTTL[*JWKSet](10*time.Minute)),
 	}
 
 	for _, opt := range opts {
