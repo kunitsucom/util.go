@@ -22,8 +22,8 @@ type option struct {
 	login_hint    string   // ref: https://openid.net/specs/openid-connect-core-1_0.html#:~:text=the%20id_token_hint%20value.-,login_hint,-OPTIONAL.%20Hint%20to
 	acr_values    []string // ref: https://openid.net/specs/openid-connect-core-1_0.html#:~:text=the%20OP%27s%20discretion.-,acr_values,-OPTIONAL.%20Requested%20Authentication
 
-	code_challenge        string // ref. https://datatracker.ietf.org/doc/html/rfc7636#:~:text=following%20additional%20parameters%3A-,code_challenge,-REQUIRED.%20%20Code%20challenge
-	code_challenge_method string // ref. https://datatracker.ietf.org/doc/html/rfc7636#:~:text=REQUIRED.%20%20Code%20challenge.-,code_challenge_method,-OPTIONAL
+	code_challenge        string // ref. https://www.rfc-editor.org/rfc/rfc7636#:~:text=following%20additional%20parameters%3A-,code_challenge,-REQUIRED.%20%20Code%20challenge
+	code_challenge_method string // ref. https://www.rfc-editor.org/rfc/rfc7636#:~:text=REQUIRED.%20%20Code%20challenge.-,code_challenge_method,-OPTIONAL
 
 	access_type string // ref. https://developers.google.com/identity/protocols/oauth2/web-server#request-parameter-access_type
 }
@@ -99,10 +99,10 @@ func WithACRValues(acr_values []string) Option { //nolint:revive,stylecheck
 //
 //   - code_challenge:
 //     REQUIRED.  Code challenge.
-//     ref. https://datatracker.ietf.org/doc/html/rfc7636#:~:text=following%20additional%20parameters%3A-,code_challenge,-REQUIRED.%20%20Code%20challenge
+//     ref. https://www.rfc-editor.org/rfc/rfc7636#:~:text=following%20additional%20parameters%3A-,code_challenge,-REQUIRED.%20%20Code%20challenge
 //   - code_challenge_method:
 //     OPTIONAL, defaults to "plain" if not present in the request. Code verifier transformation method is "S256" or "plain".
-//     ref. https://datatracker.ietf.org/doc/html/rfc7636#:~:text=REQUIRED.%20%20Code%20challenge.-,code_challenge_method,-OPTIONAL
+//     ref. https://www.rfc-editor.org/rfc/rfc7636#:~:text=REQUIRED.%20%20Code%20challenge.-,code_challenge_method,-OPTIONAL
 func WithCodeChallengeForPKCE(code_verifier pkce.CodeVerifier, code_challenge_method pkce.CodeChallengeMethod) Option { //nolint:revive,stylecheck
 	return func(o *option) {
 		o.code_challenge = code_verifier.Encode(code_challenge_method)
