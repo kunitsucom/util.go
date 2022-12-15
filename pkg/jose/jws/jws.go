@@ -51,7 +51,7 @@ func VerifySignature(token string, key crypto.PublicKey) error { //nolint:funlen
 		return fmt.Errorf("base64.RawURLEncoding.DecodeString: signature: %w", err)
 	}
 
-	// "alg" (Algorithm) Header Parameter Values for JWS - JSON Web Algorithms (JWA) ref. https://datatracker.ietf.org/doc/html/rfc7518#section-3.1
+	// "alg" (Algorithm) Header Parameter Values for JWS - JSON Web Algorithms (JWA) ref. https://www.rfc-editor.org/rfc/rfc7518#section-3.1
 	switch header.Algorithm {
 	case jwa.HS256:
 		if err := verifyHS(signature, signingInput, key, sha256.New); err != nil {
@@ -168,7 +168,7 @@ func verifyPS(signature []byte, signingInput string, key crypto.PublicKey, hashN
 }
 
 func Sign(alg jwa.Algorithm, signingInput string, key crypto.PrivateKey) (signature []byte, err error) { //nolint:funlen,cyclop
-	// "alg" (Algorithm) Header Parameter Values for JWS - JSON Web Algorithms (JWA) ref. https://datatracker.ietf.org/doc/html/rfc7518#section-3.1
+	// "alg" (Algorithm) Header Parameter Values for JWS - JSON Web Algorithms (JWA) ref. https://www.rfc-editor.org/rfc/rfc7518#section-3.1
 	switch alg {
 	case jwa.HS256:
 		signature, err = signHS(signingInput, key, sha256.New)

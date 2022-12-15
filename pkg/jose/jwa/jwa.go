@@ -43,7 +43,7 @@ package jwa
 //	specification with the equivalent identifiers used by other standards
 //	and software packages.
 //
-// - ref. https://datatracker.ietf.org/doc/html/rfc7518#section-3.1
+// - ref. https://www.rfc-editor.org/rfc/rfc7518#section-3.1
 type Algorithm = string
 
 const (

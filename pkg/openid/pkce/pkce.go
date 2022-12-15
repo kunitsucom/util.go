@@ -23,7 +23,7 @@ const (
 	// "S256" for some technical reason and know via out-of-band
 	// configuration that the server supports "plain".
 	//
-	// ref. https://datatracker.ietf.org/doc/html/rfc7636#section-4.2
+	// ref. https://www.rfc-editor.org/rfc/rfc7636#section-4.2
 	CodeChallengeMethodPlainShouldNotBeUsed CodeChallengeMethod = "plain"
 	// CodeChallengeMethodS256
 	//
@@ -32,7 +32,7 @@ const (
 	//
 	//	code_challenge = BASE64URL-ENCODE(SHA256(ASCII(code_verifier)))
 	//
-	// ref. https://datatracker.ietf.org/doc/html/rfc7636#section-4.2
+	// ref. https://www.rfc-editor.org/rfc/rfc7636#section-4.2
 	CodeChallengeMethodS256 CodeChallengeMethod = "S256"
 )
 
@@ -40,7 +40,7 @@ const (
 //
 //	unreserved  = ALPHA / DIGIT / "-" / "." / "_" / "~".
 //
-// ref. https://datatracker.ietf.org/doc/html/rfc3986#section-2.3
+// ref. https://www.rfc-editor.org/rfc/rfc3986#section-2.3
 const UnreservedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
 
 var ErrCodeVerifierLength = errors.New("pkce: code verifier length must be between 43 and 128")
@@ -50,7 +50,7 @@ func CreateCodeVerifier(length int) (CodeVerifier, error) {
 }
 
 func createCodeVerifier(randReader io.Reader, length int) (CodeVerifier, error) {
-	// https://datatracker.ietf.org/doc/html/rfc7636#section-4.1
+	// https://www.rfc-editor.org/rfc/rfc7636#section-4.1
 	// code-verifier = 43*128unreserved
 	if length < 43 || 128 < length {
 		return "", ErrCodeVerifierLength
