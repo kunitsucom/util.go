@@ -188,7 +188,7 @@ func TestHeader_Encode(t *testing.T) {
 
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
-		actual, err := Encode(testHeader)
+		actual, err := testHeader.Encode()
 		if err != nil {
 			t.Fatalf("❌: err != nil: %v", err)
 		}
@@ -204,7 +204,7 @@ func TestHeader_Encode(t *testing.T) {
 				"invalid": func() {},
 			},
 		}
-		_, err := Encode(h)
+		_, err := h.Encode()
 		if err == nil {
 			t.Fatalf("❌: err == nil: %v", err)
 		}
@@ -219,7 +219,8 @@ func TestHeader_Decode(t *testing.T) {
 
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
-		actual, err := Decode(testHeaderEncoded)
+		actual := new(Header)
+		err := actual.Decode(testHeaderEncoded)
 		if err != nil {
 			t.Fatalf("❌: err != nil: %v", err)
 		}
@@ -230,10 +231,7 @@ func TestHeader_Decode(t *testing.T) {
 
 	t.Run("failure(base64.RawURLEncoding.DecodeString)", func(t *testing.T) {
 		t.Parallel()
-		_, err := Decode("inv@lid")
-		if err == nil {
-			t.Fatalf("❌: err == nil: %v", err)
-		}
+		err := new(Header).Decode("inv@lid")
 		if expect, actual := "illegal base64 data at input byte 3", err.Error(); !strings.Contains(actual, expect) {
 			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
 		}
@@ -241,10 +239,7 @@ func TestHeader_Decode(t *testing.T) {
 
 	t.Run("failure(json.Unmarshal)", func(t *testing.T) {
 		t.Parallel()
-		_, err := Decode("aW52QGxpZA") // invalid (base64-encoded)
-		if err == nil {
-			t.Fatalf("❌: err == nil: %v", err)
-		}
+		err := new(Header).Decode("aW52QGxpZA") // invalid (base64-encoded)
 		if expect, actual := "invalid character 'i' looking for beginning of value", err.Error(); !strings.Contains(actual, expect) {
 			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
 		}

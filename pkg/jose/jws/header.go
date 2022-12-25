@@ -200,10 +200,6 @@ func (h *Header) Encode() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-func Encode(h *Header) (string, error) {
-	return h.Encode()
-}
-
 func (h *Header) Decode(header string) error {
 	decoded, err := base64.RawURLEncoding.DecodeString(header)
 	if err != nil {
@@ -215,9 +211,4 @@ func (h *Header) Decode(header string) error {
 	}
 
 	return nil
-}
-
-func Decode(header string) (*Header, error) {
-	h := new(Header)
-	return h, h.Decode(header)
 }

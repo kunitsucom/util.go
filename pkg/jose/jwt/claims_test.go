@@ -42,14 +42,14 @@ func TestClaims_UnmarshalJSON(t *testing.T) {
 
 		claims := new(Claims)
 		if err := json.Unmarshal([]byte(testClaimsString), claims); err != nil {
-			t.Errorf("json.Unmarshal: err != nil: %v", err)
+			t.Fatalf("❌: json.Unmarshal: err != nil: %v", err)
 		}
 		v, ok := claims.PrivateClaims[testPrivateClaim1Key]
 		if !ok {
-			t.Fatalf("header.PrivateHeaderParameters[testPrivatePrivateHeaderParameter1Key]: want(%T) != got(%T)", v, claims.PrivateClaims[testPrivateClaim1Key])
+			t.Fatalf("❌: header.PrivateHeaderParameters[testPrivatePrivateHeaderParameter1Key]: want(%T) != got(%T)", v, claims.PrivateClaims[testPrivateClaim1Key])
 		}
 		if actual, expect := v, testPrivateClaim1Value; actual != expect {
-			t.Errorf("actual != expect: %v != %v", actual, expect)
+			t.Fatalf("❌: actual != expect: %v != %v", actual, expect)
 		}
 		t.Logf("✅: claims: %#v", claims)
 	})
@@ -62,24 +62,25 @@ func TestClaims_MarshalJSON(t *testing.T) {
 		t.Parallel()
 		b, err := json.Marshal(testClaims)
 		if err != nil {
-			t.Fatalf("json.Marshal: %v", err)
+			t.Fatalf("❌: json.Marshal: %v", err)
 		}
 		if actual, expect := string(b), testClaimsString; actual != expect {
-			t.Fatalf("actual != expect: %v != %v", actual, expect)
+			t.Fatalf("❌: actual != expect: %v != %v", actual, expect)
 		}
 		t.Logf("✅: claims: %s", b)
 	})
 
 	t.Run("success(len(PrivateClaims)==0)", func(t *testing.T) {
 		t.Parallel()
-		expect := []byte(`{"exp":1671745431}`)
-		h := NewClaims(WithExpirationTime(time.Date(2022, 12, 23, 6, 43, 51, 0, time.FixedZone("Asia/Tokyo", 9*60*60))))
+		expect := []byte(`{"exp":1671745371,"iat":1671745311}`)
+		exp := time.Date(2022, 12, 23, 6, 42, 51, 0, time.FixedZone("Asia/Tokyo", 9*60*60))
+		h := NewClaims(WithIssuedAt(exp.Add(-1*time.Minute)), WithExpirationTime(exp))
 		actual, err := json.Marshal(h)
 		if err != nil {
-			t.Fatalf("err != nil: %v", err)
+			t.Fatalf("❌: err != nil: %v", err)
 		}
 		if !bytes.Equal(actual, expect) {
-			t.Fatalf("expect != actual: %s != %s", actual, expect)
+			t.Fatalf("❌: expect != actual: %s != %s", actual, expect)
 		}
 	})
 }
@@ -95,7 +96,7 @@ func TestClaims_marshalJSON(t *testing.T) {
 			bytes.HasPrefix,
 		)
 		if !errors.Is(err, testz.ErrTestError) {
-			t.Fatalf("err != testz.ErrTestError: %v", err)
+			t.Fatalf("❌: err != testz.ErrTestError: %v", err)
 		}
 	})
 
@@ -112,10 +113,10 @@ func TestClaims_marshalJSON(t *testing.T) {
 			bytes.HasPrefix,
 		)
 		if err == nil {
-			t.Fatalf("err == nil: %v", err)
+			t.Fatalf("❌: err == nil: %v", err)
 		}
 		if expect, actual := "invalid private claims", err.Error(); !strings.Contains(actual, expect) {
-			t.Fatalf("expect != actual: %s != %s", expect, actual)
+			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
 		}
 	})
 
@@ -127,7 +128,7 @@ func TestClaims_marshalJSON(t *testing.T) {
 			bytes.HasPrefix,
 		)
 		if !errors.Is(err, ErrInvalidJSON) {
-			t.Fatalf("err != ErrInvalidJSON: %v", err)
+			t.Fatalf("❌: err != ErrInvalidJSON: %v", err)
 		}
 	})
 
@@ -139,7 +140,7 @@ func TestClaims_marshalJSON(t *testing.T) {
 			func(s, suffix []byte) bool { return false },
 		)
 		if !errors.Is(err, ErrInvalidJSON) {
-			t.Fatalf("err != ErrInvalidJSON: %v", err)
+			t.Fatalf("❌: err != ErrInvalidJSON: %v", err)
 		}
 	})
 }
@@ -161,10 +162,10 @@ func TestClaims_Encode(t *testing.T) {
 		)
 		actual, err := h.Encode()
 		if err != nil {
-			t.Fatalf("err != nil: %v", err)
+			t.Fatalf("❌: err != nil: %v", err)
 		}
 		if expect := testClaimsEncoded; expect != actual {
-			t.Fatalf("expect != actual: %s != %s", expect, actual)
+			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
 		}
 	})
 
@@ -177,10 +178,38 @@ func TestClaims_Encode(t *testing.T) {
 		}
 		_, err := h.Encode()
 		if err == nil {
-			t.Fatalf("err == nil: %v", err)
+			t.Fatalf("❌: err == nil: %v", err)
 		}
 		if expect, actual := "invalid private claims", err.Error(); !strings.Contains(actual, expect) {
-			t.Fatalf("expect != actual: %s != %s", expect, actual)
+			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
+		}
+	})
+}
+
+func TestClaims_Decode(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success()", func(t *testing.T) {
+		t.Parallel()
+		actual := new(Claims)
+		if err := actual.Decode(testClaimsEncoded); err != nil {
+			t.Fatalf("❌: err != nil: %v", err)
+		}
+	})
+
+	t.Run("failure(base64.RawURLEncoding.DecodeString)", func(t *testing.T) {
+		t.Parallel()
+		err := new(Claims).Decode("inv@lid")
+		if expect, actual := "illegal base64 data at input byte 3", err.Error(); !strings.Contains(actual, expect) {
+			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
+		}
+	})
+
+	t.Run("failure(json.Unmarshal)", func(t *testing.T) {
+		t.Parallel()
+		err := new(Claims).Decode("aW52QGxpZA") // invalid (base64-encoded)
+		if expect, actual := "invalid character 'i' looking for beginning of value", err.Error(); !strings.Contains(actual, expect) {
+			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
 		}
 	})
 }

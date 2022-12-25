@@ -174,10 +174,6 @@ func (c *Claims) Encode() (encoded string, err error) {
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
 
-func Encode(c *Claims) (encoded string, err error) {
-	return c.Encode()
-}
-
 func (c *Claims) Decode(encoded string) error {
 	decoded, err := base64.RawURLEncoding.DecodeString(encoded)
 	if err != nil {
@@ -189,9 +185,4 @@ func (c *Claims) Decode(encoded string) error {
 	}
 
 	return nil
-}
-
-func Decode(encoded string) (*Claims, error) {
-	c := new(Claims)
-	return c, c.Decode(encoded)
 }
