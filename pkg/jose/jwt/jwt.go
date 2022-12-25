@@ -89,6 +89,7 @@ func WithPrivateClaim(name string, value any) ClaimsOption {
 
 func NewClaims(opts ...ClaimsOption) *Claims {
 	c := &Claims{
+		IssuedAt:      time.Now().Unix(),
 		PrivateClaims: make(PrivateClaims),
 	}
 
@@ -165,10 +166,32 @@ func (c *Claims) marshalJSON(
 	return append(b, privateClaims[1:]...), nil
 }
 
-func (c *Claims) Encode() (string, error) {
+func (c *Claims) Encode() (encoded string, err error) {
 	b, err := json.Marshal(c)
 	if err != nil {
 		return "", fmt.Errorf("json.Marshal: %w", err)
 	}
 	return base64.RawURLEncoding.EncodeToString(b), nil
+}
+
+func Encode(c *Claims) (encoded string, err error) {
+	return c.Encode()
+}
+
+func (c *Claims) Decode(encoded string) error {
+	decoded, err := base64.RawURLEncoding.DecodeString(encoded)
+	if err != nil {
+		return fmt.Errorf("base64.RawURLEncoding.DecodeString: %w", err)
+	}
+
+	if err := json.Unmarshal(decoded, c); err != nil {
+		return fmt.Errorf("json.Unmarshal: %w", err)
+	}
+
+	return nil
+}
+
+func Decode(encoded string) (*Claims, error) {
+	c := new(Claims)
+	return c, c.Decode(encoded)
 }
