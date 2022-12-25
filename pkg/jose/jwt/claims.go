@@ -142,7 +142,7 @@ func (c *Claims) marshalJSON(
 
 	b, err := json_Marshal(&_claims)
 	if err != nil {
-		return nil, fmt.Errorf("invalid header: %+v: %w", _claims, err)
+		return nil, fmt.Errorf("invalid claims: %+v: %w", _claims, err)
 	}
 
 	if len(c.PrivateClaims) == 0 {

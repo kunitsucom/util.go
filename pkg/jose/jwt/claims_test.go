@@ -51,7 +51,7 @@ func TestClaims_UnmarshalJSON(t *testing.T) {
 		if actual, expect := v, testPrivateClaim1Value; actual != expect {
 			t.Errorf("actual != expect: %v != %v", actual, expect)
 		}
-		t.Logf("claims: %#v", claims)
+		t.Logf("✅: claims: %#v", claims)
 	})
 }
 
@@ -67,7 +67,7 @@ func TestClaims_MarshalJSON(t *testing.T) {
 		if actual, expect := string(b), testClaimsString; actual != expect {
 			t.Fatalf("actual != expect: %v != %v", actual, expect)
 		}
-		t.Logf("header: %s", b)
+		t.Logf("✅: claims: %s", b)
 	})
 
 	t.Run("success(len(PrivateClaims)==0)", func(t *testing.T) {
