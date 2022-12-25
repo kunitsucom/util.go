@@ -9,6 +9,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -68,16 +69,16 @@ func TestHeader_UnmarshalJSON(t *testing.T) {
 
 		header := new(Header)
 		if err := json.Unmarshal([]byte(testHeaderString), header); err != nil {
-			t.Fatalf("json.Unmarshal: err != nil: %v", err)
+			t.Fatalf("❌: json.Unmarshal: err != nil: %v", err)
 		}
 		v, ok := header.PrivateHeaderParameters[testPrivatePrivateHeaderParameter1Key]
 		if !ok {
-			t.Fatalf("header.PrivateHeaderParameters[testPrivatePrivateHeaderParameter1Key]: want(%T) != got(%T)", v, header.PrivateHeaderParameters[testPrivatePrivateHeaderParameter1Key])
+			t.Fatalf("❌: header.PrivateHeaderParameters[testPrivatePrivateHeaderParameter1Key]: want(%T) != got(%T)", v, header.PrivateHeaderParameters[testPrivatePrivateHeaderParameter1Key])
 		}
 		if actual, expect := v, testPrivateHeaderParameter1Value; actual != expect {
-			t.Fatalf("actual != expect: %v != %v", actual, expect)
+			t.Fatalf("❌: actual != expect: %v != %v", actual, expect)
 		}
-		t.Logf("header: %#v", header)
+		t.Logf("✅: header: %#v", header)
 	})
 }
 
@@ -102,10 +103,10 @@ func TestHeader_MarshalJSON(t *testing.T) {
 		)
 		actual, err := json.Marshal(h)
 		if err != nil {
-			t.Fatalf("err != nil: %v", err)
+			t.Fatalf("❌: err != nil: %v", err)
 		}
 		if expect := []byte(testHeaderString); !bytes.Equal(actual, expect) {
-			t.Fatalf("expect != actual: %s != %s", actual, expect)
+			t.Fatalf("❌: expect != actual: %s != %s", actual, expect)
 		}
 	})
 
@@ -113,12 +114,12 @@ func TestHeader_MarshalJSON(t *testing.T) {
 		t.Parallel()
 		b, err := json.Marshal(NewHeader(jwa.HS256))
 		if err != nil {
-			t.Fatalf("json.Marshal: %v", err)
+			t.Fatalf("❌: json.Marshal: %v", err)
 		}
 		if expect, actual := `{"alg":"HS256"}`, string(b); expect != actual {
-			t.Fatalf("expect != actual: %v != %v", expect, actual)
+			t.Fatalf("❌: expect != actual: %v != %v", expect, actual)
 		}
-		t.Logf("header: %s", b)
+		t.Logf("✅: header: %s", b)
 	})
 }
 
@@ -133,7 +134,7 @@ func TestHeader_marshalJSON(t *testing.T) {
 			bytes.HasPrefix,
 		)
 		if !errors.Is(err, testz.ErrTestError) {
-			t.Fatalf("err != testz.ErrTestError: %v", err)
+			t.Fatalf("❌: err != testz.ErrTestError: %v", err)
 		}
 	})
 
@@ -150,10 +151,10 @@ func TestHeader_marshalJSON(t *testing.T) {
 			bytes.HasPrefix,
 		)
 		if err == nil {
-			t.Fatalf("err == nil: %v", err)
+			t.Fatalf("❌: err == nil: %v", err)
 		}
 		if expect, actual := "invalid private header parameters", err.Error(); !strings.Contains(actual, expect) {
-			t.Fatalf("expect != actual: %s != %s", expect, actual)
+			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
 		}
 	})
 
@@ -165,7 +166,7 @@ func TestHeader_marshalJSON(t *testing.T) {
 			bytes.HasPrefix,
 		)
 		if !errors.Is(err, ErrInvalidJSON) {
-			t.Fatalf("err != ErrInvalidJSON: %v", err)
+			t.Fatalf("❌: err != ErrInvalidJSON: %v", err)
 		}
 	})
 
@@ -177,7 +178,7 @@ func TestHeader_marshalJSON(t *testing.T) {
 			func(s, suffix []byte) bool { return false },
 		)
 		if !errors.Is(err, ErrInvalidJSON) {
-			t.Fatalf("err != ErrInvalidJSON: %v", err)
+			t.Fatalf("❌: err != ErrInvalidJSON: %v", err)
 		}
 	})
 }
@@ -189,14 +190,14 @@ func TestHeader_Encode(t *testing.T) {
 		t.Parallel()
 		actual, err := testHeader.Encode()
 		if err != nil {
-			t.Fatalf("err != nil: %v", err)
+			t.Fatalf("❌: err != nil: %v", err)
 		}
 		if expect := testHeaderEncoded; expect != actual {
-			t.Fatalf("expect != actual: %s != %s", "", actual)
+			t.Fatalf("❌: expect != actual: %s != %s", "", actual)
 		}
 	})
 
-	t.Run("failure()", func(t *testing.T) {
+	t.Run("failure(json.Marshal)", func(t *testing.T) {
 		t.Parallel()
 		h := &Header{
 			PrivateHeaderParameters: map[string]any{
@@ -205,10 +206,42 @@ func TestHeader_Encode(t *testing.T) {
 		}
 		_, err := h.Encode()
 		if err == nil {
-			t.Fatalf("err == nil: %v", err)
+			t.Fatalf("❌: err == nil: %v", err)
 		}
 		if expect, actual := "invalid private header parameters", err.Error(); !strings.Contains(actual, expect) {
-			t.Fatalf("expect != actual: %s != %s", expect, actual)
+			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
+		}
+	})
+}
+
+func TestHeader_Decode(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success()", func(t *testing.T) {
+		t.Parallel()
+		actual := new(Header)
+		err := actual.Decode(testHeaderEncoded)
+		if err != nil {
+			t.Fatalf("❌: err != nil: %v", err)
+		}
+		if expect := testHeader; !reflect.DeepEqual(expect, actual) {
+			t.Fatalf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure(base64.RawURLEncoding.DecodeString)", func(t *testing.T) {
+		t.Parallel()
+		err := new(Header).Decode("inv@lid")
+		if expect, actual := "illegal base64 data at input byte 3", err.Error(); !strings.Contains(actual, expect) {
+			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
+		}
+	})
+
+	t.Run("failure(json.Unmarshal)", func(t *testing.T) {
+		t.Parallel()
+		err := new(Header).Decode("aW52QGxpZA") // invalid (base64-encoded)
+		if expect, actual := "invalid character 'i' looking for beginning of value", err.Error(); !strings.Contains(actual, expect) {
+			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
 		}
 	})
 }
