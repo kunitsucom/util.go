@@ -15,7 +15,7 @@ import (
 	"github.com/kunitsuinc/util.go/pkg/jose/jwa"
 )
 
-func Sign(alg jwa.Algorithm, signingInput string, key crypto.PrivateKey) (signature string, err error) { //nolint:funlen,cyclop
+func Sign(alg jwa.Algorithm, signingInput string, key any) (signature string, err error) { //nolint:funlen,cyclop
 	// "alg" (Algorithm) Header Parameter Values for JWS - JSON Web Algorithms (JWA) ref. https://www.rfc-editor.org/rfc/rfc7518#section-3.1
 	switch alg {
 	case jwa.HS256:
@@ -87,7 +87,7 @@ func Sign(alg jwa.Algorithm, signingInput string, key crypto.PrivateKey) (signat
 	return signature, nil
 }
 
-func signHS(signingInput string, key crypto.PrivateKey, hashNewFunc func() hash.Hash) (signature string, err error) {
+func signHS(signingInput string, key any, hashNewFunc func() hash.Hash) (signature string, err error) {
 	keyBytes, ok := key.([]byte)
 	if !ok {
 		return "", ErrInvalidKeyReceived

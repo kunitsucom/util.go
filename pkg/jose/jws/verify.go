@@ -26,7 +26,7 @@ var (
 	ErrInvalidAlgorithm            = errors.New(`jws: invalid algorithm`)
 )
 
-func VerifySignature(token string, key crypto.PublicKey) error { //nolint:funlen,cyclop
+func VerifySignature(token string, key any) error { //nolint:funlen,cyclop
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
 		return ErrInvalidTokenReceived
@@ -107,7 +107,7 @@ func VerifySignature(token string, key crypto.PublicKey) error { //nolint:funlen
 	return nil
 }
 
-func verifyHS(signature []byte, signingInput string, key crypto.PublicKey, hashNewFunc func() hash.Hash) error {
+func verifyHS(signature []byte, signingInput string, key any, hashNewFunc func() hash.Hash) error {
 	keyBytes, ok := key.([]byte)
 	if !ok {
 		return ErrInvalidKeyReceived
