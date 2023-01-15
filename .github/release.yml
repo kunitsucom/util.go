@@ -1,37 +1,38 @@
 # https://docs.github.com/ja/repositories/releasing-projects-on-github/automatically-generated-release-notes
 changelog:
   categories:
-    - title: "BREAKING CHANGES"
+    - title: "💥 BREAKING CHANGES"
       labels:
         - BREAKING CHANGE
-    - title: "Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)"
+    - title: "⬆️ Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)"
       labels:
         - build
         - dependencies
-    - title: "Changes to our CI configuration files and scripts (examples: CircleCi, SauceLabs)"
+    - title: "👷 Changes to our CI configuration files and scripts (examples: CircleCi, SauceLabs)"
       labels:
         - ci
-    - title: "Documentation only changes"
+    - title: "📝 Documentation only changes"
       labels:
         - docs
-    - title: "A new feature"
+    - title: "✨ A new feature"
       labels:
         - feat
-    - title: "A bug fix"
+    - title: "🐛 A bug fix"
       labels:
         - fix
-    - title: "A code change that improves performance"
+    - title: "⚡️ A code change that improves performance"
       labels:
         - perf
-    - title: "A code change that neither fixes a bug nor adds a feature"
+    - title: "♻️ A code change that neither fixes a bug nor adds a feature"
       labels:
         - refactor
-    - title: "Adding missing tests or correcting existing tests"
+    - title: "✅ Adding missing tests or correcting existing tests"
       labels:
         - test
-    - title: "Changes to the build process or auxiliary tools and libraries such as documentation generation"
+    - title: "🚨 Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)"
+      labels:
+        - style
+    - title: "🧑‍💻 Changes to the build process or auxiliary tools and libraries such as documentation generation"
       labels:
         - chore
-    - title: "Other Changes"
-      labels:
         - "*"
