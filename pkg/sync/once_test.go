@@ -21,11 +21,11 @@ func TestOnce_Do(t *testing.T) {
 				actual++
 				return nil
 			}); err != nil {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("❌: err != nil: %v", err)
 			}
 		}
 		if actual != expect1 {
-			t.Errorf("actual != expect: %v != %v", actual, expect1)
+			t.Errorf("❌: actual != expect: %v != %v", actual, expect1)
 		}
 
 		once.Reset()
@@ -35,11 +35,11 @@ func TestOnce_Do(t *testing.T) {
 				actual++
 				return nil
 			}); err != nil {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("❌: err != nil: %v", err)
 			}
 		}
 		if actual != expect2 {
-			t.Errorf("actual != expect: %v != %v", actual, expect1)
+			t.Errorf("❌: actual != expect: %v != %v", actual, expect1)
 		}
 	})
 
@@ -54,11 +54,11 @@ func TestOnce_Do(t *testing.T) {
 				actual = i
 				return io.EOF // any error
 			}); err == nil {
-				t.Errorf("err == nil")
+				t.Errorf("❌: err == nil")
 			}
 		}
 		if actual != expect {
-			t.Errorf("actual != expect: %v != %v", actual, expect)
+			t.Errorf("❌: actual != expect: %v != %v", actual, expect)
 		}
 	})
 }

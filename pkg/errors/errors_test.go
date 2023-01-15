@@ -13,7 +13,7 @@ func TestContains(t *testing.T) {
 		t.Parallel()
 		err := (error)(nil)
 		if errorz.Contains(err, "testz: test error") {
-			t.Errorf("err not contain %s: %v", "testz: test error", err)
+			t.Errorf("❌: err not contain %s: %v", "testz: test error", err)
 		}
 	})
 
@@ -21,7 +21,7 @@ func TestContains(t *testing.T) {
 		t.Parallel()
 		err := testz.ErrTestError
 		if !errorz.Contains(err, "testz: test error") {
-			t.Errorf("err not contain `%s`: %v", "testz: test error", err)
+			t.Errorf("❌: err not contain `%s`: %v", "testz: test error", err)
 		}
 	})
 }

@@ -31,7 +31,7 @@ func signRS(key crypto.PrivateKey, signingInput string, hashNewFunc func() hash.
 	h.Write([]byte(signingInput))
 	rawSignature, err := rsa.SignPKCS1v15(rand.Reader, priv, cryptoHash, h.Sum(nil))
 	if err != nil {
-		return "", fmt.Errorf("rsa.SignPKCS1v15: %w", err)
+		return "", fmt.Errorf("❌: rsa.SignPKCS1v15: %w", err)
 	}
 	return base64.RawURLEncoding.EncodeToString(rawSignature), nil
 }
@@ -46,7 +46,7 @@ func signES(key crypto.PrivateKey, signingInput string, cryptoHash crypto.Hash, 
 	h.Write([]byte(signingInput))
 	r, s, err := ecdsa.Sign(rand.Reader, priv, h.Sum(nil))
 	if err != nil {
-		return "", fmt.Errorf("ecdsa.Sign: %w", err)
+		return "", fmt.Errorf("❌: ecdsa.Sign: %w", err)
 	}
 
 	rBytes := r.Bytes()
@@ -74,7 +74,7 @@ func signPS(key crypto.PrivateKey, signingInput string, cryptoHash crypto.Hash) 
 	h.Write([]byte(signingInput))
 	rawSignature, err := rsa.SignPSS(rand.Reader, priv, cryptoHash, h.Sum(nil), &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthEqualsHash})
 	if err != nil {
-		return "", fmt.Errorf("rsa.SignPSS: %w", err)
+		return "", fmt.Errorf("❌: rsa.SignPSS: %w", err)
 	}
 	return base64.RawURLEncoding.EncodeToString(rawSignature), nil
 }

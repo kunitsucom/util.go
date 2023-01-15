@@ -199,7 +199,7 @@ func DeleteJWSAlgorithm(alg string) {
 func (a _HS256) Sign(key any, signingInput string) (signatureEncoded string, err error) {
 	signatureEncoded, err = signHS(key, signingInput, sha256.New)
 	if err != nil {
-		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return signatureEncoded, nil
 }
@@ -207,7 +207,7 @@ func (a _HS256) Sign(key any, signingInput string) (signatureEncoded string, err
 // Verify for HS256.
 func (a _HS256) Verify(key any, signingInput string, signatureEncoded string) (err error) {
 	if err := verifyHS(key, signingInput, signatureEncoded, sha256.New); err != nil {
-		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
 }
@@ -216,7 +216,7 @@ func (a _HS256) Verify(key any, signingInput string, signatureEncoded string) (e
 func (a _HS384) Sign(key any, signingInput string) (signatureEncoded string, err error) {
 	signatureEncoded, err = signHS(key, signingInput, sha512.New384)
 	if err != nil {
-		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return signatureEncoded, nil
 }
@@ -224,7 +224,7 @@ func (a _HS384) Sign(key any, signingInput string) (signatureEncoded string, err
 // Verify for HS384.
 func (a _HS384) Verify(key any, signingInput string, signatureEncoded string) (err error) {
 	if err := verifyHS(key, signingInput, signatureEncoded, sha512.New384); err != nil {
-		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
 }
@@ -233,7 +233,7 @@ func (a _HS384) Verify(key any, signingInput string, signatureEncoded string) (e
 func (a _HS512) Sign(key any, signingInput string) (signatureEncoded string, err error) {
 	signatureEncoded, err = signHS(key, signingInput, sha512.New)
 	if err != nil {
-		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return signatureEncoded, nil
 }
@@ -241,7 +241,7 @@ func (a _HS512) Sign(key any, signingInput string) (signatureEncoded string, err
 // Verify for HS512.
 func (a _HS512) Verify(key any, signingInput string, signatureEncoded string) (err error) {
 	if err := verifyHS(key, signingInput, signatureEncoded, sha512.New); err != nil {
-		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
 }
@@ -254,7 +254,7 @@ func (a _HS512) Verify(key any, signingInput string, signatureEncoded string) (e
 func (a _RS256) Sign(key any, signingInput string) (signatureEncoded string, err error) {
 	signatureEncoded, err = signRS(key, signingInput, sha256.New, crypto.SHA256)
 	if err != nil {
-		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return signatureEncoded, nil
 }
@@ -262,7 +262,7 @@ func (a _RS256) Sign(key any, signingInput string) (signatureEncoded string, err
 // Verify for RS256.
 func (a _RS256) Verify(key any, signingInput string, signatureEncoded string) (err error) {
 	if err := verifyRS(key, signingInput, signatureEncoded, sha256.New, crypto.SHA256); err != nil {
-		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
 }
@@ -271,7 +271,7 @@ func (a _RS256) Verify(key any, signingInput string, signatureEncoded string) (e
 func (a _RS384) Sign(key any, signingInput string) (signatureEncoded string, err error) {
 	signatureEncoded, err = signRS(key, signingInput, sha512.New384, crypto.SHA384)
 	if err != nil {
-		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return signatureEncoded, nil
 }
@@ -279,7 +279,7 @@ func (a _RS384) Sign(key any, signingInput string) (signatureEncoded string, err
 // Verify for RS384.
 func (a _RS384) Verify(key any, signingInput string, signatureEncoded string) (err error) {
 	if err := verifyRS(key, signingInput, signatureEncoded, sha512.New384, crypto.SHA384); err != nil {
-		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
 }
@@ -288,7 +288,7 @@ func (a _RS384) Verify(key any, signingInput string, signatureEncoded string) (e
 func (a _RS512) Sign(key any, signingInput string) (signatureEncoded string, err error) {
 	signatureEncoded, err = signRS(key, signingInput, sha512.New, crypto.SHA512)
 	if err != nil {
-		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return signatureEncoded, nil
 }
@@ -296,7 +296,7 @@ func (a _RS512) Sign(key any, signingInput string) (signatureEncoded string, err
 // Verify for RS512.
 func (a _RS512) Verify(key any, signingInput string, signatureEncoded string) (err error) {
 	if err := verifyRS(key, signingInput, signatureEncoded, sha512.New, crypto.SHA512); err != nil {
-		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
 }
@@ -309,7 +309,7 @@ func (a _RS512) Verify(key any, signingInput string, signatureEncoded string) (e
 func (a _ES256) Sign(key any, signingInput string) (signatureEncoded string, err error) {
 	signatureEncoded, err = signES(key, signingInput, crypto.SHA256, 32)
 	if err != nil {
-		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return signatureEncoded, nil
 }
@@ -317,7 +317,7 @@ func (a _ES256) Sign(key any, signingInput string) (signatureEncoded string, err
 // Verify for ES256.
 func (a _ES256) Verify(key any, signingInput string, signatureEncoded string) (err error) {
 	if err := verifyES(key, signingInput, signatureEncoded, crypto.SHA256, 32); err != nil {
-		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
 }
@@ -326,7 +326,7 @@ func (a _ES256) Verify(key any, signingInput string, signatureEncoded string) (e
 func (a _ES384) Sign(key any, signingInput string) (signatureEncoded string, err error) {
 	signatureEncoded, err = signES(key, signingInput, crypto.SHA384, 48)
 	if err != nil {
-		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return signatureEncoded, nil
 }
@@ -334,7 +334,7 @@ func (a _ES384) Sign(key any, signingInput string) (signatureEncoded string, err
 // Verify for ES384.
 func (a _ES384) Verify(key any, signingInput string, signatureEncoded string) (err error) {
 	if err := verifyES(key, signingInput, signatureEncoded, crypto.SHA384, 48); err != nil {
-		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
 }
@@ -343,7 +343,7 @@ func (a _ES384) Verify(key any, signingInput string, signatureEncoded string) (e
 func (a _ES512) Sign(key any, signingInput string) (signatureEncoded string, err error) {
 	signatureEncoded, err = signES(key, signingInput, crypto.SHA512, 66)
 	if err != nil {
-		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return signatureEncoded, nil
 }
@@ -351,7 +351,7 @@ func (a _ES512) Sign(key any, signingInput string) (signatureEncoded string, err
 // Verify for ES512.
 func (a _ES512) Verify(key any, signingInput string, signatureEncoded string) (err error) {
 	if err := verifyES(key, signingInput, signatureEncoded, crypto.SHA512, 66); err != nil {
-		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
 }
@@ -364,7 +364,7 @@ func (a _ES512) Verify(key any, signingInput string, signatureEncoded string) (e
 func (a _PS256) Sign(key any, signingInput string) (signatureEncoded string, err error) {
 	signatureEncoded, err = signPS(key, signingInput, crypto.SHA256)
 	if err != nil {
-		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return signatureEncoded, nil
 }
@@ -372,7 +372,7 @@ func (a _PS256) Sign(key any, signingInput string) (signatureEncoded string, err
 // Verify for PS256.
 func (a _PS256) Verify(key any, signingInput string, signatureEncoded string) (err error) {
 	if err := verifyPS(key, signingInput, signatureEncoded, sha256.New, crypto.SHA256, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthAuto}); err != nil {
-		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
 }
@@ -381,7 +381,7 @@ func (a _PS256) Verify(key any, signingInput string, signatureEncoded string) (e
 func (a _PS384) Sign(key any, signingInput string) (signatureEncoded string, err error) {
 	signatureEncoded, err = signPS(key, signingInput, crypto.SHA384)
 	if err != nil {
-		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return signatureEncoded, nil
 }
@@ -389,7 +389,7 @@ func (a _PS384) Sign(key any, signingInput string) (signatureEncoded string, err
 // Verify for PS384.
 func (a _PS384) Verify(key any, signingInput string, signatureEncoded string) (err error) {
 	if err := verifyPS(key, signingInput, signatureEncoded, sha512.New384, crypto.SHA384, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthAuto}); err != nil {
-		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
 }
@@ -398,7 +398,7 @@ func (a _PS384) Verify(key any, signingInput string, signatureEncoded string) (e
 func (a _PS512) Sign(key any, signingInput string) (signatureEncoded string, err error) {
 	signatureEncoded, err = signPS(key, signingInput, crypto.SHA512)
 	if err != nil {
-		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return signatureEncoded, nil
 }
@@ -406,7 +406,7 @@ func (a _PS512) Sign(key any, signingInput string) (signatureEncoded string, err
 // Verify for PS512.
 func (a _PS512) Verify(key any, signingInput string, signatureEncoded string) (err error) {
 	if err := verifyPS(key, signingInput, signatureEncoded, sha512.New, crypto.SHA512, &rsa.PSSOptions{SaltLength: rsa.PSSSaltLengthAuto}); err != nil {
-		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
+		return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
 }
@@ -417,10 +417,10 @@ func (a _PS512) Verify(key any, signingInput string, signatureEncoded string) (e
 
 // Sign for none.
 func (a _None) Sign(key any, signingInput string) (signatureEncoded string, err error) {
-	return "", fmt.Errorf("alg=%s key=%T: %w", a, key, ErrAlgorithmNoneIsNotSupported)
+	return "", fmt.Errorf("❌: alg=%s key=%T: %w", a, key, ErrAlgorithmNoneIsNotSupported)
 }
 
 // Verify for none.
 func (a _None) Verify(key any, signingInput string, signatureEncoded string) (err error) {
-	return fmt.Errorf("alg=%s key=%T: %w", a, key, ErrAlgorithmNoneIsNotSupported)
+	return fmt.Errorf("❌: alg=%s key=%T: %w", a, key, ErrAlgorithmNoneIsNotSupported)
 }

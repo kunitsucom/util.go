@@ -18,7 +18,7 @@ func TestMemStatsTicker(t *testing.T) {
 		s := runtimez.NewMemStatsTicker(ctx, 1*time.Hour)
 		MemStats := s.MemStats()
 		if MemStats.Alloc == 0 {
-			t.Errorf("MemStats.Alloc == 0")
+			t.Errorf("❌: MemStats.Alloc == 0")
 		}
 		s.Stop()
 		s.Restart()
@@ -32,7 +32,7 @@ func TestMemStatsTicker(t *testing.T) {
 		s := runtimez.NewMemStatsTicker(ctx, 1*time.Hour)
 		MemStats := s.MemStats()
 		if MemStats.Alloc == 0 {
-			t.Errorf("MemStats.Alloc == 0")
+			t.Errorf("❌: MemStats.Alloc == 0")
 		}
 		cancel()
 	})

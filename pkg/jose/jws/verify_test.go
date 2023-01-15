@@ -133,7 +133,7 @@ func TestVerify(t *testing.T) {
 		jsonWebKey.KeyType = "oct"
 		headerEncoded, err := jose.NewHeader(jwa.HS256, jose.WithJSONWebKey(jsonWebKey)).Encode()
 		if err != nil {
-			t.Fatalf("Encode: err != nil: %v", err)
+			t.Fatalf("❌: Encode: err != nil: %v", err)
 		}
 
 		if _, err := jws.Verify(jws.UseJSONWebKey(), headerEncoded+".invalid.jwt"); err == nil || !errors.Is(err, jwk.ErrKeyIsNotForAlgorithm) {
@@ -152,7 +152,7 @@ func TestVerify(t *testing.T) {
 		t.Parallel()
 		headerEncoded, err := jose.NewHeader(jwa.HS256, jose.WithJWKSetURL("http://127.0.0.1:1/")).Encode()
 		if err != nil {
-			t.Fatalf("Encode: err != nil: %v", err)
+			t.Fatalf("❌: Encode: err != nil: %v", err)
 		}
 		expect := "connect: connection refused"
 		if _, err := jws.Verify(jws.UseJWKSetURL(context.Background()), headerEncoded+".invalid.jwt"); err == nil || !strings.Contains(err.Error(), expect) {

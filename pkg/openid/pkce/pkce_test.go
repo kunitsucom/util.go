@@ -15,9 +15,9 @@ func TestCreateCodeVerifier(t *testing.T) {
 		t.Parallel()
 		cv, err := CreateCodeVerifier(128)
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
-		t.Logf("\ncv=%s", cv)
+		t.Logf("✅: cv=%s", cv)
 	})
 
 	t.Run("success()", func(t *testing.T) {
@@ -27,10 +27,10 @@ func TestCreateCodeVerifier(t *testing.T) {
 			"01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567",
 		), 128)
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -40,11 +40,11 @@ func TestCreateCodeVerifier(t *testing.T) {
 			"01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567",
 		), 1)
 		if actual == nil {
-			t.Errorf("err == nil")
+			t.Errorf("❌: err == nil")
 		}
 		expect := ErrCodeVerifierLength
 		if !errors.Is(actual, expect) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -52,11 +52,11 @@ func TestCreateCodeVerifier(t *testing.T) {
 		t.Parallel()
 		_, actual := createCodeVerifier(bytes.NewBufferString("not enough"), 128)
 		if actual == nil {
-			t.Errorf("err == nil")
+			t.Errorf("❌: err == nil")
 		}
 		expect := io.ErrUnexpectedEOF
 		if !errors.Is(actual, expect) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -98,11 +98,11 @@ func TestCodeVerifier_Encode(t *testing.T) {
 		for _, tc := range cases {
 			cv, err := createCodeVerifier(tc.Reader, tc.Length)
 			if err != nil {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("❌: err != nil: %v", err)
 			}
 			actual := cv.Encode(tc.Method)
 			if tc.Expect != actual {
-				t.Errorf("expect != actual: %v != %v", tc.Expect, actual)
+				t.Errorf("❌: expect != actual: %v != %v", tc.Expect, actual)
 			}
 		}
 	})

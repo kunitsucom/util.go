@@ -45,7 +45,7 @@ func TestServer_Serve(t *testing.T) {
 		}()
 		err := s.Serve(context.Background())
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 	})
 
@@ -79,7 +79,7 @@ func TestServer_Serve(t *testing.T) {
 		}()
 		err := s.Serve(context.Background())
 		if err == nil {
-			t.Errorf("err == nil")
+			t.Errorf("❌: err == nil")
 		}
 	})
 
@@ -109,7 +109,7 @@ func TestServer_Serve(t *testing.T) {
 		cancel()
 		err := s.Serve(ctx)
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 	})
 
@@ -137,7 +137,7 @@ func TestServer_Serve(t *testing.T) {
 		cancel()
 		err := s.Serve(ctx)
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 	})
 }

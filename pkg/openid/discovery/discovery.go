@@ -102,24 +102,24 @@ func (d *Client) GetProviderMetadata(ctx context.Context, providerMetadataURL Pr
 	return d.cacheStore.GetOrSet(providerMetadataURL, func() (*ProviderMetadata, error) { //nolint:wrapcheck
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, providerMetadataURL, nil)
 		if err != nil {
-			return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
+			return nil, fmt.Errorf("❌: http.NewRequestWithContext: %w", err)
 		}
 
 		resp, err := d.client.Do(req)
 		if err != nil {
-			return nil, fmt.Errorf("(*http.Client).Do: %w", err)
+			return nil, fmt.Errorf("❌: (*http.Client).Do: %w", err)
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
 			body, _ := io.ReadAll(resp.Body)
 			bodyCutOff := slicez.CutOff(body, 100)
-			return nil, fmt.Errorf("code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
+			return nil, fmt.Errorf("❌: code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
 		}
 
 		r := new(ProviderMetadata)
 		if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
-			return nil, fmt.Errorf("(*json.Decoder).Decode(*discovery.JWKSet): %w", err)
+			return nil, fmt.Errorf("❌: (*json.Decoder).Decode(*discovery.JWKSet): %w", err)
 		}
 
 		return r, nil

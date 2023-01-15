@@ -160,7 +160,7 @@ var verifyTestCases = map[string]struct {
 		signatureEncoded: "failure",
 		errHandler: func(t *testing.T, err error) { //nolint:thelper
 			if !errors.Is(err, rsa.ErrVerification) {
-				t.Errorf("%s: err != rsa.ErrVerification: %v", t.Name(), err)
+				t.Errorf("❌: %s: err != rsa.ErrVerification: %v", t.Name(), err)
 			}
 		},
 	},
@@ -365,7 +365,7 @@ var verifyTestCases = map[string]struct {
 		signatureEncoded: "failure",
 		errHandler: func(t *testing.T, err error) { //nolint:thelper
 			if !errors.Is(err, rsa.ErrVerification) {
-				t.Errorf("%s: err != rsa.ErrVerification: %v", t.Name(), err)
+				t.Errorf("❌: %s: err != rsa.ErrVerification: %v", t.Name(), err)
 			}
 		},
 	},

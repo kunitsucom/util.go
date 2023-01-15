@@ -18,7 +18,7 @@ func TestIPNetSet_Contains(t *testing.T) {
 		s := netz.IPNetSet([]*net.IPNet{netz.PrivateIPAddressClassA})
 
 		if !s.Contains(ip) {
-			t.Errorf("%s should contain %s", ipNetSet, ip)
+			t.Errorf("❌: %s should contain %s", ipNetSet, ip)
 		}
 	})
 
@@ -31,7 +31,7 @@ func TestIPNetSet_Contains(t *testing.T) {
 		s := netz.IPNetSet([]*net.IPNet{netz.PrivateIPAddressClassA})
 
 		if s.Contains(ip) {
-			t.Errorf("%s should contain %s", ipNetSet, ip)
+			t.Errorf("❌: %s should contain %s", ipNetSet, ip)
 		}
 	})
 }

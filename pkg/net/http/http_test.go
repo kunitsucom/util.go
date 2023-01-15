@@ -38,7 +38,7 @@ func TestListenAndServe(t *testing.T) {
 			_ = s.Shutdown(context.Background())
 		}()
 		if err := ListenAndServe(s); err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 	})
 
@@ -46,7 +46,7 @@ func TestListenAndServe(t *testing.T) {
 		t.Parallel()
 		s := &TestHTTPServer{Err: http.ErrServerClosed}
 		if err := listenAndServe(s); err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 	})
 
@@ -54,7 +54,7 @@ func TestListenAndServe(t *testing.T) {
 		t.Parallel()
 		s := &TestHTTPServer{io.ErrUnexpectedEOF}
 		if err := listenAndServe(s); err == nil {
-			t.Errorf("err == nil")
+			t.Errorf("❌: err == nil")
 		}
 	})
 }

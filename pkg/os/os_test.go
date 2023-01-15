@@ -16,7 +16,7 @@ func TestExists(t *testing.T) {
 		t.Parallel()
 		for _, path := range []string{".", ".."} {
 			if !osz.Exists(path) {
-				t.Errorf("path `%s` should exist", path)
+				t.Errorf("❌: path `%s` should exist", path)
 			}
 		}
 	})
@@ -25,7 +25,7 @@ func TestExists(t *testing.T) {
 		t.Parallel()
 		for _, path := range []string{"path_not_exist"} {
 			if osz.Exists(path) {
-				t.Errorf("path `%s` should not exist", path)
+				t.Errorf("❌: path `%s` should not exist", path)
 			}
 		}
 	})
@@ -37,7 +37,7 @@ func TestIsDir(t *testing.T) {
 		t.Parallel()
 		for _, path := range []string{".", ".."} {
 			if !osz.IsDir(path) {
-				t.Errorf("path `%s` should be dir", path)
+				t.Errorf("❌: path `%s` should be dir", path)
 			}
 		}
 	})
@@ -46,7 +46,7 @@ func TestIsDir(t *testing.T) {
 		t.Parallel()
 		for _, path := range []string{"path_not_exist", callerFile} {
 			if osz.IsDir(path) {
-				t.Errorf("path `%s` should not exist", path)
+				t.Errorf("❌: path `%s` should not exist", path)
 			}
 		}
 	})
@@ -58,7 +58,7 @@ func TestCheckDir(t *testing.T) {
 		t.Parallel()
 		for _, path := range []string{".", ".."} {
 			if err := osz.CheckDir(path); err != nil {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("❌: err != nil: %v", err)
 			}
 		}
 	})
@@ -67,7 +67,7 @@ func TestCheckDir(t *testing.T) {
 		t.Parallel()
 		for _, path := range []string{"path_not_exist", callerFile} {
 			if err := osz.CheckDir(path); err == nil {
-				t.Errorf("err == nil")
+				t.Errorf("❌: err == nil")
 			}
 		}
 	})
@@ -84,17 +84,17 @@ func TestReadlinkAndReadFile(t *testing.T) {
 		})
 		actual, _, err := osz.ReadlinkAndReadFile(linkTestFile)
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
 	t.Run("failure()", func(t *testing.T) {
 		for _, path := range []string{"path_not_exist"} {
 			if _, _, err := osz.ReadlinkAndReadFile(path); err == nil {
-				t.Errorf("path `%s` should not exist", path)
+				t.Errorf("❌: path `%s` should not exist", path)
 			}
 		}
 	})

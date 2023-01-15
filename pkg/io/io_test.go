@@ -18,10 +18,10 @@ func TestReadAllString(t *testing.T) {
 		expect := "test string"
 		actual, err := ioz.ReadAllString(bytes.NewBufferString(expect))
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -30,11 +30,11 @@ func TestReadAllString(t *testing.T) {
 
 		_, err := ioz.ReadAllString(testz.NewReadWriter(nil, 0, testz.ErrTestError))
 		if err == nil {
-			t.Errorf("err == nil: %v", err)
+			t.Errorf("❌: err == nil: %v", err)
 		}
 		expect := testz.ErrTestError
 		if !strings.Contains(err.Error(), expect.Error()) {
-			t.Errorf("err: %v != %v", err, expect)
+			t.Errorf("❌: err: %v != %v", err, expect)
 		}
 	})
 }

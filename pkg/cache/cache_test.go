@@ -23,24 +23,24 @@ func TestStore_GetOrSet(t *testing.T) {
 		const value = "test value"
 		zero, err := store.GetOrSet(key, func() (string, error) { return value, io.ErrUnexpectedEOF })
 		if err == nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if zero != "" {
-			t.Errorf("expect != actual: %v != %v", value, zero)
+			t.Errorf("❌: expect != actual: %v != %v", value, zero)
 		}
 		got, err := store.GetOrSet(key, func() (string, error) { return value, nil })
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if got != value {
-			t.Errorf("expect != actual: %v != %v", value, got)
+			t.Errorf("❌: expect != actual: %v != %v", value, got)
 		}
 		cached, err := store.GetOrSet(key, func() (string, error) { return value, nil })
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if cached != value {
-			t.Errorf("expect != actual: %v != %v", value, cached)
+			t.Errorf("❌: expect != actual: %v != %v", value, cached)
 		}
 	})
 
@@ -51,26 +51,26 @@ func TestStore_GetOrSet(t *testing.T) {
 		const value = "test value"
 		got, err := store.GetOrSet(key, func() (string, error) { return value, nil })
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if got != value {
-			t.Errorf("expect != actual: %v != %v", value, got)
+			t.Errorf("❌: expect != actual: %v != %v", value, got)
 		}
 		time.Sleep(50 * time.Millisecond)
 		cached, err := store.GetOrSet(key, func() (string, error) { return value, nil })
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if expect, actual := value, cached; expect != actual {
-			t.Errorf("expect != actual: %v != %v", value, cached)
+			t.Errorf("❌: expect != actual: %v != %v", value, cached)
 		}
 		store.Delete(key)
 		deleted, err := store.GetOrSet(key, func() (string, error) { return "", io.ErrUnexpectedEOF })
 		if !errors.Is(err, io.ErrUnexpectedEOF) {
-			t.Errorf("err != io.ErrUnexpectedEOF: %v", err)
+			t.Errorf("❌: err != io.ErrUnexpectedEOF: %v", err)
 		}
 		if expect, actual := "", deleted; expect != actual {
-			t.Errorf("expect != actual: %v != %v", value, cached)
+			t.Errorf("❌: expect != actual: %v != %v", value, cached)
 		}
 	})
 
@@ -81,19 +81,19 @@ func TestStore_GetOrSet(t *testing.T) {
 		const value = "test value"
 		got, err := store.GetOrSet(key, func() (string, error) { return value, nil })
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if got != value {
-			t.Errorf("expect != actual: %v != %v", value, got)
+			t.Errorf("❌: expect != actual: %v != %v", value, got)
 		}
 		time.Sleep(100 * time.Millisecond)
 		const value2 = "notCached"
 		notCached, err := store.GetOrSet(key, func() (string, error) { return value2, nil })
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if notCached != value2 {
-			t.Errorf("expect != actual: %v != %v", value2, notCached)
+			t.Errorf("❌: expect != actual: %v != %v", value2, notCached)
 		}
 	})
 
@@ -104,19 +104,19 @@ func TestStore_GetOrSet(t *testing.T) {
 		const value = "test value"
 		got, err := store.GetOrSetWithTTL(key, func() (string, error) { return value, nil }, 0)
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if got != value {
-			t.Errorf("expect != actual: %v != %v", value, got)
+			t.Errorf("❌: expect != actual: %v != %v", value, got)
 		}
 		store.Flush()
 		const value2 = "notCached"
 		notCached, err := store.GetOrSet(key, func() (string, error) { return value2, nil })
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if notCached != value2 {
-			t.Errorf("expect != actual: %v != %v", value2, notCached)
+			t.Errorf("❌: expect != actual: %v != %v", value2, notCached)
 		}
 	})
 }

@@ -47,15 +47,15 @@ func TestCreateCodeVerifier(t *testing.T) {
 		t.Parallel()
 		actual, err := randz.ReadString(128)
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
-		t.Logf("\ncv=%s", actual)
+		t.Logf("✅: cv=%s", actual)
 
 		backup := randz.DefaultReader
 		t.Cleanup(func() { randz.DefaultReader = backup })
 		randz.DefaultReader = bytes.NewBuffer(nil)
 		if _, err := randz.ReadString(128); err == nil {
-			t.Errorf("err == nil: %v", err)
+			t.Errorf("❌: err == nil: %v", err)
 		}
 	})
 
@@ -67,10 +67,10 @@ func TestCreateCodeVerifier(t *testing.T) {
 		)), randz.WithRandomSource(randz.DefaultRandomSource))
 		actual, err := r.ReadString(128)
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -79,11 +79,11 @@ func TestCreateCodeVerifier(t *testing.T) {
 		r := randz.NewReader(randz.WithRandomReader(bytes.NewReader(nil)))
 		_, actual := r.ReadString(128)
 		if actual == nil {
-			t.Errorf("err == nil")
+			t.Errorf("❌: err == nil")
 		}
 		expect := io.EOF
 		if !errors.Is(actual, expect) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }

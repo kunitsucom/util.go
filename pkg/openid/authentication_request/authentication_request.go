@@ -133,15 +133,15 @@ func New(authorization_endpoint string, scope []string, response_type, client_id
 
 	u, err := url.Parse(authorization_endpoint)
 	if err != nil {
-		return nil, fmt.Errorf("url.Parse: %w", err)
+		return nil, fmt.Errorf("❌: url.Parse: %w", err)
 	}
 
 	if len(scope) == 0 {
-		return nil, fmt.Errorf("scope=%v: %w", scope, ErrParameterIsEmpty)
+		return nil, fmt.Errorf("❌: scope=%v: %w", scope, ErrParameterIsEmpty)
 	}
 
 	if response_type == "" || client_id == "" || redirect_uri == "" || state == "" {
-		return nil, fmt.Errorf("response_type=%s, client_id=%s, redirect_uri=%s, state=%s: %w", response_type, client_id, redirect_uri, state, ErrParameterIsEmpty)
+		return nil, fmt.Errorf("❌: response_type=%s, client_id=%s, redirect_uri=%s, state=%s: %w", response_type, client_id, redirect_uri, state, ErrParameterIsEmpty)
 	}
 
 	query := make(url.Values)

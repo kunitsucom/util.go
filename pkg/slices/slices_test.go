@@ -19,7 +19,7 @@ func TestSort(t *testing.T) {
 			return a < b
 		})
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -34,7 +34,7 @@ func TestCopy(t *testing.T) {
 		expect := byte('T')
 		actual := src[0]
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -48,7 +48,7 @@ func TestContains(t *testing.T) {
 		value := 1
 		actual := slicez.Contains(s, value)
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -59,7 +59,7 @@ func TestContains(t *testing.T) {
 		value := math.MaxInt
 		actual := slicez.Contains(s, value)
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -73,7 +73,7 @@ func TestDeepContains(t *testing.T) {
 		value := []int{1}
 		actual := slicez.DeepContains(s, value)
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -84,7 +84,7 @@ func TestDeepContains(t *testing.T) {
 		value := []int{}
 		actual := slicez.DeepContains(s, value)
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -98,7 +98,7 @@ func TestEqual(t *testing.T) {
 		b := []int{0, 1, 2, 3}
 		actual := slicez.Equal(a, b)
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -109,7 +109,7 @@ func TestEqual(t *testing.T) {
 		b := []int{1, 2, 3}
 		actual := slicez.Equal(a, b)
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -120,7 +120,7 @@ func TestEqual(t *testing.T) {
 		b := []int{1, 2, 3, 0}
 		actual := slicez.Equal(a, b)
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -134,7 +134,7 @@ func TestExclude(t *testing.T) {
 		value := []int{1}
 		actual := slicez.Exclude(s, value)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -145,7 +145,7 @@ func TestExclude(t *testing.T) {
 		value := []int{math.MaxInt}
 		actual := slicez.Exclude(s, value)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -159,7 +159,7 @@ func TestDeepExclude(t *testing.T) {
 		value := []int{1}
 		actual := slicez.DeepExclude(s, value)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -170,7 +170,7 @@ func TestDeepExclude(t *testing.T) {
 		value := []int{math.MaxInt}
 		actual := slicez.DeepExclude(s, value)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -186,7 +186,7 @@ func TestEach(t *testing.T) {
 			actual = append(actual, i-1)
 		})
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -201,7 +201,7 @@ func TestFilter(t *testing.T) {
 			return i != 3
 		})
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -213,7 +213,7 @@ func TestFilter(t *testing.T) {
 			return i != math.MaxInt
 		})
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -229,7 +229,7 @@ func TestToMap(t *testing.T) {
 			return key
 		})
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -244,7 +244,7 @@ func TestSelect(t *testing.T) {
 			return "foo" + strconv.Itoa(value)
 		})
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -257,7 +257,7 @@ func TestFirst(t *testing.T) {
 		s := []string{"1", "2", "3"}
 		actual := slicez.First(s)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -267,7 +267,7 @@ func TestFirst(t *testing.T) {
 		s := []string{}
 		actual := slicez.First(s)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -280,7 +280,7 @@ func TestLast(t *testing.T) {
 		s := []string{"1", "2", "3"}
 		actual := slicez.Last(s)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -290,7 +290,7 @@ func TestLast(t *testing.T) {
 		s := []string{}
 		actual := slicez.Last(s)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -303,7 +303,7 @@ func TestSplit(t *testing.T) {
 		s := []string{"1", "2", "3", "4", "5", "6"}
 		actual := slicez.Split(s, 2)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -313,7 +313,7 @@ func TestSplit(t *testing.T) {
 		s := []string{"1", "2", "3", "4", "5"}
 		actual := slicez.Split(s, 2)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -323,7 +323,7 @@ func TestSplit(t *testing.T) {
 		s := []string{"1", "2", "3", "4", "5"}
 		actual := slicez.Split(s, math.MaxInt)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -336,7 +336,7 @@ func TestUniq(t *testing.T) {
 		s := []string{"1", "2", "3", "2", "3"}
 		actual := slicez.Uniq(s)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -349,7 +349,7 @@ func TestReverse(t *testing.T) {
 		s := []string{"0", "1", "2", "3"}
 		actual := slicez.Reverse(s)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -362,7 +362,7 @@ func TestCutOff(t *testing.T) {
 		s := []string{"0", "1", "2", "3"}
 		actual := slicez.CutOff(s, 3)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 	t.Run("success(equal)", func(t *testing.T) {
@@ -371,7 +371,7 @@ func TestCutOff(t *testing.T) {
 		s := []string{"0", "1", "2", "3"}
 		actual := slicez.CutOff(s, 4)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 	t.Run("success(less)", func(t *testing.T) {
@@ -380,7 +380,7 @@ func TestCutOff(t *testing.T) {
 		s := []string{"0", "1", "2", "3"}
 		actual := slicez.CutOff(s, 5)
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }

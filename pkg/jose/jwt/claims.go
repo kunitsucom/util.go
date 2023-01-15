@@ -216,7 +216,7 @@ func (c *ClaimsSet) marshalJSON(
 
 	b, err := json_Marshal(&_claimsSet)
 	if err != nil {
-		return nil, fmt.Errorf("invalid claims set: %+v: %w", _claimsSet, err)
+		return nil, fmt.Errorf("❌: invalid claims set: %+v: %w", _claimsSet, err)
 	}
 
 	if len(c.PrivateClaims) == 0 {
@@ -225,15 +225,15 @@ func (c *ClaimsSet) marshalJSON(
 
 	privateClaims, err := json.Marshal(c.PrivateClaims)
 	if err != nil {
-		return nil, fmt.Errorf("invalid private claims: %+v: %w", c.PrivateClaims, err)
+		return nil, fmt.Errorf("❌: invalid private claims: %+v: %w", c.PrivateClaims, err)
 	}
 
 	if !bytes_HasSuffix(b, []byte{'}'}) {
-		return nil, fmt.Errorf("%s: %w", b, ErrInvalidJSON)
+		return nil, fmt.Errorf("❌: %s: %w", b, ErrInvalidJSON)
 	}
 
 	if !bytes_HasPrefix(privateClaims, []byte{'{'}) {
-		return nil, fmt.Errorf("%s: %w", privateClaims, ErrInvalidJSON)
+		return nil, fmt.Errorf("❌: %s: %w", privateClaims, ErrInvalidJSON)
 	}
 
 	b[len(b)-1] = ','
@@ -243,7 +243,7 @@ func (c *ClaimsSet) marshalJSON(
 func (c *ClaimsSet) Encode() (encoded string, err error) {
 	b, err := json.Marshal(c)
 	if err != nil {
-		return "", fmt.Errorf("json.Marshal: %w", err)
+		return "", fmt.Errorf("❌: json.Marshal: %w", err)
 	}
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
@@ -251,11 +251,11 @@ func (c *ClaimsSet) Encode() (encoded string, err error) {
 func (c *ClaimsSet) Decode(encoded string) error {
 	decoded, err := base64.RawURLEncoding.DecodeString(encoded)
 	if err != nil {
-		return fmt.Errorf("base64.RawURLEncoding.DecodeString: %w", err)
+		return fmt.Errorf("❌: base64.RawURLEncoding.DecodeString: %w", err)
 	}
 
 	if err := json.Unmarshal(decoded, c); err != nil {
-		return fmt.Errorf("json.Unmarshal: %w", err)
+		return fmt.Errorf("❌: json.Unmarshal: %w", err)
 	}
 
 	return nil
@@ -267,16 +267,16 @@ func (c *ClaimsSet) Decode(encoded string) error {
 func (c *ClaimsSet) GetPrivateClaim(claimName string, v any) error {
 	reflectValue := reflect.ValueOf(v)
 	if reflectValue.Kind() != reflect.Pointer && reflectValue.Kind() != reflect.Interface {
-		return fmt.Errorf("v.(type)==%T: %w", v, ErrVIsNotPointerOrInterface)
+		return fmt.Errorf("❌: v.(type)==%T: %w", v, ErrVIsNotPointerOrInterface)
 	}
 	reflectValueElem := reflectValue.Elem()
 	param, ok := c.PrivateClaims[claimName]
 	if !ok {
-		return fmt.Errorf("(*jwt.ClaimsSet).PrivateClaims[%q]: %w", claimName, ErrPrivateClaimIsNotFound)
+		return fmt.Errorf("❌: (*jwt.ClaimsSet).PrivateClaims[%q]: %w", claimName, ErrPrivateClaimIsNotFound)
 	}
 	paramReflectValue := reflect.ValueOf(param)
 	if reflectValueElem.Type() != paramReflectValue.Type() {
-		return fmt.Errorf("(*jwt.ClaimsSet).PrivateClaims[%q].(type)==%T, v.(type)==%T: %w", claimName, param, v, ErrPrivateClaimTypeIsNotMatch)
+		return fmt.Errorf("❌: (*jwt.ClaimsSet).PrivateClaims[%q].(type)==%T, v.(type)==%T: %w", claimName, param, v, ErrPrivateClaimTypeIsNotMatch)
 	}
 	reflectValueElem.Set(paramReflectValue)
 	return nil
