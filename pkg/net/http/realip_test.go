@@ -19,7 +19,7 @@ func TestContextXRealIP(t *testing.T) {
 	expect := ""
 	actual := httpz.ContextXRealIP(context.Background())
 	if expect != actual {
-		t.Errorf("expect != actual: %s", actual)
+		t.Errorf("❌: expect != actual: %s", actual)
 	}
 }
 
@@ -53,10 +53,10 @@ func TestNewXRealIPHandler(t *testing.T) {
 			ServeHTTP(actualResponse, r)
 
 		if expect != actualCtx {
-			t.Errorf("expect != actualCtx: %s", actual)
+			t.Errorf("❌: expect != actualCtx: %s", actual)
 		}
 		if expect != actual {
-			t.Errorf("expect != actual: %s", actual)
+			t.Errorf("❌: expect != actual: %s", actual)
 		}
 	})
 
@@ -87,10 +87,10 @@ func TestNewXRealIPHandler(t *testing.T) {
 			ServeHTTP(actualResponse, r)
 
 		if expect != actualCtx {
-			t.Errorf("expect != actualCtx: %s", actual)
+			t.Errorf("❌: expect != actualCtx: %s", actual)
 		}
 		if expect != actual {
-			t.Errorf("expect != actual: %s", actual)
+			t.Errorf("❌: expect != actual: %s", actual)
 		}
 	})
 
@@ -119,10 +119,10 @@ func TestNewXRealIPHandler(t *testing.T) {
 			ServeHTTP(actualResponse, r)
 
 		if expect != actualCtx {
-			t.Errorf("expect != actualCtx: %s", actual)
+			t.Errorf("❌: expect != actualCtx: %s", actual)
 		}
 		if expect != actual {
-			t.Errorf("expect != actual: %s", actual)
+			t.Errorf("❌: expect != actual: %s", actual)
 		}
 	})
 
@@ -151,10 +151,10 @@ func TestNewXRealIPHandler(t *testing.T) {
 			ServeHTTP(actualResponse, r)
 
 		if expect != actualCtx {
-			t.Errorf("expect != actualCtx: %s", actual)
+			t.Errorf("❌: expect != actualCtx: %s", actual)
 		}
 		if expect != actual {
-			t.Errorf("expect != actual: %s", actual)
+			t.Errorf("❌: expect != actual: %s", actual)
 		}
 	})
 }

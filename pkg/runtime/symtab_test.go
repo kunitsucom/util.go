@@ -11,7 +11,7 @@ func TestFuncName(t *testing.T) {
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 		if expect, actual := "runtime_test.testFuncName", testFuncName(0); expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -21,7 +21,7 @@ func TestFullFuncName(t *testing.T) {
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 		if expect, actual := "github.com/kunitsuinc/util.go/pkg/runtime_test.testFullFuncName", testFullFuncName(0); expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }

@@ -42,12 +42,12 @@ func Verify(keyOption jws.KeyOption, jwt string, opts ...VerifyOption) (header *
 
 	_, payloadEncoded, _, err := jws.Parse(jwt)
 	if err != nil {
-		return nil, nil, fmt.Errorf("jws.Parse: %w", err)
+		return nil, nil, fmt.Errorf("❌: jws.Parse: %w", err)
 	}
 
 	cs := new(ClaimsSet)
 	if err := cs.Decode(payloadEncoded); err != nil {
-		return nil, nil, fmt.Errorf("(*jwt.ClaimsSet).Decode: %w", err)
+		return nil, nil, fmt.Errorf("❌: (*jwt.ClaimsSet).Decode: %w", err)
 	}
 
 	if err := verifyClaimsSet(cs, vo, time.Now()); err != nil {
@@ -56,7 +56,7 @@ func Verify(keyOption jws.KeyOption, jwt string, opts ...VerifyOption) (header *
 
 	h, err := jws.Verify(keyOption, jwt)
 	if err != nil {
-		return nil, nil, fmt.Errorf("jws.Verify: %w", err)
+		return nil, nil, fmt.Errorf("❌: jws.Verify: %w", err)
 	}
 
 	return h, cs, nil
@@ -64,11 +64,11 @@ func Verify(keyOption jws.KeyOption, jwt string, opts ...VerifyOption) (header *
 
 func verifyClaimsSet(cs *ClaimsSet, vo *verifyOption, now time.Time) error {
 	if cs.ExpirationTime != 0 && cs.ExpirationTime <= now.Unix() {
-		return fmt.Errorf("exp=%d <= now=%d: %w", cs.ExpirationTime, now.Unix(), ErrTokenIsExpired)
+		return fmt.Errorf("❌: exp=%d <= now=%d: %w", cs.ExpirationTime, now.Unix(), ErrTokenIsExpired)
 	}
 
 	if cs.NotBefore != 0 && cs.NotBefore >= now.Unix() {
-		return fmt.Errorf("nbf=%d >= now=%d: %w", cs.NotBefore, now.Unix(), ErrTokenIsExpired)
+		return fmt.Errorf("❌: nbf=%d >= now=%d: %w", cs.NotBefore, now.Unix(), ErrTokenIsExpired)
 	}
 
 	if vo.aud != "" {
@@ -92,5 +92,5 @@ func verifyAudience(cs *ClaimsSet, aud string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("want=%v got=%v: %w", aud, cs.Audience, ErrAudienceIsNotMatch)
+	return fmt.Errorf("❌: want=%v got=%v: %w", aud, cs.Audience, ErrAudienceIsNotMatch)
 }

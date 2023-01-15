@@ -59,7 +59,7 @@ func createCodeVerifier(randReader io.Reader, length int) (CodeVerifier, error) 
 	r := randz.NewReader(randz.WithRandomSource(UnreservedCharacters), randz.WithRandomReader(randReader))
 	random, err := r.ReadString(length)
 	if err != nil {
-		return "", fmt.Errorf("randz.GenerateRandomString: %w", err)
+		return "", fmt.Errorf("❌: randz.GenerateRandomString: %w", err)
 	}
 
 	return CodeVerifier(random), nil

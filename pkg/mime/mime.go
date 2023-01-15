@@ -16,7 +16,7 @@ func DetectContentType(reader io.Reader) (contentType string, err error) {
 	// Read sniff
 	bytesRead, err := reader.Read(buffer)
 	if err != nil && !errors.Is(err, io.EOF) {
-		return "", fmt.Errorf("reader.Read: %w", err)
+		return "", fmt.Errorf("❌: reader.Read: %w", err)
 	}
 
 	// Worked around a problem where any content would be marked as application/octet-stream if the content length was less than a sniff.

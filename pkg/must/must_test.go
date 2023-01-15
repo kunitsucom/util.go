@@ -35,7 +35,7 @@ func TestMust(t *testing.T) {
 		t.Parallel()
 		defer func() {
 			if err := recover(); err == nil {
-				t.Errorf("recover: err == nil")
+				t.Errorf("❌: recover: err == nil")
 			}
 		}()
 
@@ -50,7 +50,7 @@ func TestOne(t *testing.T) {
 		i := must.One(newInt(1, nil))
 
 		if i <= 0 {
-			t.Errorf("i <= 0")
+			t.Errorf("❌: i <= 0")
 		}
 	})
 
@@ -58,7 +58,7 @@ func TestOne(t *testing.T) {
 		t.Parallel()
 		defer func() {
 			if err := recover(); err == nil {
-				t.Errorf("recover: err == nil")
+				t.Errorf("❌: recover: err == nil")
 			}
 		}()
 
@@ -73,7 +73,7 @@ func TestTwo(t *testing.T) {
 		i1, i2 := must.Two(newInt2(1, 1, nil))
 
 		if i1 <= 0 || i2 <= 0 {
-			t.Errorf("i1 <= 0 || i2 <= 0")
+			t.Errorf("❌: i1 <= 0 || i2 <= 0")
 		}
 	})
 
@@ -81,7 +81,7 @@ func TestTwo(t *testing.T) {
 		t.Parallel()
 		defer func() {
 			if err := recover(); err == nil {
-				t.Errorf("recover: err == nil")
+				t.Errorf("❌: recover: err == nil")
 			}
 		}()
 
@@ -96,7 +96,7 @@ func TestThree(t *testing.T) {
 		i1, i2, i3 := must.Three(newInt3(1, 1, 1, nil))
 
 		if i1 <= 0 || i2 <= 0 || i3 <= 0 {
-			t.Errorf("i1 <= 0 || i2 <= 0 || i3 <= 0")
+			t.Errorf("❌: i1 <= 0 || i2 <= 0 || i3 <= 0")
 		}
 	})
 
@@ -104,7 +104,7 @@ func TestThree(t *testing.T) {
 		t.Parallel()
 		defer func() {
 			if err := recover(); err == nil {
-				t.Errorf("recover: err == nil")
+				t.Errorf("❌: recover: err == nil")
 			}
 		}()
 
@@ -119,7 +119,7 @@ func TestFour(t *testing.T) {
 		i1, i2, i3, i4 := must.Four(newInt4(1, 1, 1, 1, nil))
 
 		if i1 <= 0 || i2 <= 0 || i3 <= 0 || i4 <= 0 {
-			t.Errorf("i1 <= 0 || i2 <= 0 || i3 <= 0 || i4 <= 0")
+			t.Errorf("❌: i1 <= 0 || i2 <= 0 || i3 <= 0 || i4 <= 0")
 		}
 	})
 
@@ -127,7 +127,7 @@ func TestFour(t *testing.T) {
 		t.Parallel()
 		defer func() {
 			if err := recover(); err == nil {
-				t.Errorf("recover: err == nil")
+				t.Errorf("❌: recover: err == nil")
 			}
 		}()
 
@@ -142,7 +142,7 @@ func TestFive(t *testing.T) {
 		i1, i2, i3, i4, i5 := must.Five(newInt5(1, 1, 1, 1, 1, nil))
 
 		if i1 <= 0 || i2 <= 0 || i3 <= 0 || i4 <= 0 || i5 <= 0 {
-			t.Errorf("i1 <= 0 || i2 <= 0 || i3 <= 0 || i4 <= 0 || i5 <= 0")
+			t.Errorf("❌: i1 <= 0 || i2 <= 0 || i3 <= 0 || i4 <= 0 || i5 <= 0")
 		}
 	})
 
@@ -150,7 +150,7 @@ func TestFive(t *testing.T) {
 		t.Parallel()
 		defer func() {
 			if err := recover(); err == nil {
-				t.Errorf("recover: err == nil")
+				t.Errorf("❌: recover: err == nil")
 			}
 		}()
 

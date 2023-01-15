@@ -23,7 +23,7 @@ func TestRange(t *testing.T) {
 			randz.Range(0, 3),
 		}
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -42,7 +42,7 @@ func TestRangeRand(t *testing.T) {
 			randz.RangeRand(r, 0, 3),
 		}
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -60,7 +60,7 @@ func TestRange32(t *testing.T) {
 			randz.Range31(0, 3),
 		}
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -79,7 +79,7 @@ func TestRange32Rand(t *testing.T) {
 			randz.Range31Rand(r, 0, 3),
 		}
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -97,7 +97,7 @@ func TestRange64(t *testing.T) {
 			randz.Range63(0, 3),
 		}
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -116,7 +116,7 @@ func TestRange64Rand(t *testing.T) {
 			randz.Range63Rand(r, 0, 3),
 		}
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -134,7 +134,7 @@ func TestRangeDuration(t *testing.T) {
 			randz.RangeDuration(0, 3),
 		}
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }
@@ -153,7 +153,7 @@ func TestRangeDurationRand(t *testing.T) {
 			randz.RangeDurationRand(r, 0, 3),
 		}
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 }

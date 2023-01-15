@@ -24,7 +24,7 @@ func TestWithSignalChannel(t *testing.T) {
 		actual := contextz.MustSignalChannel(ctx)
 
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v", actual)
+			t.Errorf("❌: expect != actual: %v", actual)
 		}
 	})
 
@@ -35,16 +35,16 @@ func TestWithSignalChannel(t *testing.T) {
 			recov := recover()
 
 			if recov == nil {
-				t.Errorf("recov == nil")
+				t.Errorf("❌: recov == nil")
 			}
 
 			err, ok := recov.(error)
 			if !ok {
-				t.Errorf("!ok")
+				t.Errorf("❌: !ok")
 			}
 
 			if !errors.Is(err, contextz.ErrValueNotSet) {
-				t.Errorf("err != contextz.ErrValueNotSet: %v", err)
+				t.Errorf("❌: err != contextz.ErrValueNotSet: %v", err)
 			}
 		}()
 

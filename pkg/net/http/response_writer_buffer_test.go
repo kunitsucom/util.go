@@ -41,7 +41,7 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 		)
 
 		if expect != actual {
-			t.Errorf("expect != actual: %s", actual)
+			t.Errorf("❌: expect != actual: %s", actual)
 		}
 	})
 
@@ -70,7 +70,7 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 		)
 
 		if expect != actual {
-			t.Errorf("expect != actual: %s", actual)
+			t.Errorf("❌: expect != actual: %s", actual)
 		}
 	})
 }

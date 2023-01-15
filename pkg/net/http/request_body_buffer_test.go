@@ -22,11 +22,11 @@ func TestRequestBodyBuffer(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString(expect))
 		buf, err := httpz.RequestBodyBuffer(r)
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		actual := buf.String()
 		if expect != actual {
-			t.Errorf("expect != actual: %v", actual)
+			t.Errorf("❌: expect != actual: %v", actual)
 		}
 	})
 
@@ -37,10 +37,10 @@ func TestRequestBodyBuffer(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", testz.NewReadWriter(bytes.NewBuffer(nil), 0, testz.ErrTestError))
 		actual, err := httpz.RequestBodyBuffer(r)
 		if !errors.Is(err, testz.ErrTestError) {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %v", actual)
+			t.Errorf("❌: expect != actual: %v", actual)
 		}
 	})
 }
@@ -70,12 +70,12 @@ func TestNewRequestBodyBufferHandler(t *testing.T) {
 			})).
 			ServeHTTP(actualResponse, r)
 		if !ok {
-			t.Errorf("!ok")
+			t.Errorf("❌: !ok")
 		}
 
 		actual := actualBuf.String()
 		if expect != actual {
-			t.Errorf("expect != actual: %s", actual)
+			t.Errorf("❌: expect != actual: %s", actual)
 		}
 	})
 
@@ -103,12 +103,12 @@ func TestNewRequestBodyBufferHandler(t *testing.T) {
 			ServeHTTP(actualResponse, r)
 
 		if ok {
-			t.Errorf("ok")
+			t.Errorf("❌: ok")
 		}
 
 		actual := actualBuf.String()
 		if expect != actual {
-			t.Errorf("expect != actual: %s", actual)
+			t.Errorf("❌: expect != actual: %s", actual)
 		}
 	})
 
@@ -136,12 +136,12 @@ func TestNewRequestBodyBufferHandler(t *testing.T) {
 			ServeHTTP(actualResponse, r)
 
 		if ok {
-			t.Errorf("ok")
+			t.Errorf("❌: ok")
 		}
 
 		actual := actualBuf.String()
 		if expect != actual {
-			t.Errorf("expect != actual: %s", actual)
+			t.Errorf("❌: expect != actual: %s", actual)
 		}
 	})
 }

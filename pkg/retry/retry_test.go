@@ -45,7 +45,7 @@ func TestRetryer_Retry(t *testing.T) {
 		const expect = `retries=0/20 retryAfter=10µs; retries=1/20 retryAfter=10µs; retries=2/20 retryAfter=10µs; retries=3/20 retryAfter=10µs; retries=4/20 retryAfter=10µs; retries=5/20 retryAfter=10µs; retries=6/20 retryAfter=10µs; retries=7/20 retryAfter=10µs; retries=8/20 retryAfter=10µs; retries=9/20 retryAfter=10µs; retries=10/20 retryAfter=10µs; retries=11/20 retryAfter=10µs; retries=12/20 retryAfter=10µs; retries=13/20 retryAfter=10µs; retries=14/20 retryAfter=10µs; retries=15/20 retryAfter=10µs; retries=16/20 retryAfter=10µs; retries=17/20 retryAfter=10µs; retries=18/20 retryAfter=10µs; retries=19/20 retryAfter=10µs; retries=20/20 retryAfter=10µs; `
 		actual := buf.String()
 		if expect != actual {
-			t.Errorf("expect != actual")
+			t.Errorf("❌: expect != actual")
 		}
 		t.Logf("\nactual: " + buf.String())
 	})
@@ -62,7 +62,7 @@ func TestRetryer_Retry(t *testing.T) {
 		const expect = `retries=0/20 retryAfter=8.165505ms; retries=1/20 retryAfter=7.393152ms; retries=2/20 retryAfter=3.995827ms; retries=3/20 retryAfter=7.197794ms; retries=4/20 retryAfter=4.376202ms; retries=5/20 retryAfter=126.063µs; retries=6/20 retryAfter=4.980153ms; retries=7/20 retryAfter=6.422456ms; retries=8/20 retryAfter=9.894929ms; retries=9/20 retryAfter=2.637646ms; retries=10/20 retryAfter=943.416µs; retries=11/20 retryAfter=6.976708ms; retries=12/20 retryAfter=9.259259ms; retries=13/20 retryAfter=885.298µs; retries=14/20 retryAfter=9.98852ms; retries=15/20 retryAfter=6.116249ms; retries=16/20 retryAfter=3.981575ms; retries=17/20 retryAfter=3.529631ms; retries=18/20 retryAfter=918.339µs; retries=19/20 retryAfter=5.164748ms; retries=20/20 retryAfter=9.441706ms; `
 		actual := buf.String()
 		if expect != actual {
-			t.Errorf("expect != actual")
+			t.Errorf("❌: expect != actual")
 		}
 		t.Logf("\nactual: " + buf.String())
 	})
@@ -80,11 +80,11 @@ func TestRetryer_Retry(t *testing.T) {
 		r.Retry(ctx) // third
 		err := r.Err()
 		if err == nil {
-			t.Errorf("err == nil")
+			t.Errorf("❌: err == nil")
 		}
 		const expect = "context canceled"
 		if !strings.Contains(err.Error(), expect) {
-			t.Errorf("err not contain: `%s` != `%v`", expect, err)
+			t.Errorf("❌: err not contain: `%s` != `%v`", expect, err)
 		}
 	})
 }
@@ -106,12 +106,12 @@ func TestRetryer_Do(t *testing.T) {
 			return nil
 		})
 		if err != nil {
-			t.Errorf("err != nil")
+			t.Errorf("❌: err != nil")
 		}
 		const expect = `retries=0/20 retryAfter=8.165505ms; `
 		actual := buf.String()
 		if expect != actual {
-			t.Errorf("expect != actual")
+			t.Errorf("❌: expect != actual")
 		}
 		t.Logf("\nactual: " + buf.String())
 	})
@@ -131,16 +131,16 @@ func TestRetryer_Do(t *testing.T) {
 			fmt.Fprintf(buf, "retries=%d/%d retryAfter=%s; ", r.Retries(), maxRetries, r.RetryAfter())
 		}))
 		if err == nil {
-			t.Errorf("err == nil")
+			t.Errorf("❌: err == nil")
 		}
 		const expectErr = "retry: reached max retries: unexpected EOF"
 		if !strings.Contains(err.Error(), expectErr) {
-			t.Errorf("err not contain: `%s` != `%v`", expectErr, err)
+			t.Errorf("❌: err not contain: `%s` != `%v`", expectErr, err)
 		}
 		const expect = `retries=0/20 retryAfter=8.165505ms; retries=1/20 retryAfter=7.393152ms; retries=2/20 retryAfter=3.995827ms; retries=3/20 retryAfter=7.197794ms; retries=4/20 retryAfter=4.376202ms; retries=5/20 retryAfter=126.063µs; retries=6/20 retryAfter=4.980153ms; retries=7/20 retryAfter=6.422456ms; retries=8/20 retryAfter=9.894929ms; retries=9/20 retryAfter=2.637646ms; retries=10/20 retryAfter=943.416µs; retries=11/20 retryAfter=6.976708ms; retries=12/20 retryAfter=9.259259ms; retries=13/20 retryAfter=885.298µs; retries=14/20 retryAfter=9.98852ms; retries=15/20 retryAfter=6.116249ms; retries=16/20 retryAfter=3.981575ms; retries=17/20 retryAfter=3.529631ms; retries=18/20 retryAfter=918.339µs; retries=19/20 retryAfter=5.164748ms; retries=20/20 retryAfter=9.441706ms; `
 		actual := buf.String()
 		if expect != actual {
-			t.Errorf("expect != actual")
+			t.Errorf("❌: expect != actual")
 		}
 		t.Logf("\nactual: " + buf.String())
 	})
@@ -159,16 +159,16 @@ func TestRetryer_Do(t *testing.T) {
 			return io.ErrUnexpectedEOF
 		}, retry.WithUnretryableErrors([]error{io.ErrUnexpectedEOF}))
 		if err == nil {
-			t.Errorf("err == nil")
+			t.Errorf("❌: err == nil")
 		}
 		const expectErr = "retry: unretryable error: unexpected EOF"
 		if !strings.Contains(err.Error(), expectErr) {
-			t.Errorf("err not contain: `%s` != `%v`", expectErr, err)
+			t.Errorf("❌: err not contain: `%s` != `%v`", expectErr, err)
 		}
 		const expect = `retries=0/20 retryAfter=8.165505ms; `
 		actual := buf.String()
 		if expect != actual {
-			t.Errorf("expect != actual")
+			t.Errorf("❌: expect != actual")
 		}
 		t.Logf("\nactual: " + buf.String())
 	})

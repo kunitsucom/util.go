@@ -20,10 +20,10 @@ func TestReadSeekBuffer_Read(t *testing.T) {
 				actual := make([]byte, 5)
 				_, err := buf.Read(actual)
 				if err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 				if !reflect.DeepEqual(expect, actual) {
-					t.Errorf("expect != actual: %s != %s", expect, actual)
+					t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 				}
 			}
 			{
@@ -31,16 +31,16 @@ func TestReadSeekBuffer_Read(t *testing.T) {
 				actual := make([]byte, 5)
 				_, err := buf.Read(actual)
 				if err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 				if !reflect.DeepEqual(expect, actual) {
-					t.Errorf("expect != actual: %s != %s", expect, actual)
+					t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 				}
 			}
 			{
 				_, err := buf.Seek(0, io.SeekStart)
 				if !errors.Is(err, ErrOriginalIOReaderHasNotCompletedReading) {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 			}
 			{
@@ -48,61 +48,61 @@ func TestReadSeekBuffer_Read(t *testing.T) {
 				actual := make([]byte, 5)
 				_, err := buf.Read(actual)
 				if !errors.Is(err, io.EOF) {
-					t.Errorf("err != io.EOF: %v", err)
+					t.Errorf("❌: err != io.EOF: %v", err)
 				}
 				if !reflect.DeepEqual(expect, actual) {
-					t.Errorf("expect != actual: %s != %s", expect, actual)
+					t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 				}
 			}
 			{
 				if _, err := buf.Seek(0, io.SeekStart); err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 				expect := []byte("TestS")
 				actual := make([]byte, 5)
 				_, err := buf.Read(actual)
 				if err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 				if !reflect.DeepEqual(expect, actual) {
-					t.Errorf("expect != actual: %s != %s", expect, actual)
+					t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 				}
 			}
 			{
 				if _, err := buf.Seek(-6, io.SeekEnd); err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 				expect := []byte("String")
 				actual := make([]byte, 6)
 				_, err := buf.Read(actual)
 				if err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 				if !reflect.DeepEqual(expect, actual) {
-					t.Errorf("expect != actual: %s != %s", expect, actual)
+					t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 				}
 			}
 			{
 				expect := []byte("")
 				actual, err := io.ReadAll(buf)
 				if err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 				if !reflect.DeepEqual(expect, actual) {
-					t.Errorf("expect != actual: %s != %s", expect, actual)
+					t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 				}
 			}
 			{
 				if _, err := buf.Seek(0, io.SeekStart); err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 				expect := []byte("TestString")
 				actual, err := io.ReadAll(buf)
 				if err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 				if !reflect.DeepEqual(expect, actual) {
-					t.Errorf("expect != actual: %s != %s", expect, actual)
+					t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 				}
 			}
 		}
@@ -121,13 +121,13 @@ func TestReadSeekBuffer_Read(t *testing.T) {
 			buf.off = len(buf.buf)
 			n, err := buf.Read(actual)
 			if !errors.Is(err, nil) {
-				t.Errorf("err != io.EOF: %v", err)
+				t.Errorf("❌: err != io.EOF: %v", err)
 			}
 			if n != 0 {
-				t.Errorf("n != 0: %v", n)
+				t.Errorf("❌: n != 0: %v", n)
 			}
 			if !reflect.DeepEqual(expect, actual) {
-				t.Errorf("expect != actual: %s != %s", expect, actual)
+				t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 			}
 		}
 
@@ -149,26 +149,26 @@ func TestReadSeekBuffer_Seek(t *testing.T) {
 				expect := []byte("TestString")
 				actual, err := io.ReadAll(buf)
 				if err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 				if !reflect.DeepEqual(expect, actual) {
-					t.Errorf("expect != actual: %s != %s", expect, actual)
+					t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 				}
 			}
 			_, err := buf.Seek(0, io.SeekStart)
 			if err != nil {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("❌: err != nil: %v", err)
 			}
 			expect := []byte("TestString")
 			actual, err := io.ReadAll(buf)
 			if err != nil {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("❌: err != nil: %v", err)
 			}
 			if !reflect.DeepEqual(expect, actual) {
-				t.Errorf("expect != actual: %s != %s", expect, actual)
+				t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 			}
 			if _, err := buf.Seek(0, io.SeekStart); err != nil {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("❌: err != nil: %v", err)
 			}
 		}
 
@@ -181,7 +181,7 @@ func TestReadSeekBuffer_Seek(t *testing.T) {
 		expect := []byte("TestString")
 		actual := buf2.Bytes()
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %s != %s", expect, actual)
+			t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 		}
 	})
 
@@ -192,25 +192,25 @@ func TestReadSeekBuffer_Seek(t *testing.T) {
 				expect := []byte("TestString")
 				actual, err := io.ReadAll(buf)
 				if err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 				if !reflect.DeepEqual(expect, actual) {
-					t.Errorf("expect != actual: %s != %s", expect, actual)
+					t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 				}
 				if _, err := buf.Seek(0, io.SeekStart); err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 			}
 			if _, err := buf.Seek(1, io.SeekCurrent); err != nil {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("❌: err != nil: %v", err)
 			}
 			expect := []byte("estString")
 			actual, err := io.ReadAll(buf)
 			if err != nil {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("❌: err != nil: %v", err)
 			}
 			if !reflect.DeepEqual(expect, actual) {
-				t.Errorf("expect != actual: %s != %s", expect, actual)
+				t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 			}
 		}
 
@@ -227,25 +227,25 @@ func TestReadSeekBuffer_Seek(t *testing.T) {
 				expect := []byte("TestString")
 				actual, err := io.ReadAll(buf)
 				if err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 				if !reflect.DeepEqual(expect, actual) {
-					t.Errorf("expect != actual: %s != %s", expect, actual)
+					t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 				}
 				if _, err := buf.Seek(0, io.SeekStart); err != nil {
-					t.Errorf("err != nil: %v", err)
+					t.Errorf("❌: err != nil: %v", err)
 				}
 			}
 			if _, err := buf.Seek(-9, io.SeekEnd); err != nil {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("❌: err != nil: %v", err)
 			}
 			expect := []byte("estString")
 			actual, err := io.ReadAll(buf)
 			if err != nil {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("❌: err != nil: %v", err)
 			}
 			if !reflect.DeepEqual(expect, actual) {
-				t.Errorf("expect != actual: %s != %s", expect, actual)
+				t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 			}
 		}
 
@@ -263,13 +263,13 @@ func TestReadSeekBuffer_Seek(t *testing.T) {
 			expect := []byte("TestString")
 			actual, err := io.ReadAll(buf)
 			if err != nil {
-				t.Errorf("err != nil: %v", err)
+				t.Errorf("❌: err != nil: %v", err)
 			}
 			if !reflect.DeepEqual(expect, actual) {
-				t.Errorf("expect != actual: %s != %s", expect, actual)
+				t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 			}
 			if _, err := buf.Seek(maxInt, io.SeekStart); !errors.Is(err, ErrOffsetExceedsBufferSize) {
-				t.Errorf("err != ErrOffsetExceedsBufferSize: %v", err)
+				t.Errorf("❌: err != ErrOffsetExceedsBufferSize: %v", err)
 			}
 		}
 
@@ -286,13 +286,13 @@ func TestReadSeekBuffer_Seek(t *testing.T) {
 		expect := []byte("TestString")
 		actual, err := io.ReadAll(buf)
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %s != %s", expect, actual)
+			t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 		}
 		if _, err := buf.Seek(0, 3); !errors.Is(err, ErrUnexpectedWhence) {
-			t.Errorf("err != ErrUnexpectedWhence: %v", err)
+			t.Errorf("❌: err != ErrUnexpectedWhence: %v", err)
 		}
 	})
 
@@ -302,13 +302,13 @@ func TestReadSeekBuffer_Seek(t *testing.T) {
 		expect := []byte("TestString")
 		actual, err := io.ReadAll(buf)
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %s != %s", expect, actual)
+			t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 		}
 		if _, err := buf.Seek(10, io.SeekCurrent); !errors.Is(err, ErrOffsetExceedsBufferSize) {
-			t.Errorf("err != ErrOffsetExceedsBufferSize: %v", err)
+			t.Errorf("❌: err != ErrOffsetExceedsBufferSize: %v", err)
 		}
 	})
 }
@@ -322,7 +322,7 @@ func TestString(t *testing.T) {
 		actual := buf.String()
 
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %s != %s", expect, actual)
+			t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 		}
 	})
 
@@ -333,7 +333,7 @@ func TestString(t *testing.T) {
 
 		expect := "<nil>"
 		if !reflect.DeepEqual(expect, actual) {
-			t.Errorf("expect != actual: %s != %s", expect, actual)
+			t.Errorf("❌: expect != actual: %s != %s", expect, actual)
 		}
 	})
 }

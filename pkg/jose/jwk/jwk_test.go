@@ -361,7 +361,7 @@ func TestClient_GetJSONWebKey(t *testing.T) {
 		cached := jwk2.N
 
 		if first != cached {
-			t.Errorf("first != cached: %v != %v", first, cached)
+			t.Errorf("❌: first != cached: %v != %v", first, cached)
 		}
 	})
 

@@ -16,10 +16,10 @@ func TestDetectContentType(t *testing.T) {
 		const expect = "text/html; charset=utf-8"
 		actual, err := mime.DetectContentType(strings.NewReader("<!DOCTYPE html>"))
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if expect != actual {
-			t.Errorf("expect != actual: %v != %v", expect, actual)
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
 
@@ -27,7 +27,7 @@ func TestDetectContentType(t *testing.T) {
 		t.Parallel()
 		r := testz.NewReadWriter(bytes.NewBuffer(nil), 0, testz.ErrTestError)
 		if _, err := mime.DetectContentType(r); err == nil {
-			t.Errorf("err == nil")
+			t.Errorf("❌: err == nil")
 		}
 	})
 }

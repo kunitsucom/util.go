@@ -31,13 +31,13 @@ func TestDumpResponse(t *testing.T) {
 		}
 		actualDump, actualBody, err := DumpResponse(expectResponse)
 		if err != nil {
-			t.Errorf("err != nil: %v", err)
+			t.Errorf("❌: err != nil: %v", err)
 		}
 		if !reflect.DeepEqual(expectDump, string(actualDump)) {
-			t.Errorf("expectDump != actualDump: %s", actualDump)
+			t.Errorf("❌: expectDump != actualDump: %s", actualDump)
 		}
 		if expectBody != actualBody.String() {
-			t.Errorf("string(expectDump) != string(actualDump): %s", actualDump)
+			t.Errorf("❌: string(expectDump) != string(actualDump): %s", actualDump)
 		}
 	})
 
@@ -54,7 +54,7 @@ func TestDumpResponse(t *testing.T) {
 		}
 		_, _, err := dumpResponse(testResponse, func(dst io.Writer, src io.Reader) (written int64, err error) { return 0, io.EOF }, httputil.DumpResponse)
 		if err == nil {
-			t.Errorf("err == nil")
+			t.Errorf("❌: err == nil")
 		}
 	})
 
@@ -70,7 +70,7 @@ func TestDumpResponse(t *testing.T) {
 			Body:       io.NopCloser(bytes.NewBufferString("test")),
 		}
 		if _, _, err := dumpResponse(testResponse, io.Copy, func(resp *http.Response, body bool) ([]byte, error) { return nil, io.EOF }); err == nil {
-			t.Errorf("err == nil")
+			t.Errorf("❌: err == nil")
 		}
 	})
 }

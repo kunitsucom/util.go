@@ -13,7 +13,7 @@ var ErrEnvironmentVariableIsEmpty = errors.New("env: environment variable is emp
 func String(key string) (string, error) {
 	value, found := os.LookupEnv(key)
 	if !found {
-		return "", fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
+		return "", fmt.Errorf("❌: %s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	return value, nil
@@ -40,12 +40,12 @@ func MustString(key string) string {
 func Bool(key string) (bool, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
-		return false, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
+		return false, fmt.Errorf("❌: %s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	value, err := strconv.ParseBool(env)
 	if err != nil {
-		return false, fmt.Errorf("strconv.ParseBool: %w", err)
+		return false, fmt.Errorf("❌: strconv.ParseBool: %w", err)
 	}
 
 	return value, nil
@@ -72,12 +72,12 @@ func MustBool(key string) bool {
 func Int(key string) (int, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
-		return 0, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
+		return 0, fmt.Errorf("❌: %s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	value, err := strconv.Atoi(env)
 	if err != nil {
-		return 0, fmt.Errorf("strconv.Atoi: %w", err)
+		return 0, fmt.Errorf("❌: strconv.Atoi: %w", err)
 	}
 
 	return value, nil
@@ -104,12 +104,12 @@ func MustInt(key string) int {
 func Int64(key string) (int64, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
-		return 0, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
+		return 0, fmt.Errorf("❌: %s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	value, err := strconv.ParseInt(env, 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("strconv.ParseInt: %w", err)
+		return 0, fmt.Errorf("❌: strconv.ParseInt: %w", err)
 	}
 
 	return value, nil
@@ -136,12 +136,12 @@ func MustInt64(key string) int64 {
 func Uint(key string) (uint, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
-		return 0, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
+		return 0, fmt.Errorf("❌: %s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	value, err := strconv.ParseUint(env, 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("strconv.ParseInt: %w", err)
+		return 0, fmt.Errorf("❌: strconv.ParseInt: %w", err)
 	}
 
 	return uint(value), nil
@@ -168,12 +168,12 @@ func MustUint(key string) uint {
 func Uint64(key string) (uint64, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
-		return 0, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
+		return 0, fmt.Errorf("❌: %s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	value, err := strconv.ParseUint(env, 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("strconv.ParseInt: %w", err)
+		return 0, fmt.Errorf("❌: strconv.ParseInt: %w", err)
 	}
 
 	return value, nil
@@ -200,12 +200,12 @@ func MustUint64(key string) uint64 {
 func Float64(key string) (float64, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
-		return 0, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
+		return 0, fmt.Errorf("❌: %s: %w", key, ErrEnvironmentVariableIsEmpty)
 	}
 
 	value, err := strconv.ParseFloat(env, 64)
 	if err != nil {
-		return 0, fmt.Errorf("strconv.ParseFloat: %w", err)
+		return 0, fmt.Errorf("❌: strconv.ParseFloat: %w", err)
 	}
 
 	return value, nil
@@ -232,7 +232,7 @@ func MustFloat64(key string) float64 {
 func Second(key string) (time.Duration, error) {
 	env, err := Int64(key)
 	if err != nil {
-		return 0, fmt.Errorf("Int64: %w", err)
+		return 0, fmt.Errorf("❌: Int64: %w", err)
 	}
 
 	return time.Duration(env) * time.Second, nil
