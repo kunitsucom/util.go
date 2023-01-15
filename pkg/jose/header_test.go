@@ -53,7 +53,7 @@ var (
 		Type:                            "JWT",
 		ContentType:                     "JWT",
 		Critical:                        []string{"name"},
-		PrivateHeaderParameters: map[string]interface{}{
+		PrivateHeaderParameters: map[string]any{
 			testPrivatePrivateHeaderParameter1Key: testPrivateHeaderParameter1Value,
 		},
 	}
@@ -89,6 +89,7 @@ func TestHeader_MarshalJSON(t *testing.T) {
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 		h := NewHeader(
+			jwa.HS256,
 			WithAlgorithm(jwa.HS256),
 			WithEncryptionAlgorithm("test"),
 			WithCompressionAlgorithm("DEF"),
@@ -115,7 +116,7 @@ func TestHeader_MarshalJSON(t *testing.T) {
 
 	t.Run("success(len(PrivateHeaderParameters)==0)", func(t *testing.T) {
 		t.Parallel()
-		b, err := json.Marshal(NewHeader(WithAlgorithm(jwa.HS256)))
+		b, err := json.Marshal(NewHeader(jwa.HS256))
 		if err != nil {
 			t.Fatalf("❌: json.Marshal: %v", err)
 		}
@@ -256,8 +257,8 @@ func TestHeader_GetPrivateHeaderParameter(t *testing.T) {
 		t.Parallel()
 		const testKey = "testKey"
 		expect := "testValue"
-		h := NewHeader(WithPrivateHeaderParameter(testKey, expect))
-		h.PrivateHeaderParameters[testKey] = expect
+		h := NewHeader(jwa.HS256, WithPrivateHeaderParameter(testKey, expect))
+		h.SetPrivateHeaderParameter(testKey, expect)
 		var actual string
 		if err := h.GetPrivateHeaderParameter(testKey, &actual); err != nil {
 			t.Fatalf("❌: (*Header).GetPrivateHeaderParameter: err != nil: %v", err)
@@ -275,8 +276,8 @@ func TestHeader_GetPrivateHeaderParameter(t *testing.T) {
 			if1    *Header
 		}
 		expect := &Expect{expect: "test", if1: testHeader}
-		h := NewHeader(WithPrivateHeaderParameter(testKey, expect))
-		h.PrivateHeaderParameters[testKey] = expect
+		h := NewHeader(jwa.HS256, WithPrivateHeaderParameter(testKey, expect))
+		h.SetPrivateHeaderParameter(testKey, expect)
 		var actual *Expect
 		if err := h.GetPrivateHeaderParameter(testKey, &actual); err != nil {
 			t.Fatalf("❌: (*Header).GetPrivateHeaderParameter: err != nil: %v", err)
@@ -289,8 +290,8 @@ func TestHeader_GetPrivateHeaderParameter(t *testing.T) {
 	t.Run("failure(jose.ErrValueIsNotPointerOrInterface)", func(t *testing.T) {
 		t.Parallel()
 		const testKey = "testKey"
-		h := NewHeader()
-		if err := h.GetPrivateHeaderParameter(testKey, nil); err == nil || !errors.Is(err, ErrValueIsNotPointerOrInterface) {
+		h := NewHeader(jwa.HS256)
+		if err := h.GetPrivateHeaderParameter(testKey, nil); err == nil || !errors.Is(err, ErrVIsNotPointerOrInterface) {
 			t.Fatalf("❌: (*Header).GetPrivateHeaderParameter: err: %v", err)
 		}
 	})
@@ -298,9 +299,9 @@ func TestHeader_GetPrivateHeaderParameter(t *testing.T) {
 	t.Run("failure(jose.ErrPrivateHeaderParameterIsNotMatch)", func(t *testing.T) {
 		t.Parallel()
 		const testKey = "testKey"
-		h := NewHeader()
+		h := NewHeader(jwa.HS256)
 		var v string
-		if err := h.GetPrivateHeaderParameter(testKey, &v); err == nil || !errors.Is(err, ErrPrivateHeaderParameterNotFound) {
+		if err := h.GetPrivateHeaderParameter(testKey, &v); err == nil || !errors.Is(err, ErrPrivateHeaderParameterIsNotFound) {
 			t.Fatalf("❌: (*Header).GetPrivateHeaderParameter: err: %v", err)
 		}
 	})
@@ -310,13 +311,13 @@ func TestHeader_GetPrivateHeaderParameter(t *testing.T) {
 		const testKey = "testKey"
 		type Expect struct {
 			expect string
-			if1    interface{}
+			if1    any
 		}
 		expect := &Expect{expect: "test", if1: "test"}
-		h := NewHeader(WithPrivateHeaderParameter(testKey, expect))
-		h.PrivateHeaderParameters[testKey] = expect
+		h := NewHeader(jwa.HS256, WithPrivateHeaderParameter(testKey, expect))
+		h.SetPrivateHeaderParameter(testKey, expect)
 		var actual string
-		if err := h.GetPrivateHeaderParameter(testKey, &actual); err == nil || !errors.Is(err, ErrPrivateHeaderParameterIsNotMatch) {
+		if err := h.GetPrivateHeaderParameter(testKey, &actual); err == nil || !errors.Is(err, ErrPrivateHeaderParameterTypeIsNotMatch) {
 			t.Fatalf("❌: (*Header).GetPrivateHeaderParameter: err: %v", err)
 		}
 	})

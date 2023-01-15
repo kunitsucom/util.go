@@ -20,7 +20,7 @@ func TestNew(t *testing.T) {
 		token, err := jwt.NewJWSToken(
 			hmacKey,
 			jose.NewHeader(
-				jose.WithAlgorithm(jwa.HS256),
+				jwa.HS256,
 				jose.WithType("JWT"),
 				jose.WithPrivateHeaderParameter("testPrivateHeaderParameter", "testPrivateHeaderParameter"),
 			),

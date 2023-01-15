@@ -215,17 +215,17 @@ func TestClaims_Decode(t *testing.T) {
 	})
 }
 
-func TestHeader_GetPrivateClaim(t *testing.T) {
+func TestClaimsSet_GetPrivateClaim(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 		const testKey = "testKey"
 		expect := "testValue"
-		h := NewClaimsSet(WithPrivateClaim(testKey, expect))
-		h.PrivateClaims[testKey] = expect
+		c := NewClaimsSet(WithPrivateClaim(testKey, expect))
+		c.SetPrivateClaim(testKey, expect)
 		var actual string
-		if err := h.GetPrivateClaim(testKey, &actual); err != nil {
+		if err := c.GetPrivateClaim(testKey, &actual); err != nil {
 			t.Fatalf("❌: (*Header).GetPrivateClaim: err != nil: %v", err)
 		}
 		if expect != actual {
@@ -241,10 +241,10 @@ func TestHeader_GetPrivateClaim(t *testing.T) {
 			if1    *ClaimsSet
 		}
 		expect := &Expect{expect: "test", if1: testClaimsSet}
-		h := NewClaimsSet(WithPrivateClaim(testKey, expect))
-		h.PrivateClaims[testKey] = expect
+		c := NewClaimsSet(WithPrivateClaim(testKey, expect))
+		c.SetPrivateClaim(testKey, expect)
 		var actual *Expect
-		if err := h.GetPrivateClaim(testKey, &actual); err != nil {
+		if err := c.GetPrivateClaim(testKey, &actual); err != nil {
 			t.Fatalf("❌: (*Header).GetPrivateClaim: err != nil: %v", err)
 		}
 		if !reflect.DeepEqual(expect, actual) {
@@ -255,8 +255,8 @@ func TestHeader_GetPrivateClaim(t *testing.T) {
 	t.Run("failure(jose.ErrValueIsNotPointerOrInterface)", func(t *testing.T) {
 		t.Parallel()
 		const testKey = "testKey"
-		h := NewClaimsSet()
-		if err := h.GetPrivateClaim(testKey, nil); err == nil || !errors.Is(err, ErrValueIsNotPointerOrInterface) {
+		c := NewClaimsSet()
+		if err := c.GetPrivateClaim(testKey, nil); err == nil || !errors.Is(err, ErrVIsNotPointerOrInterface) {
 			t.Fatalf("❌: (*Header).GetPrivateClaim: err: %v", err)
 		}
 	})
@@ -264,9 +264,9 @@ func TestHeader_GetPrivateClaim(t *testing.T) {
 	t.Run("failure(jose.ErrPrivateHeaderParameterIsNotMatch)", func(t *testing.T) {
 		t.Parallel()
 		const testKey = "testKey"
-		h := NewClaimsSet()
+		c := NewClaimsSet()
 		var v string
-		if err := h.GetPrivateClaim(testKey, &v); err == nil || !errors.Is(err, ErrPrivateClaimNotFound) {
+		if err := c.GetPrivateClaim(testKey, &v); err == nil || !errors.Is(err, ErrPrivateClaimIsNotFound) {
 			t.Fatalf("❌: (*Header).GetPrivateClaim: err: %v", err)
 		}
 	})
@@ -276,13 +276,13 @@ func TestHeader_GetPrivateClaim(t *testing.T) {
 		const testKey = "testKey"
 		type Expect struct {
 			expect string
-			if1    interface{}
+			if1    any
 		}
 		expect := &Expect{expect: "test", if1: "test"}
-		h := NewClaimsSet(WithPrivateClaim(testKey, expect))
-		h.PrivateClaims[testKey] = expect
+		c := NewClaimsSet(WithPrivateClaim(testKey, expect))
+		c.SetPrivateClaim(testKey, expect)
 		var actual string
-		if err := h.GetPrivateClaim(testKey, &actual); err == nil || !errors.Is(err, ErrPrivateClaimIsNotMatch) {
+		if err := c.GetPrivateClaim(testKey, &actual); err == nil || !errors.Is(err, ErrPrivateClaimTypeIsNotMatch) {
 			t.Fatalf("❌: (*Header).GetPrivateClaim: err: %v", err)
 		}
 	})

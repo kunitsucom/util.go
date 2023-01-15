@@ -42,7 +42,7 @@ func TestVerify(t *testing.T) {
 
 	t.Run("failure(exp,jwt.ErrTokenIsExpired)", func(t *testing.T) {
 		t.Parallel()
-		token, err := jwt.Sign(testHS256Key, jose.NewHeader(jose.WithAlgorithm(jwa.HS256)), jwt.NewClaimsSet(jwt.WithExpirationTime(time.Now().Add(-1*time.Hour))))
+		token, err := jwt.Sign(testHS256Key, jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithExpirationTime(time.Now().Add(-1*time.Hour))))
 		if err != nil {
 			t.Fatalf("❌: jwt.New: err != nil: %v", err)
 		}
@@ -53,7 +53,7 @@ func TestVerify(t *testing.T) {
 
 	t.Run("failure(nbf,jwt.ErrTokenIsExpired)", func(t *testing.T) {
 		t.Parallel()
-		token, err := jwt.Sign(testHS256Key, jose.NewHeader(jose.WithAlgorithm(jwa.HS256)), jwt.NewClaimsSet(jwt.WithNotBefore(time.Now().Add(1*time.Hour))))
+		token, err := jwt.Sign(testHS256Key, jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithNotBefore(time.Now().Add(1*time.Hour))))
 		if err != nil {
 			t.Fatalf("❌: jwt.New: err != nil: %v", err)
 		}
@@ -64,7 +64,7 @@ func TestVerify(t *testing.T) {
 
 	t.Run("failure(aud,jwt.ErrAudienceIsNotMatch)", func(t *testing.T) {
 		t.Parallel()
-		token, err := jwt.Sign(testHS256Key, jose.NewHeader(jose.WithAlgorithm(jwa.HS256)), jwt.NewClaimsSet(jwt.WithAudience("aud")))
+		token, err := jwt.Sign(testHS256Key, jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithAudience("aud")))
 		if err != nil {
 			t.Fatalf("❌: jwt.New: err != nil: %v", err)
 		}
@@ -75,7 +75,7 @@ func TestVerify(t *testing.T) {
 
 	t.Run("failure(aud,jwt.ErrAudienceIsNotMatch)", func(t *testing.T) {
 		t.Parallel()
-		token, err := jwt.Sign(testHS256Key, jose.NewHeader(jose.WithAlgorithm(jwa.HS256)), jwt.NewClaimsSet(jwt.WithPrivateClaim("privateClaim", "privateClaim")))
+		token, err := jwt.Sign(testHS256Key, jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithPrivateClaim("privateClaim", "privateClaim")))
 		if err != nil {
 			t.Fatalf("❌: jwt.New: err != nil: %v", err)
 		}
