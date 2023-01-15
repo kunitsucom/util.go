@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -18,10 +19,10 @@ const (
 )
 
 var (
-	testClaims = &Claims{
+	testClaimsSet = &ClaimsSet{
 		Issuer:         "http://localhost/iss",
 		Subject:        "userID",
-		Audience:       "http://localhost/aud",
+		Audience:       []string{"http://localhost/test/aud"},
 		ExpirationTime: 1671745431,
 		NotBefore:      1671745431,
 		IssuedAt:       1671745431,
@@ -30,8 +31,8 @@ var (
 			testPrivateClaim1Key: testPrivateClaim1Value,
 		},
 	}
-	testClaimsString  = fmt.Sprintf(`{"iss":"http://localhost/iss","sub":"userID","aud":"http://localhost/aud","exp":1671745431,"nbf":1671745431,"iat":1671745431,"jti":"jwtID","%s":"%s"}`, testPrivateClaim1Key, testPrivateClaim1Value)
-	testClaimsEncoded = "eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2lzcyIsInN1YiI6InVzZXJJRCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3QvYXVkIiwiZXhwIjoxNjcxNzQ1NDMxLCJuYmYiOjE2NzE3NDU0MzEsImlhdCI6MTY3MTc0NTQzMSwianRpIjoiand0SUQiLCJuYW1lIjoidmFsdWUifQ"
+	testClaimsString  = fmt.Sprintf(`{"iss":"http://localhost/iss","sub":"userID","aud":["http://localhost/test/aud"],"exp":1671745431,"nbf":1671745431,"iat":1671745431,"jti":"jwtID","%s":"%s"}`, testPrivateClaim1Key, testPrivateClaim1Value)
+	testClaimsEncoded = "eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2lzcyIsInN1YiI6InVzZXJJRCIsImF1ZCI6WyJodHRwOi8vbG9jYWxob3N0L3Rlc3QvYXVkIl0sImV4cCI6MTY3MTc0NTQzMSwibmJmIjoxNjcxNzQ1NDMxLCJpYXQiOjE2NzE3NDU0MzEsImp0aSI6Imp3dElEIiwibmFtZSI6InZhbHVlIn0"
 )
 
 func TestClaims_UnmarshalJSON(t *testing.T) {
@@ -40,7 +41,7 @@ func TestClaims_UnmarshalJSON(t *testing.T) {
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 
-		claims := new(Claims)
+		claims := new(ClaimsSet)
 		if err := json.Unmarshal([]byte(testClaimsString), claims); err != nil {
 			t.Fatalf("❌: json.Unmarshal: err != nil: %v", err)
 		}
@@ -60,7 +61,7 @@ func TestClaims_MarshalJSON(t *testing.T) {
 
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
-		b, err := json.Marshal(testClaims)
+		b, err := json.Marshal(testClaimsSet)
 		if err != nil {
 			t.Fatalf("❌: json.Marshal: %v", err)
 		}
@@ -74,7 +75,7 @@ func TestClaims_MarshalJSON(t *testing.T) {
 		t.Parallel()
 		expect := []byte(`{"exp":1671745371,"iat":1671745311}`)
 		exp := time.Date(2022, 12, 23, 6, 42, 51, 0, time.FixedZone("Asia/Tokyo", 9*60*60))
-		h := NewClaims(WithIssuedAt(exp.Add(-1*time.Minute)), WithExpirationTime(exp))
+		h := NewClaimsSet(WithIssuedAt(exp.Add(-1*time.Minute)), WithExpirationTime(exp))
 		actual, err := json.Marshal(h)
 		if err != nil {
 			t.Fatalf("❌: err != nil: %v", err)
@@ -90,7 +91,7 @@ func TestClaims_marshalJSON(t *testing.T) {
 
 	t.Run("failure(json_Marshal)", func(t *testing.T) {
 		t.Parallel()
-		_, err := testClaims.marshalJSON(
+		_, err := testClaimsSet.marshalJSON(
 			func(v any) ([]byte, error) { return nil, testz.ErrTestError },
 			bytes.HasSuffix,
 			bytes.HasPrefix,
@@ -102,7 +103,7 @@ func TestClaims_marshalJSON(t *testing.T) {
 
 	t.Run("failure(invalid)", func(t *testing.T) {
 		t.Parallel()
-		h := &Claims{
+		h := &ClaimsSet{
 			PrivateClaims: map[string]any{
 				"invalid": func() {},
 			},
@@ -122,7 +123,7 @@ func TestClaims_marshalJSON(t *testing.T) {
 
 	t.Run("failure(bytes_HasSuffix)", func(t *testing.T) {
 		t.Parallel()
-		_, err := testClaims.marshalJSON(
+		_, err := testClaimsSet.marshalJSON(
 			json.Marshal,
 			func(s, suffix []byte) bool { return false },
 			bytes.HasPrefix,
@@ -134,7 +135,7 @@ func TestClaims_marshalJSON(t *testing.T) {
 
 	t.Run("failure(bytes_HasPrefix)", func(t *testing.T) {
 		t.Parallel()
-		_, err := testClaims.marshalJSON(
+		_, err := testClaimsSet.marshalJSON(
 			json.Marshal,
 			bytes.HasSuffix,
 			func(s, suffix []byte) bool { return false },
@@ -150,10 +151,10 @@ func TestClaims_Encode(t *testing.T) {
 
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
-		h := NewClaims(
+		h := NewClaimsSet(
 			WithIssuer("http://localhost/iss"),
 			WithSubject("userID"),
-			WithAudience("http://localhost/aud"),
+			WithAudience("http://localhost/test/aud"),
 			WithExpirationTime(time.Date(2022, 12, 23, 6, 43, 51, 0, time.FixedZone("Asia/Tokyo", 9*60*60))),
 			WithNotBefore(time.Date(2022, 12, 23, 6, 43, 51, 0, time.FixedZone("Asia/Tokyo", 9*60*60))),
 			WithIssuedAt(time.Date(2022, 12, 23, 6, 43, 51, 0, time.FixedZone("Asia/Tokyo", 9*60*60))),
@@ -171,7 +172,7 @@ func TestClaims_Encode(t *testing.T) {
 
 	t.Run("failure()", func(t *testing.T) {
 		t.Parallel()
-		h := &Claims{
+		h := &ClaimsSet{
 			PrivateClaims: map[string]any{
 				"invalid": func() {},
 			},
@@ -191,7 +192,7 @@ func TestClaims_Decode(t *testing.T) {
 
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
-		actual := new(Claims)
+		actual := new(ClaimsSet)
 		if err := actual.Decode(testClaimsEncoded); err != nil {
 			t.Fatalf("❌: err != nil: %v", err)
 		}
@@ -199,7 +200,7 @@ func TestClaims_Decode(t *testing.T) {
 
 	t.Run("failure(base64.RawURLEncoding.DecodeString)", func(t *testing.T) {
 		t.Parallel()
-		err := new(Claims).Decode("inv@lid")
+		err := new(ClaimsSet).Decode("inv@lid")
 		if expect, actual := "illegal base64 data at input byte 3", err.Error(); !strings.Contains(actual, expect) {
 			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
 		}
@@ -207,9 +208,82 @@ func TestClaims_Decode(t *testing.T) {
 
 	t.Run("failure(json.Unmarshal)", func(t *testing.T) {
 		t.Parallel()
-		err := new(Claims).Decode("aW52QGxpZA") // invalid (base64-encoded)
+		err := new(ClaimsSet).Decode("aW52QGxpZA") // invalid (base64-encoded)
 		if expect, actual := "invalid character 'i' looking for beginning of value", err.Error(); !strings.Contains(actual, expect) {
 			t.Fatalf("❌: expect != actual: %s != %s", expect, actual)
+		}
+	})
+}
+
+func TestHeader_GetPrivateClaim(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success()", func(t *testing.T) {
+		t.Parallel()
+		const testKey = "testKey"
+		expect := "testValue"
+		h := NewClaimsSet(WithPrivateClaim(testKey, expect))
+		h.PrivateClaims[testKey] = expect
+		var actual string
+		if err := h.GetPrivateClaim(testKey, &actual); err != nil {
+			t.Fatalf("❌: (*Header).GetPrivateClaim: err != nil: %v", err)
+		}
+		if expect != actual {
+			t.Fatalf("❌: (*Header).GetPrivateClaim: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("success()", func(t *testing.T) {
+		t.Parallel()
+		const testKey = "testKey"
+		type Expect struct {
+			expect string
+			if1    *ClaimsSet
+		}
+		expect := &Expect{expect: "test", if1: testClaimsSet}
+		h := NewClaimsSet(WithPrivateClaim(testKey, expect))
+		h.PrivateClaims[testKey] = expect
+		var actual *Expect
+		if err := h.GetPrivateClaim(testKey, &actual); err != nil {
+			t.Fatalf("❌: (*Header).GetPrivateClaim: err != nil: %v", err)
+		}
+		if !reflect.DeepEqual(expect, actual) {
+			t.Fatalf("❌: (*Header).GetPrivateClaim: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure(jose.ErrValueIsNotPointerOrInterface)", func(t *testing.T) {
+		t.Parallel()
+		const testKey = "testKey"
+		h := NewClaimsSet()
+		if err := h.GetPrivateClaim(testKey, nil); err == nil || !errors.Is(err, ErrValueIsNotPointerOrInterface) {
+			t.Fatalf("❌: (*Header).GetPrivateClaim: err: %v", err)
+		}
+	})
+
+	t.Run("failure(jose.ErrPrivateHeaderParameterIsNotMatch)", func(t *testing.T) {
+		t.Parallel()
+		const testKey = "testKey"
+		h := NewClaimsSet()
+		var v string
+		if err := h.GetPrivateClaim(testKey, &v); err == nil || !errors.Is(err, ErrPrivateClaimNotFound) {
+			t.Fatalf("❌: (*Header).GetPrivateClaim: err: %v", err)
+		}
+	})
+
+	t.Run("failure(jose.ErrPrivateHeaderParameterIsNotMatch)", func(t *testing.T) {
+		t.Parallel()
+		const testKey = "testKey"
+		type Expect struct {
+			expect string
+			if1    interface{}
+		}
+		expect := &Expect{expect: "test", if1: "test"}
+		h := NewClaimsSet(WithPrivateClaim(testKey, expect))
+		h.PrivateClaims[testKey] = expect
+		var actual string
+		if err := h.GetPrivateClaim(testKey, &actual); err == nil || !errors.Is(err, ErrPrivateClaimIsNotMatch) {
+			t.Fatalf("❌: (*Header).GetPrivateClaim: err: %v", err)
 		}
 	})
 }
