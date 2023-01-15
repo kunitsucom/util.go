@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	ErrPrivateClaimNotFound         = errors.New(`jwt: private claim not found`)
-	ErrValueIsNotPointerOrInterface = errors.New(`jwt: value is not pointer or interface`)
-	ErrPrivateClaimIsNotMatch       = errors.New(`jwt: private claim type is not match`)
+	ErrPrivateClaimIsNotFound     = errors.New(`jwt: private claim is not found`)
+	ErrVIsNotPointerOrInterface   = errors.New(`jwt: v is not pointer or interface`)
+	ErrPrivateClaimTypeIsNotMatch = errors.New(`jwt: private claim type is not match`)
 )
 
 //   - ref. JOSE Header - JSON Web Token (JWT) https://www.rfc-editor.org/rfc/rfc7519#section-5
@@ -261,27 +261,22 @@ func (c *ClaimsSet) Decode(encoded string) error {
 	return nil
 }
 
+// GetPrivateClaim
+//
+//   - ref. https://pkg.go.dev/github.com/kunitsuinc/util.go@v0.0.26/pkg/maps#Get
 func (c *ClaimsSet) GetPrivateClaim(claimName string, v interface{}) error {
 	reflectValue := reflect.ValueOf(v)
-	// NOTE: memo
-	// if !reflectValue.IsValid() {
-	// 	return errors.New("")
-	// }
 	if reflectValue.Kind() != reflect.Pointer && reflectValue.Kind() != reflect.Interface {
-		return fmt.Errorf("v.(type)==%T: %w", v, ErrValueIsNotPointerOrInterface)
+		return fmt.Errorf("v.(type)==%T: %w", v, ErrVIsNotPointerOrInterface)
 	}
 	reflectValueElem := reflectValue.Elem()
-	// NOTE: memo
-	// if !reflectValueElem.CanSet() {
-	// 	return errors.New("")
-	// }
 	param, ok := c.PrivateClaims[claimName]
 	if !ok {
-		return fmt.Errorf("(*jwt.ClaimsSet).PrivateClaims[%q]: %w", claimName, ErrPrivateClaimNotFound)
+		return fmt.Errorf("(*jwt.ClaimsSet).PrivateClaims[%q]: %w", claimName, ErrPrivateClaimIsNotFound)
 	}
 	paramReflectValue := reflect.ValueOf(param)
 	if reflectValueElem.Type() != paramReflectValue.Type() {
-		return fmt.Errorf("(*jwt.ClaimsSet).PrivateClaims[%q].(type)==%T, v.(type)==%T: %w", claimName, param, v, ErrPrivateClaimIsNotMatch)
+		return fmt.Errorf("(*jwt.ClaimsSet).PrivateClaims[%q].(type)==%T, v.(type)==%T: %w", claimName, param, v, ErrPrivateClaimTypeIsNotMatch)
 	}
 	reflectValueElem.Set(paramReflectValue)
 	return nil

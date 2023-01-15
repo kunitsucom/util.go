@@ -49,7 +49,7 @@ func TestVerify(t *testing.T) {
 		publicKey := must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM)))
 		privateKey := must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM)))
 		header := jose.NewHeader(
-			jose.WithAlgorithm(jwa.RS256),
+			jwa.RS256,
 			jose.WithJSONWebKey(new(jwk.JSONWebKey).EncodeRSAPublicKey(publicKey)),
 		)
 		headerEncoded, err := header.Encode()
@@ -80,7 +80,7 @@ func TestVerify(t *testing.T) {
 		mux.HandleFunc(keysPath, func(w http.ResponseWriter, r *http.Request) { _, _ = w.Write(jwks) })
 		s := httptest.NewServer(mux)
 		jwksURL := s.URL + keysPath
-		headerEncoded, err := jose.NewHeader(jose.WithAlgorithm(jwa.RS256), jose.WithJWKSetURL(jwksURL), jose.WithKeyID("testKeyID1")).Encode()
+		headerEncoded, err := jose.NewHeader(jwa.RS256, jose.WithJWKSetURL(jwksURL), jose.WithKeyID("testKeyID1")).Encode()
 		if err != nil {
 			t.Fatalf("❌: header.Encode: err != nil: %v", err)
 		}
@@ -131,7 +131,7 @@ func TestVerify(t *testing.T) {
 		t.Parallel()
 		jsonWebKey := new(jwk.JSONWebKey).EncodeRSAPublicKey(&rsa.PublicKey{N: big.NewInt(0)})
 		jsonWebKey.KeyType = "oct"
-		headerEncoded, err := jose.NewHeader(jose.WithAlgorithm(jwa.HS256), jose.WithJSONWebKey(jsonWebKey)).Encode()
+		headerEncoded, err := jose.NewHeader(jwa.HS256, jose.WithJSONWebKey(jsonWebKey)).Encode()
 		if err != nil {
 			t.Fatalf("Encode: err != nil: %v", err)
 		}
@@ -150,7 +150,7 @@ func TestVerify(t *testing.T) {
 
 	t.Run("failure(jose.ErrJWKSetIsEmpty)", func(t *testing.T) {
 		t.Parallel()
-		headerEncoded, err := jose.NewHeader(jose.WithAlgorithm(jwa.HS256), jose.WithJWKSetURL("http://127.0.0.1:1/")).Encode()
+		headerEncoded, err := jose.NewHeader(jwa.HS256, jose.WithJWKSetURL("http://127.0.0.1:1/")).Encode()
 		if err != nil {
 			t.Fatalf("Encode: err != nil: %v", err)
 		}
@@ -173,7 +173,7 @@ func TestVerify(t *testing.T) {
 		s := httptest.NewServer(mux)
 		jwksURL := s.URL + keysPath
 
-		headerEncoded, err := jose.NewHeader(jose.WithAlgorithm(jwa.HS256), jose.WithJWKSetURL(jwksURL)).Encode()
+		headerEncoded, err := jose.NewHeader(jwa.HS256, jose.WithJWKSetURL(jwksURL)).Encode()
 		if err != nil {
 			t.Fatalf("❌: header.Encode: err != nil: %v", err)
 		}
@@ -197,7 +197,7 @@ func TestVerify(t *testing.T) {
 		s := httptest.NewServer(mux)
 		jwksURL := s.URL + keysPath
 
-		headerEncoded, err := jose.NewHeader(jose.WithAlgorithm(jwa.RS256), jose.WithJWKSetURL(jwksURL), jose.WithKeyID("NotFound")).Encode()
+		headerEncoded, err := jose.NewHeader(jwa.RS256, jose.WithJWKSetURL(jwksURL), jose.WithKeyID("NotFound")).Encode()
 		if err != nil {
 			t.Fatalf("❌: header.Encode: err != nil: %v", err)
 		}

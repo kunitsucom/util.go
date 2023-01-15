@@ -21,7 +21,7 @@ func TestSign(t *testing.T) {
 		token, err := jwt.Sign(
 			hmacKey,
 			jose.NewHeader(
-				jose.WithAlgorithm(jwa.HS256),
+				jwa.HS256,
 				jose.WithType("JWT"),
 				jose.WithPrivateHeaderParameter("testPrivateHeaderParameter", "testPrivateHeaderParameter"),
 			),
@@ -56,7 +56,7 @@ func TestSign(t *testing.T) {
 		_, err := jwt.Sign(
 			hmacKey,
 			jose.NewHeader(
-				jose.WithAlgorithm(jwa.HS256),
+				jwa.HS256,
 				jose.WithType("JWT"),
 				jose.WithPrivateHeaderParameter("testPrivateHeaderParameter", func() {}),
 			),
@@ -78,7 +78,7 @@ func TestSign(t *testing.T) {
 		_, err := jwt.Sign(
 			hmacKey,
 			jose.NewHeader(
-				jose.WithAlgorithm(jwa.HS256),
+				jwa.HS256,
 				jose.WithType("JWT"),
 				jose.WithPrivateHeaderParameter("testPrivateHeaderParameter", "testPrivateHeaderParameter"),
 			),
@@ -99,7 +99,7 @@ func TestSign(t *testing.T) {
 		_, err := jwt.Sign(
 			nil,
 			jose.NewHeader(
-				jose.WithAlgorithm(jwa.HS256),
+				jwa.HS256,
 				jose.WithType("JWT"),
 				jose.WithPrivateHeaderParameter("testPrivateHeaderParameter", "testPrivateHeaderParameter"),
 			),
