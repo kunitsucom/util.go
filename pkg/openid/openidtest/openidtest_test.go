@@ -16,14 +16,14 @@ func TestStartOpenIDProvider(t *testing.T) {
 
 	addr, metadata, _ := openidtest.StartOpenIDProvider()
 
-	t.Logf("start open id provider: %s", addr)
+	t.Logf("📝: start open id provider: %s", addr)
 
 	func() {
 		resp := must.One(http.Get(metadata.Issuer + discovery.ProviderMetadataURLPath)) //nolint:bodyclose
 		defer resp.Body.Close()
 		got := new(discovery.ProviderMetadata)
 		must.Must(json.NewDecoder(resp.Body).Decode(got))
-		t.Logf("%s", must.One(json.Marshal(got)))
+		t.Logf("📝: %s", must.One(json.Marshal(got)))
 	}()
 
 	func() {
@@ -31,6 +31,6 @@ func TestStartOpenIDProvider(t *testing.T) {
 		defer resp.Body.Close()
 		got := new(jwk.JWKSet)
 		must.Must(json.NewDecoder(resp.Body).Decode(got))
-		t.Logf("%s", must.One(json.Marshal(got)))
+		t.Logf("📝: %s", must.One(json.Marshal(got)))
 	}()
 }

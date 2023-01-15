@@ -21,16 +21,14 @@ func TestDocumentURL(t *testing.T) {
 		t.Parallel()
 		r, err := http.Get(discovery.Google)
 		if err != nil {
-			t.Logf("🤔: http.Get: %v", err)
 			return
 		}
 		defer r.Body.Close()
 		buf := bytes.NewBuffer(nil)
 		if _, err := io.Copy(buf, r.Body); err != nil {
-			t.Logf("🤔: io.Copy: %v", err)
 			return
 		}
-		t.Logf("✅: %s:\n"+buf.String(), discovery.Google)
+		t.Logf("📝: %s:\n"+buf.String(), discovery.Google)
 	})
 }
 

@@ -30,7 +30,7 @@ func TestRetryer_Retry(t *testing.T) {
 		}
 		fmt.Fprintf(buf, "[EXAMPLE] time=%s If there is no difference of about %s in execution time between ↑ and ↓, it is OK.\n", time.Now(), maxInterval)
 		fmt.Fprintf(buf, "[EXAMPLE] time=%s retries=%d/%d retryAfter=%s\n", time.Now(), r.Retries(), maxRetries, r.RetryAfter())
-		t.Logf("\n" + buf.String())
+		t.Logf("✅: %s", buf)
 	})
 
 	t.Run("success(constant)", func(t *testing.T) {
@@ -47,7 +47,7 @@ func TestRetryer_Retry(t *testing.T) {
 		if expect != actual {
 			t.Errorf("❌: expect != actual")
 		}
-		t.Logf("\nactual: " + buf.String())
+		t.Logf("✅: actual: " + buf.String())
 	})
 
 	t.Run("success(jitter)", func(t *testing.T) {
@@ -64,7 +64,7 @@ func TestRetryer_Retry(t *testing.T) {
 		if expect != actual {
 			t.Errorf("❌: expect != actual")
 		}
-		t.Logf("\nactual: " + buf.String())
+		t.Logf("✅: actual: %s", buf)
 	})
 
 	t.Run("failure(deadline)", func(t *testing.T) {
@@ -113,7 +113,7 @@ func TestRetryer_Do(t *testing.T) {
 		if expect != actual {
 			t.Errorf("❌: expect != actual")
 		}
-		t.Logf("\nactual: " + buf.String())
+		t.Logf("✅: actual: %s", buf)
 	})
 
 	t.Run("failure(reachedMaxRetries)", func(t *testing.T) {
@@ -142,7 +142,7 @@ func TestRetryer_Do(t *testing.T) {
 		if expect != actual {
 			t.Errorf("❌: expect != actual")
 		}
-		t.Logf("\nactual: " + buf.String())
+		t.Logf("✅: actual: %s", buf)
 	})
 
 	t.Run("failure(unretryableErrors)", func(t *testing.T) {
@@ -170,6 +170,6 @@ func TestRetryer_Do(t *testing.T) {
 		if expect != actual {
 			t.Errorf("❌: expect != actual")
 		}
-		t.Logf("\nactual: " + buf.String())
+		t.Logf("✅: actual: %s", buf)
 	})
 }

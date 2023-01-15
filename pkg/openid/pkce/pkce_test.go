@@ -17,7 +17,7 @@ func TestCreateCodeVerifier(t *testing.T) {
 		if err != nil {
 			t.Errorf("❌: err != nil: %v", err)
 		}
-		t.Logf("\ncv=%s", cv)
+		t.Logf("✅: cv=%s", cv)
 	})
 
 	t.Run("success()", func(t *testing.T) {

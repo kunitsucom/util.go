@@ -49,7 +49,7 @@ func TestCreateCodeVerifier(t *testing.T) {
 		if err != nil {
 			t.Errorf("❌: err != nil: %v", err)
 		}
-		t.Logf("\ncv=%s", actual)
+		t.Logf("✅: cv=%s", actual)
 
 		backup := randz.DefaultReader
 		t.Cleanup(func() { randz.DefaultReader = backup })
