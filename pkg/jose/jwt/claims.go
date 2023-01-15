@@ -264,7 +264,7 @@ func (c *ClaimsSet) Decode(encoded string) error {
 // GetPrivateClaim
 //
 //   - ref. https://pkg.go.dev/github.com/kunitsuinc/util.go@v0.0.26/pkg/maps#Get
-func (c *ClaimsSet) GetPrivateClaim(claimName string, v interface{}) error {
+func (c *ClaimsSet) GetPrivateClaim(claimName string, v any) error {
 	reflectValue := reflect.ValueOf(v)
 	if reflectValue.Kind() != reflect.Pointer && reflectValue.Kind() != reflect.Interface {
 		return fmt.Errorf("v.(type)==%T: %w", v, ErrVIsNotPointerOrInterface)
@@ -280,4 +280,8 @@ func (c *ClaimsSet) GetPrivateClaim(claimName string, v interface{}) error {
 	}
 	reflectValueElem.Set(paramReflectValue)
 	return nil
+}
+
+func (c *ClaimsSet) SetPrivateClaim(claimName string, v any) {
+	c.PrivateClaims[claimName] = v
 }

@@ -53,7 +53,7 @@ var (
 		Type:                            "JWT",
 		ContentType:                     "JWT",
 		Critical:                        []string{"name"},
-		PrivateHeaderParameters: map[string]interface{}{
+		PrivateHeaderParameters: map[string]any{
 			testPrivatePrivateHeaderParameter1Key: testPrivateHeaderParameter1Value,
 		},
 	}
@@ -258,7 +258,7 @@ func TestHeader_GetPrivateHeaderParameter(t *testing.T) {
 		const testKey = "testKey"
 		expect := "testValue"
 		h := NewHeader(jwa.HS256, WithPrivateHeaderParameter(testKey, expect))
-		h.PrivateHeaderParameters[testKey] = expect
+		h.SetPrivateHeaderParameter(testKey, expect)
 		var actual string
 		if err := h.GetPrivateHeaderParameter(testKey, &actual); err != nil {
 			t.Fatalf("❌: (*Header).GetPrivateHeaderParameter: err != nil: %v", err)
@@ -277,7 +277,7 @@ func TestHeader_GetPrivateHeaderParameter(t *testing.T) {
 		}
 		expect := &Expect{expect: "test", if1: testHeader}
 		h := NewHeader(jwa.HS256, WithPrivateHeaderParameter(testKey, expect))
-		h.PrivateHeaderParameters[testKey] = expect
+		h.SetPrivateHeaderParameter(testKey, expect)
 		var actual *Expect
 		if err := h.GetPrivateHeaderParameter(testKey, &actual); err != nil {
 			t.Fatalf("❌: (*Header).GetPrivateHeaderParameter: err != nil: %v", err)
@@ -311,11 +311,11 @@ func TestHeader_GetPrivateHeaderParameter(t *testing.T) {
 		const testKey = "testKey"
 		type Expect struct {
 			expect string
-			if1    interface{}
+			if1    any
 		}
 		expect := &Expect{expect: "test", if1: "test"}
 		h := NewHeader(jwa.HS256, WithPrivateHeaderParameter(testKey, expect))
-		h.PrivateHeaderParameters[testKey] = expect
+		h.SetPrivateHeaderParameter(testKey, expect)
 		var actual string
 		if err := h.GetPrivateHeaderParameter(testKey, &actual); err == nil || !errors.Is(err, ErrPrivateHeaderParameterTypeIsNotMatch) {
 			t.Fatalf("❌: (*Header).GetPrivateHeaderParameter: err: %v", err)

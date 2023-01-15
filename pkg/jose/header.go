@@ -763,7 +763,7 @@ func (h *Header) Decode(headerEncoded string) error {
 // GetPrivateHeaderParameter
 //
 //   - ref. https://pkg.go.dev/github.com/kunitsuinc/util.go@v0.0.26/pkg/maps#Get
-func (h *Header) GetPrivateHeaderParameter(parameterName string, v interface{}) error {
+func (h *Header) GetPrivateHeaderParameter(parameterName string, v any) error {
 	reflectValue := reflect.ValueOf(v)
 	if reflectValue.Kind() != reflect.Pointer && reflectValue.Kind() != reflect.Interface {
 		return fmt.Errorf("v.(type)==%T: %w", v, ErrVIsNotPointerOrInterface)
@@ -779,4 +779,8 @@ func (h *Header) GetPrivateHeaderParameter(parameterName string, v interface{}) 
 	}
 	reflectValueElem.Set(paramReflectValue)
 	return nil
+}
+
+func (h *Header) SetPrivateHeaderParameter(parameterName string, v any) {
+	h.PrivateHeaderParameters[parameterName] = v
 }
