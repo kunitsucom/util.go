@@ -23,18 +23,13 @@ defaults:
 jobs:
   ci:
     name: CI
-    # cf. https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # ref. https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
     steps:
       - uses: actions/checkout@v3
-
-      # cf. https://github.com/actions/setup-go#usage
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v3 # ref. https://github.com/actions/setup-go#usage
         with:
           go-version-file: go.mod
-
-      # cf. https://github.com/actions/cache/blob/main/examples.md#go---modules
-      - uses: actions/cache@v3
+      - uses: actions/cache@v3 # ref. https://github.com/actions/cache/blob/main/examples.md#go---modules
         id: cache
         with:
           path: |
@@ -43,28 +38,21 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-
-      # cf. https://github.com/actions/cache#skipping-steps-based-on-cache-hit
       - name: Run go mod tidy
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-hit != 'true' # ref. https://github.com/actions/cache#skipping-steps-based-on-cache-hit
         run: |
           go mod tidy
           git diff --exit-code go.mod go.sum
-
-      # cf. https://github.com/golangci/golangci-lint-action#how-to-use
-      - uses: golangci/golangci-lint-action@v3.3.1
+      - uses: golangci/golangci-lint-action@v3.3.1 # ref. https://github.com/golangci/golangci-lint-action#how-to-use
         with:
           version: latest
-
       - name: Run go test
         env:
           COLOR: true
         run: |
           go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./...
           go tool cover -func=./coverage.txt
-
-      # cf. https://github.com/codecov/codecov-action#example-workflowyml-with-codecov-action
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v3 # ref. https://github.com/codecov/codecov-action#example-workflowyml-with-codecov-action
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.txt
