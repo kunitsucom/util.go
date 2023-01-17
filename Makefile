@@ -9,6 +9,10 @@ export PATH := ${GITROOT}/.local/bin:${GITROOT}/.bin:${PATH}
 help: githooks ## display this help documents
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' ${MAKEFILE_LIST} | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-40s\033[0m %s\n", $$1, $$2}'
 
+.PHONY: githooks
+githooks:
+	@[[ -f "${PRE_PUSH}" ]] || cp -aiv "${GITROOT}/.githooks/pre-push" "${PRE_PUSH}"
+
 .PHONY: setup
 setup: githooks ## Setup tools for development
 	# == SETUP =====================================================
@@ -17,10 +21,6 @@ setup: githooks ## Setup tools for development
 	# golangci-lint
 	golangci-lint --version
 	# --------------------------------------------------------------
-
-.PHONY: githooks
-githooks:
-	@[[ -f "${PRE_PUSH}" ]] || cp -aiv "${GITROOT}/.githooks/pre-push" "${PRE_PUSH}"
 
 .PHONY: clean
 clean:  ## Clean up cache, etc
@@ -32,16 +32,17 @@ clean:  ## Clean up cache, etc
 	golangci-lint cache clean
 
 .PHONY: lint
-lint:  ## Run secretlint, go mod tidy, golangci-lint
+lint: githooks ## Run secretlint, go mod tidy, golangci-lint
 	# tidy
 	go mod tidy
 	git diff --exit-code go.mod go.sum
-	# lint
+	# golangci-lint
 	# ref. https://golangci-lint.run/usage/linters/
 	golangci-lint run --fix --sort-results
-	git diff --exit-code
 	# ref. https://github.com/secretlint/secretlint
 	docker run -v "`pwd`:`pwd`" -w "`pwd`" --rm secretlint/secretlint secretlint "**/*"
+	# diff
+	git diff --exit-code
 
 .PHONY: test
 test: githooks ## Run go test and display coverage
