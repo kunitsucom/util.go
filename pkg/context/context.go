@@ -24,7 +24,7 @@ func WithSignalChannel(parent context.Context, signalChannel chan os.Signal) con
 func MustSignalChannel(ctx context.Context) (signalChannel chan os.Signal) {
 	ch, ok := ctx.Value(signalChannelKey).(chan os.Signal)
 	if !ok {
-		panic(fmt.Errorf("❌: MustSignalChannel: %w", ErrValueNotSet))
+		panic(fmt.Errorf("MustSignalChannel: %w", ErrValueNotSet))
 	}
 
 	return ch

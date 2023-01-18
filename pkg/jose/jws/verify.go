@@ -46,12 +46,12 @@ func UseJWKSetURL(ctx context.Context) KeyOption {
 func Verify(keyOption KeyOption, jwt string) (header *jose.Header, err error) {
 	headerEncoded, payloadEncoded, signatureEncoded, err := Parse(jwt)
 	if err != nil {
-		return nil, fmt.Errorf("❌: jws.ParseHeader: %w", err)
+		return nil, fmt.Errorf("jws.ParseHeader: %w", err)
 	}
 
 	h := new(jose.Header)
 	if err := h.Decode(headerEncoded); err != nil {
-		return nil, fmt.Errorf("❌: (*jose.Header).Decode: %w", err)
+		return nil, fmt.Errorf("(*jose.Header).Decode: %w", err)
 	}
 
 	signingInput := headerEncoded + "." + payloadEncoded
@@ -82,7 +82,7 @@ func verifyWithJSONWebKey(header *jose.Header, signingInput, signatureEncoded st
 
 	pub, err := header.JSONWebKey.DecodePublicKey()
 	if err != nil {
-		return fmt.Errorf("❌: header.JSONWebKey.DecodePublicKey: %w", err)
+		return fmt.Errorf("header.JSONWebKey.DecodePublicKey: %w", err)
 	}
 
 	return jwa.JWS(header.Algorithm).Verify(pub, signingInput, signatureEncoded) //nolint:wrapcheck
@@ -95,7 +95,7 @@ func verifyWithJWKSetURL(ctx context.Context, header *jose.Header, signingInput,
 
 	jwks, err := jwk.GetJWKSet(ctx, header.JWKSetURL)
 	if err != nil {
-		return fmt.Errorf("❌: jwk.GetJWKSet: %w", err)
+		return fmt.Errorf("jwk.GetJWKSet: %w", err)
 	}
 
 	var jsonWebKey *jwk.JSONWebKey
@@ -105,14 +105,14 @@ func verifyWithJWKSetURL(ctx context.Context, header *jose.Header, signingInput,
 	} else {
 		key, err := jwks.GetJSONWebKey(header.KeyID)
 		if err != nil {
-			return fmt.Errorf("❌: jwks.GetJSONWebKey: %w", err)
+			return fmt.Errorf("jwks.GetJSONWebKey: %w", err)
 		}
 		jsonWebKey = key
 	}
 
 	pub, err := jsonWebKey.DecodePublicKey()
 	if err != nil {
-		return fmt.Errorf("❌: jsonWebKey.DecodePublicKey: %w", err)
+		return fmt.Errorf("jsonWebKey.DecodePublicKey: %w", err)
 	}
 
 	return jwa.JWS(header.Algorithm).Verify(pub, signingInput, signatureEncoded) //nolint:wrapcheck

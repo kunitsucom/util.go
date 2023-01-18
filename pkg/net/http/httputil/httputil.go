@@ -21,14 +21,14 @@ func dumpResponse(
 	bodyBuf := bytes.NewBuffer(nil)
 
 	if _, err := io_Copy(bodyBuf, resp.Body); err != nil {
-		return nil, nil, fmt.Errorf("❌: (*bytes.Buffer).ReadFrom: %w", err)
+		return nil, nil, fmt.Errorf("(*bytes.Buffer).ReadFrom: %w", err)
 	}
 
 	resp.Body = io.NopCloser(bytes.NewBuffer(bodyBuf.Bytes()))
 
 	d, err := httputil_DumpResponse(resp, true)
 	if err != nil {
-		return nil, nil, fmt.Errorf("❌: httputil.DumpResponse: %w", err)
+		return nil, nil, fmt.Errorf("httputil.DumpResponse: %w", err)
 	}
 
 	return d, bodyBuf, nil

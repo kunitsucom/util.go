@@ -17,7 +17,7 @@ func TestNew(t *testing.T) {
 		t.Parallel()
 
 		hmacKey := []byte("test")
-		token, err := jwt.NewJWSToken(
+		token, err := jwt.New(
 			hmacKey,
 			jose.NewHeader(
 				jwa.HS256,

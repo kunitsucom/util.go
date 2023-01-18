@@ -22,12 +22,12 @@ func ParseRSAPrivateKeyPEM(pemBytes []byte) (*rsa.PrivateKey, error) {
 
 	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("❌: x509.ParsePKCS1PrivateKey: %w", err)
+		return nil, fmt.Errorf("x509.ParsePKCS1PrivateKey: %w", err)
 	}
 
 	rsaPrivateKey, ok := key.(*rsa.PrivateKey)
 	if !ok {
-		return nil, fmt.Errorf("❌: expect=%T actual=%T: %w", rsaPrivateKey, key, ErrKeyTypeMismatch)
+		return nil, fmt.Errorf("expect=%T actual=%T: %w", rsaPrivateKey, key, ErrKeyTypeMismatch)
 	}
 
 	return rsaPrivateKey, nil
@@ -41,12 +41,12 @@ func ParseRSAPublicKeyPEM(pemBytes []byte) (*rsa.PublicKey, error) {
 
 	key, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("❌: x509.ParsePKIXPublicKey: %w", err)
+		return nil, fmt.Errorf("x509.ParsePKIXPublicKey: %w", err)
 	}
 
 	rsaPublicKey, ok := key.(*rsa.PublicKey)
 	if !ok {
-		return nil, fmt.Errorf("❌: expect=%T actual=%T: %w", rsaPublicKey, key, ErrKeyTypeMismatch)
+		return nil, fmt.Errorf("expect=%T actual=%T: %w", rsaPublicKey, key, ErrKeyTypeMismatch)
 	}
 
 	return rsaPublicKey, nil
@@ -60,12 +60,12 @@ func ParseECDSAPrivateKeyPEM(pemBytes []byte) (*ecdsa.PrivateKey, error) {
 
 	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("❌: x509.ParsePKCS1PrivateKey: %w", err)
+		return nil, fmt.Errorf("x509.ParsePKCS1PrivateKey: %w", err)
 	}
 
 	ecdsaPrivateKey, ok := key.(*ecdsa.PrivateKey)
 	if !ok {
-		return nil, fmt.Errorf("❌: expect=%T actual=%T: %w", ecdsaPrivateKey, key, ErrKeyTypeMismatch)
+		return nil, fmt.Errorf("expect=%T actual=%T: %w", ecdsaPrivateKey, key, ErrKeyTypeMismatch)
 	}
 
 	return ecdsaPrivateKey, nil
@@ -79,12 +79,12 @@ func ParseECDSAPublicKeyPEM(pemBytes []byte) (*ecdsa.PublicKey, error) {
 
 	key, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("❌: x509.ParsePKIXPublicKey: %w", err)
+		return nil, fmt.Errorf("x509.ParsePKIXPublicKey: %w", err)
 	}
 
 	ecdsaPublicKey, ok := key.(*ecdsa.PublicKey)
 	if !ok {
-		return nil, fmt.Errorf("❌: expect=%T actual=%T: %w", ecdsaPublicKey, key, ErrKeyTypeMismatch)
+		return nil, fmt.Errorf("expect=%T actual=%T: %w", ecdsaPublicKey, key, ErrKeyTypeMismatch)
 	}
 
 	return ecdsaPublicKey, nil

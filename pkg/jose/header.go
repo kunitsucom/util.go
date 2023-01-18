@@ -657,7 +657,7 @@ func WithPrivateHeaderParameter(name string, value any) HeaderParameter {
 // Example:
 //
 //	header := jose.NewHeader(
-//		jose.WithAlgorithm(jwa.HS256),
+//		jwa.HS256,
 //		jose.WithType("JWT"),
 //	)
 func NewHeader(alg string, parameters ...HeaderParameter) *Header {
@@ -715,7 +715,7 @@ func (h *Header) marshalJSON(
 
 	b, err := json_Marshal(&_header)
 	if err != nil {
-		return nil, fmt.Errorf("❌: invalid jose header: %+v: %w", _header, err)
+		return nil, fmt.Errorf("invalid jose header: %+v: %w", _header, err)
 	}
 
 	if len(h.PrivateHeaderParameters) == 0 {
@@ -724,15 +724,15 @@ func (h *Header) marshalJSON(
 
 	privateHeaderParameters, err := json.Marshal(h.PrivateHeaderParameters)
 	if err != nil {
-		return nil, fmt.Errorf("❌: invalid private header parameters: %+v: %w", h.PrivateHeaderParameters, err)
+		return nil, fmt.Errorf("invalid private header parameters: %+v: %w", h.PrivateHeaderParameters, err)
 	}
 
 	if !bytes_HasSuffix(b, []byte{'}'}) {
-		return nil, fmt.Errorf("❌: %s: %w", b, ErrInvalidJSON)
+		return nil, fmt.Errorf("%s: %w", b, ErrInvalidJSON)
 	}
 
 	if !bytes_HasPrefix(privateHeaderParameters, []byte{'{'}) {
-		return nil, fmt.Errorf("❌: %s: %w", privateHeaderParameters, ErrInvalidJSON)
+		return nil, fmt.Errorf("%s: %w", privateHeaderParameters, ErrInvalidJSON)
 	}
 
 	b[len(b)-1] = ','
@@ -742,7 +742,7 @@ func (h *Header) marshalJSON(
 func (h *Header) Encode() (string, error) {
 	b, err := json.Marshal(h)
 	if err != nil {
-		return "", fmt.Errorf("❌: json.Marshal: %w", err)
+		return "", fmt.Errorf("json.Marshal: %w", err)
 	}
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
@@ -750,11 +750,11 @@ func (h *Header) Encode() (string, error) {
 func (h *Header) Decode(headerEncoded string) error {
 	decoded, err := base64.RawURLEncoding.DecodeString(headerEncoded)
 	if err != nil {
-		return fmt.Errorf("❌: base64.RawURLEncoding.DecodeString: %w", err)
+		return fmt.Errorf("base64.RawURLEncoding.DecodeString: %w", err)
 	}
 
 	if err := json.Unmarshal(decoded, h); err != nil {
-		return fmt.Errorf("❌: json.Unmarshal: %w", err)
+		return fmt.Errorf("json.Unmarshal: %w", err)
 	}
 
 	return nil
@@ -766,16 +766,16 @@ func (h *Header) Decode(headerEncoded string) error {
 func (h *Header) GetPrivateHeaderParameter(parameterName string, v any) error {
 	reflectValue := reflect.ValueOf(v)
 	if reflectValue.Kind() != reflect.Pointer && reflectValue.Kind() != reflect.Interface {
-		return fmt.Errorf("❌: v.(type)==%T: %w", v, ErrVIsNotPointerOrInterface)
+		return fmt.Errorf("v.(type)==%T: %w", v, ErrVIsNotPointerOrInterface)
 	}
 	reflectValueElem := reflectValue.Elem()
 	param, ok := h.PrivateHeaderParameters[parameterName]
 	if !ok {
-		return fmt.Errorf("❌: (*jose.Header).PrivateHeaderParameters[%q]: %w", parameterName, ErrPrivateHeaderParameterIsNotFound)
+		return fmt.Errorf("(*jose.Header).PrivateHeaderParameters[%q]: %w", parameterName, ErrPrivateHeaderParameterIsNotFound)
 	}
 	paramReflectValue := reflect.ValueOf(param)
 	if reflectValueElem.Type() != paramReflectValue.Type() {
-		return fmt.Errorf("❌: (*jose.Header).PrivateHeaderParameters[%q].(type)==%T, v.(type)==%T: %w", parameterName, param, v, ErrPrivateHeaderParameterTypeIsNotMatch)
+		return fmt.Errorf("(*jose.Header).PrivateHeaderParameters[%q].(type)==%T, v.(type)==%T: %w", parameterName, param, v, ErrPrivateHeaderParameterTypeIsNotMatch)
 	}
 	reflectValueElem.Set(paramReflectValue)
 	return nil

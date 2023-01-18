@@ -82,7 +82,7 @@ func Get[Key comparable](m map[Key]any, key Key, v any) error {
 	// 	return errors.New("")
 	// }
 	if reflectValue.Kind() != reflect.Pointer && reflectValue.Kind() != reflect.Interface {
-		return fmt.Errorf("❌: v.(type)==%T: %w", v, ErrVIsNotPointerOrInterface)
+		return fmt.Errorf("v.(type)==%T: %w", v, ErrVIsNotPointerOrInterface)
 	}
 	reflectValueElem := reflectValue.Elem()
 	// NOTE: memo
@@ -91,11 +91,11 @@ func Get[Key comparable](m map[Key]any, key Key, v any) error {
 	// }
 	param, ok := m[key]
 	if !ok {
-		return fmt.Errorf("❌: map[%v]: %w", key, ErrKeyIsNotFound)
+		return fmt.Errorf("map[%v]: %w", key, ErrKeyIsNotFound)
 	}
 	paramReflectValue := reflect.ValueOf(param)
 	if reflectValueElem.Type() != paramReflectValue.Type() {
-		return fmt.Errorf("❌: map[%v].(type)==%T, v.(type)==%T: %w", key, param, v, ErrValueTypeIsNotMatch)
+		return fmt.Errorf("map[%v].(type)==%T, v.(type)==%T: %w", key, param, v, ErrValueTypeIsNotMatch)
 	}
 	reflectValueElem.Set(paramReflectValue)
 	return nil
