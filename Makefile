@@ -24,6 +24,9 @@ setup: githooks ## Setup tools for development
 
 .PHONY: clean
 clean:  ## Clean up cache, etc
+	# reset tmp
+	rm -rf ./.tmp
+	git checkout ./.tmp
 	# go build cache
 	go env GOCACHE
 	go clean -x -cache -testcache -modcache -fuzzcache
@@ -38,11 +41,11 @@ lint: githooks ## Run secretlint, go mod tidy, golangci-lint
 	git diff --exit-code go.mod go.sum
 	# golangci-lint
 	# ref. https://golangci-lint.run/usage/linters/
-	golangci-lint run --fix --sort-results
-	# ref. https://github.com/secretlint/secretlint
-	docker run -v "`pwd`:`pwd`" -w "`pwd`" --rm secretlint/secretlint secretlint "**/*"
+	golangci-lint run --fix --sort-results --verbose
 	# diff
 	git diff --exit-code
+	# ref. https://github.com/secretlint/secretlint
+	docker run -v "`pwd`:`pwd`" -w "`pwd`" --rm secretlint/secretlint secretlint "**/*"
 
 .PHONY: test
 test: githooks ## Run go test and display coverage

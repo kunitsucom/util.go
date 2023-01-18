@@ -12,7 +12,7 @@ func RequestBodyBuffer(r *http.Request) (*bytes.Buffer, error) {
 	buf := bytes.NewBuffer(nil)
 
 	if _, err := buf.ReadFrom(r.Body); err != nil {
-		return nil, fmt.Errorf("❌: (*bytes.Buffer).ReadFrom: %w", err)
+		return nil, fmt.Errorf("(*bytes.Buffer).ReadFrom: %w", err)
 	}
 
 	r.Body = io.NopCloser(bytes.NewBuffer(buf.Bytes()))

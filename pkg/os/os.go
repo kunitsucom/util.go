@@ -21,7 +21,7 @@ func IsDir(path string) bool {
 func CheckDir(path string) error {
 	info, err := os.Stat(path)
 	if err != nil {
-		return fmt.Errorf("❌: os.Stat: %w", err)
+		return fmt.Errorf("os.Stat: %w", err)
 	}
 	if info.IsDir() {
 		return nil
@@ -37,7 +37,7 @@ func ReadlinkAndReadFile(path string) (resolved string, bytes []byte, err error)
 
 	b, err := os.ReadFile(path)
 	if err != nil {
-		return "", nil, fmt.Errorf("❌: os.ReadFile: %w", err)
+		return "", nil, fmt.Errorf("os.ReadFile: %w", err)
 	}
 
 	return path, b, nil

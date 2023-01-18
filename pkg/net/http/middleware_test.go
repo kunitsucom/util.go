@@ -16,13 +16,13 @@ func testMiddleware(num int) func(http.Handler) http.Handler {
 	return func(original http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			if _, err := rw.Write([]byte(fmt.Sprintf("middleware %d preProcess\n", num))); err != nil {
-				panic(fmt.Errorf("❌: rw.Write: %w", err))
+				panic(fmt.Errorf("rw.Write: %w", err))
 			}
 
 			original.ServeHTTP(rw, r)
 
 			if _, err := rw.Write([]byte(fmt.Sprintf("middleware %d postProcess\n", num))); err != nil {
-				panic(fmt.Errorf("❌: rw.Write: %w", err))
+				panic(fmt.Errorf("rw.Write: %w", err))
 			}
 		})
 	}

@@ -35,7 +35,7 @@ func (rwb *ResponseWriterBuffer) StatusCode() int {
 func (rwb *ResponseWriterBuffer) Write(p []byte) (int, error) {
 	n, err := io.MultiWriter(rwb.Buffer, rwb.ResponseWriter).Write(p)
 	if err != nil {
-		return n, fmt.Errorf("❌: io.MultiWriter().Write: %w", err)
+		return n, fmt.Errorf("io.MultiWriter().Write: %w", err)
 	}
 
 	return n, nil

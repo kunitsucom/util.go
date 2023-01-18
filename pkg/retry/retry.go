@@ -241,7 +241,7 @@ func (r *Retryer) Do(ctx context.Context, do func(ctx context.Context) error, op
 		}
 		for _, unretryableError := range c.unretryableErrors {
 			if errors.Is(err, unretryableError) {
-				return fmt.Errorf("❌: %v: %w", ErrUnretryableError, err)
+				return fmt.Errorf("%v: %w", ErrUnretryableError, err)
 			}
 		}
 		if c.retryableErrorHandler != nil {
@@ -249,5 +249,5 @@ func (r *Retryer) Do(ctx context.Context, do func(ctx context.Context) error, op
 		}
 	}
 
-	return fmt.Errorf("❌: %v: %w", r.Err(), err)
+	return fmt.Errorf("%v: %w", r.Err(), err)
 }

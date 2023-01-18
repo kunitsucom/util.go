@@ -397,17 +397,17 @@ func (jwk *JSONWebKey) EncodeRSAPublicKey(key *rsa.PublicKey, opts ...JSONWebKey
 func (jwk *JSONWebKey) DecodeRSAPublicKey() (*rsa.PublicKey, error) {
 	n, err := base64.RawURLEncoding.DecodeString(jwk.N)
 	if err != nil {
-		return nil, fmt.Errorf("❌: base64.RawURLEncoding.DecodeString: JSONWebKey.N: %w", err)
+		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.N: %w", err)
 	}
 
 	eBytes, err := base64.RawURLEncoding.DecodeString(jwk.E)
 	if err != nil {
-		return nil, fmt.Errorf("❌: base64.RawURLEncoding.DecodeString: JSONWebKey.E: %w", err)
+		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.E: %w", err)
 	}
 
 	e, err := strconv.Atoi(string(eBytes))
 	if err != nil {
-		return nil, fmt.Errorf("❌: strconv.Atoi: JSONWebKey.E: %w", err)
+		return nil, fmt.Errorf("strconv.Atoi: JSONWebKey.E: %w", err)
 	}
 
 	return &rsa.PublicKey{
@@ -435,17 +435,17 @@ func (jwk *JSONWebKey) DecodeRSAPrivateKey() (*rsa.PrivateKey, error) {
 
 	d, err := base64.RawURLEncoding.DecodeString(jwk.D)
 	if err != nil {
-		return nil, fmt.Errorf("❌: base64.RawURLEncoding.DecodeString: JSONWebKey.D: %w", err)
+		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.D: %w", err)
 	}
 
 	p, err := base64.RawURLEncoding.DecodeString(jwk.P)
 	if err != nil {
-		return nil, fmt.Errorf("❌: base64.RawURLEncoding.DecodeString: JSONWebKey.P: %w", err)
+		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.P: %w", err)
 	}
 
 	q, err := base64.RawURLEncoding.DecodeString(jwk.Q)
 	if err != nil {
-		return nil, fmt.Errorf("❌: base64.RawURLEncoding.DecodeString: JSONWebKey.Q: %w", err)
+		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.Q: %w", err)
 	}
 
 	return &rsa.PrivateKey{
@@ -481,17 +481,17 @@ func (jwk *JSONWebKey) DecodeECDSAPublicKey() (*ecdsa.PublicKey, error) {
 	case "P-521":
 		crv = elliptic.P521()
 	default:
-		return nil, fmt.Errorf("❌: crv=%s: %w", jwk.Crv, ErrCurveNotSupported)
+		return nil, fmt.Errorf("crv=%s: %w", jwk.Crv, ErrCurveNotSupported)
 	}
 
 	x, err := base64.RawURLEncoding.DecodeString(jwk.X)
 	if err != nil {
-		return nil, fmt.Errorf("❌: base64.RawURLEncoding.DecodeString: JSONWebKey.X: %w", err)
+		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.X: %w", err)
 	}
 
 	y, err := base64.RawURLEncoding.DecodeString(jwk.Y)
 	if err != nil {
-		return nil, fmt.Errorf("❌: base64.RawURLEncoding.DecodeString: JSONWebKey.Y: %w", err)
+		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.Y: %w", err)
 	}
 
 	return &ecdsa.PublicKey{
@@ -518,7 +518,7 @@ func (jwk *JSONWebKey) DecodeECDSAPrivateKey() (*ecdsa.PrivateKey, error) {
 
 	d, err := base64.RawURLEncoding.DecodeString(jwk.D)
 	if err != nil {
-		return nil, fmt.Errorf("❌: base64.RawURLEncoding.DecodeString: JSONWebKey.D: %w", err)
+		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.D: %w", err)
 	}
 
 	return &ecdsa.PrivateKey{
@@ -535,7 +535,7 @@ func (jwk *JSONWebKey) DecodePublicKey() (crypto.PublicKey, error) {
 		return jwk.DecodeECDSAPublicKey()
 	}
 
-	return nil, fmt.Errorf("❌: kty=%s: %w", jwk.KeyType, ErrKeyIsNotForAlgorithm)
+	return nil, fmt.Errorf("kty=%s: %w", jwk.KeyType, ErrKeyIsNotForAlgorithm)
 }
 
 // TODO: impl
@@ -583,24 +583,24 @@ func (d *Client) GetJWKSet(ctx context.Context, jwksURL JWKSetURL) (*JWKSet, err
 	return d.cacheStore.GetOrSet(jwksURL, func() (*JWKSet, error) { //nolint:wrapcheck
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, jwksURL, nil)
 		if err != nil {
-			return nil, fmt.Errorf("❌: http.NewRequestWithContext: %w", err)
+			return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
 		}
 
 		resp, err := d.client.Do(req)
 		if err != nil {
-			return nil, fmt.Errorf("❌: (*http.Client).Do: %w", err)
+			return nil, fmt.Errorf("(*http.Client).Do: %w", err)
 		}
 		defer resp.Body.Close()
 
 		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
 			body, _ := io.ReadAll(resp.Body)
 			bodyCutOff := slicez.CutOff(body, 100)
-			return nil, fmt.Errorf("❌: code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
+			return nil, fmt.Errorf("code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
 		}
 
 		r := new(JWKSet)
 		if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
-			return nil, fmt.Errorf("❌: (*json.Decoder).Decode(*discovery.JWKSet): %w", err)
+			return nil, fmt.Errorf("(*json.Decoder).Decode(*discovery.JWKSet): %w", err)
 		}
 
 		return r, nil
@@ -625,5 +625,5 @@ func (jwks *JWKSet) GetJSONWebKey(kid string) (*JSONWebKey, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("❌: kid=%s: %w", kid, ErrKidNotFound)
+	return nil, fmt.Errorf("kid=%s: %w", kid, ErrKidNotFound)
 }
