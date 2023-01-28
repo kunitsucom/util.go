@@ -2,6 +2,8 @@ package jws
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/rsa"
 	"errors"
 	"fmt"
 
@@ -28,6 +30,18 @@ func UseKey(key any) KeyOption {
 	return KeyOption{
 		key: key,
 	}
+}
+
+func UseHMACKey(key []byte) KeyOption {
+	return UseKey(key)
+}
+
+func UseRSAPublicKey(key *rsa.PublicKey) KeyOption {
+	return UseKey(key)
+}
+
+func UseECDSAPublicKey(key *ecdsa.PublicKey) KeyOption {
+	return UseKey(key)
 }
 
 func UseJSONWebKey() KeyOption {
