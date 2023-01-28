@@ -15,23 +15,24 @@ func TestMemStatsTicker(t *testing.T) {
 		t.Parallel()
 
 		ctx := context.Background()
-		s := runtimez.NewMemStatsTicker(ctx, 1*time.Hour)
-		MemStats := s.MemStats()
-		if MemStats.Alloc == 0 {
+		ticker := runtimez.NewMemStatsTicker(ctx, 100*time.Millisecond)
+		m := ticker.MemStats()
+		if m.Alloc == 0 {
 			t.Errorf("❌: MemStats.Alloc == 0")
 		}
-		s.Stop()
-		s.Restart()
-		s.Reset(1 * time.Hour)
+		time.Sleep(1 * time.Second)
+		ticker.Stop()
+		ticker.Restart()
+		ticker.Reset(1 * time.Hour)
 	})
 
-	t.Run("success", func(t *testing.T) {
+	t.Run("success(cancel)", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithCancel(context.Background())
-		s := runtimez.NewMemStatsTicker(ctx, 1*time.Hour)
-		MemStats := s.MemStats()
-		if MemStats.Alloc == 0 {
+		ticker := runtimez.NewMemStatsTicker(ctx, 1*time.Hour)
+		m := ticker.MemStats()
+		if m.Alloc == 0 {
 			t.Errorf("❌: MemStats.Alloc == 0")
 		}
 		cancel()
