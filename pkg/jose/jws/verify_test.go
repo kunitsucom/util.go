@@ -39,8 +39,80 @@ func TestVerify(t *testing.T) {
 			t.Errorf("❌: jws.Sign: actual != expect: %v", actual)
 		}
 		jwt := signingInput + "." + signatureEncoded
-		if _, err := jws.Verify(jws.UseKey(key), jwt); err != nil {
+		if _, err := jws.Verify(jws.UseHMACKey(key), jwt); err != nil {
 			t.Errorf("❌: jws.Verify: err != nil: %v", err)
+		}
+	})
+
+	t.Run("success(RS256)", func(t *testing.T) {
+		t.Parallel()
+		publicKey := must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM)))
+		privateKey := must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM)))
+		header := jose.NewHeader(
+			jwa.RS256,
+		)
+		headerEncoded, err := header.Encode()
+		if err != nil {
+			t.Fatalf("❌: header.Encode: err != nil: %v", err)
+		}
+		payloadEncoded := "claims"
+		signingInput := headerEncoded + "." + payloadEncoded
+
+		signatureEncoded, err := jws.Sign(jwa.RS256, privateKey, signingInput)
+		if err != nil {
+			t.Fatalf("❌: jws.Sign: err != nil: %v", err)
+		}
+
+		if _, err := jws.Verify(jws.UseRSAPublicKey(publicKey), signingInput+"."+signatureEncoded); err != nil {
+			t.Fatalf("❌: jws.Verify: err != nil: %v", err)
+		}
+	})
+
+	t.Run("success(ES256)", func(t *testing.T) {
+		t.Parallel()
+		publicKey := must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey256BitPEM)))
+		privateKey := must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testz.TestECDSAPrivateKey256BitPEM)))
+		header := jose.NewHeader(
+			jwa.ES256,
+		)
+		headerEncoded, err := header.Encode()
+		if err != nil {
+			t.Fatalf("❌: header.Encode: err != nil: %v", err)
+		}
+		payloadEncoded := "claims"
+		signingInput := headerEncoded + "." + payloadEncoded
+
+		signatureEncoded, err := jws.Sign(jwa.ES256, privateKey, signingInput)
+		if err != nil {
+			t.Fatalf("❌: jws.Sign: err != nil: %v", err)
+		}
+
+		if _, err := jws.Verify(jws.UseECDSAPublicKey(publicKey), signingInput+"."+signatureEncoded); err != nil {
+			t.Fatalf("❌: jws.Verify: err != nil: %v", err)
+		}
+	})
+
+	t.Run("success(PS256)", func(t *testing.T) {
+		t.Parallel()
+		publicKey := must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM)))
+		privateKey := must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM)))
+		header := jose.NewHeader(
+			jwa.PS256,
+		)
+		headerEncoded, err := header.Encode()
+		if err != nil {
+			t.Fatalf("❌: header.Encode: err != nil: %v", err)
+		}
+		payloadEncoded := "claims"
+		signingInput := headerEncoded + "." + payloadEncoded
+
+		signatureEncoded, err := jws.Sign(jwa.PS256, privateKey, signingInput)
+		if err != nil {
+			t.Fatalf("❌: jws.Sign: err != nil: %v", err)
+		}
+
+		if _, err := jws.Verify(jws.UseRSAPublicKey(publicKey), signingInput+"."+signatureEncoded); err != nil {
+			t.Fatalf("❌: jws.Verify: err != nil: %v", err)
 		}
 	})
 

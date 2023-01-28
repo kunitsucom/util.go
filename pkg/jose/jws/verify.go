@@ -33,21 +33,15 @@ func UseKey(key any) KeyOption {
 }
 
 func UseHMACKey(key []byte) KeyOption {
-	return KeyOption{
-		key: key,
-	}
+	return UseKey(key)
 }
 
 func UseRSAPublicKey(key *rsa.PublicKey) KeyOption {
-	return KeyOption{
-		key: key,
-	}
+	return UseKey(key)
 }
 
 func UseECDSAPublicKey(key *ecdsa.PublicKey) KeyOption {
-	return KeyOption{
-		key: key,
-	}
+	return UseKey(key)
 }
 
 func UseJSONWebKey() KeyOption {
