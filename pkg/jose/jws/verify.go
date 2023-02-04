@@ -19,45 +19,45 @@ var (
 	ErrInvalidKeyOption     = errors.New(`jws: invalid key option`)
 )
 
-type KeyOption struct {
+type VerificationKeyOption struct {
 	key           any
 	useJSONWebKey bool
 	useJWKSetURL  bool
 	ctx           context.Context //nolint:containedctx
 }
 
-func UseKey(key any) KeyOption {
-	return KeyOption{
+func UseKey(key any) VerificationKeyOption {
+	return VerificationKeyOption{
 		key: key,
 	}
 }
 
-func UseHMACKey(key []byte) KeyOption {
+func UseHMACKey(key []byte) VerificationKeyOption {
 	return UseKey(key)
 }
 
-func UseRSAPublicKey(key *rsa.PublicKey) KeyOption {
+func UseRSAKey(key *rsa.PublicKey) VerificationKeyOption {
 	return UseKey(key)
 }
 
-func UseECDSAPublicKey(key *ecdsa.PublicKey) KeyOption {
+func UseECDSAKey(key *ecdsa.PublicKey) VerificationKeyOption {
 	return UseKey(key)
 }
 
-func UseJSONWebKey() KeyOption {
-	return KeyOption{
+func UseJSONWebKey() VerificationKeyOption {
+	return VerificationKeyOption{
 		useJSONWebKey: true,
 	}
 }
 
-func UseJWKSetURL(ctx context.Context) KeyOption {
-	return KeyOption{
+func UseJWKSetURL(ctx context.Context) VerificationKeyOption {
+	return VerificationKeyOption{
 		useJWKSetURL: true,
 		ctx:          ctx,
 	}
 }
 
-func Verify(keyOption KeyOption, jwt string) (header *jose.Header, err error) {
+func Verify(keyOption VerificationKeyOption, jwt string) (header *jose.Header, err error) {
 	headerEncoded, payloadEncoded, signatureEncoded, err := Parse(jwt)
 	if err != nil {
 		return nil, fmt.Errorf("jws.ParseHeader: %w", err)

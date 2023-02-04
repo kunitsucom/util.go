@@ -31,7 +31,7 @@ func TestVerify(t *testing.T) {
 		key := []byte("your-256-bit-secret")
 		signingInput := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"
 		signatureEncodedExpected := "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-		signatureEncoded, err := jws.Sign(jwa.HS256, key, signingInput)
+		signatureEncoded, err := jws.Sign(jwa.HS256, jws.WithHMACKey(key), signingInput)
 		if err != nil {
 			t.Errorf("❌: jws.Sign: err != nil: %v", err)
 		}
@@ -58,12 +58,12 @@ func TestVerify(t *testing.T) {
 		payloadEncoded := "claims"
 		signingInput := headerEncoded + "." + payloadEncoded
 
-		signatureEncoded, err := jws.Sign(jwa.RS256, privateKey, signingInput)
+		signatureEncoded, err := jws.Sign(jwa.RS256, jws.WithRSAKey(privateKey), signingInput)
 		if err != nil {
 			t.Fatalf("❌: jws.Sign: err != nil: %v", err)
 		}
 
-		if _, err := jws.Verify(jws.UseRSAPublicKey(publicKey), signingInput+"."+signatureEncoded); err != nil {
+		if _, err := jws.Verify(jws.UseRSAKey(publicKey), signingInput+"."+signatureEncoded); err != nil {
 			t.Fatalf("❌: jws.Verify: err != nil: %v", err)
 		}
 	})
@@ -82,12 +82,12 @@ func TestVerify(t *testing.T) {
 		payloadEncoded := "claims"
 		signingInput := headerEncoded + "." + payloadEncoded
 
-		signatureEncoded, err := jws.Sign(jwa.ES256, privateKey, signingInput)
+		signatureEncoded, err := jws.Sign(jwa.ES256, jws.WithECDSAKey(privateKey), signingInput)
 		if err != nil {
 			t.Fatalf("❌: jws.Sign: err != nil: %v", err)
 		}
 
-		if _, err := jws.Verify(jws.UseECDSAPublicKey(publicKey), signingInput+"."+signatureEncoded); err != nil {
+		if _, err := jws.Verify(jws.UseECDSAKey(publicKey), signingInput+"."+signatureEncoded); err != nil {
 			t.Fatalf("❌: jws.Verify: err != nil: %v", err)
 		}
 	})
@@ -106,12 +106,12 @@ func TestVerify(t *testing.T) {
 		payloadEncoded := "claims"
 		signingInput := headerEncoded + "." + payloadEncoded
 
-		signatureEncoded, err := jws.Sign(jwa.PS256, privateKey, signingInput)
+		signatureEncoded, err := jws.Sign(jwa.PS256, jws.WithRSAKey(privateKey), signingInput)
 		if err != nil {
 			t.Fatalf("❌: jws.Sign: err != nil: %v", err)
 		}
 
-		if _, err := jws.Verify(jws.UseRSAPublicKey(publicKey), signingInput+"."+signatureEncoded); err != nil {
+		if _, err := jws.Verify(jws.UseRSAKey(publicKey), signingInput+"."+signatureEncoded); err != nil {
 			t.Fatalf("❌: jws.Verify: err != nil: %v", err)
 		}
 	})
@@ -131,7 +131,7 @@ func TestVerify(t *testing.T) {
 		payloadEncoded := "claims"
 		signingInput := headerEncoded + "." + payloadEncoded
 
-		signatureEncoded, err := jws.Sign(jwa.RS256, privateKey, signingInput)
+		signatureEncoded, err := jws.Sign(jwa.RS256, jws.WithRSAKey(privateKey), signingInput)
 		if err != nil {
 			t.Fatalf("❌: jws.Sign: err != nil: %v", err)
 		}
@@ -159,7 +159,7 @@ func TestVerify(t *testing.T) {
 		payloadEncoded := "claims"
 		signingInput := headerEncoded + "." + payloadEncoded
 
-		signatureEncoded, err := jws.Sign(jwa.RS256, privateKey, signingInput)
+		signatureEncoded, err := jws.Sign(jwa.RS256, jws.WithRSAKey(privateKey), signingInput)
 		if err != nil {
 			t.Fatalf("❌: jws.Sign: err != nil: %v", err)
 		}

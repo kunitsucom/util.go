@@ -56,6 +56,21 @@ var signTestCases = map[string]struct {
 			}
 		},
 	},
+	fmt.Sprintf("failure(%s,jwa.ErrInvalidKeyReceived)", jwa.HS256): {
+		alg:          string(jwa.HS256),
+		key:          []byte(nil),
+		signingInput: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ",
+		sigHandler: func(t *testing.T, signatureEncoded string) { //nolint:thelper
+			if actual, expect := signatureEncoded, ""; actual != expect {
+				t.Errorf("❌: actual != expect: %v", actual)
+			}
+		},
+		errHandler: func(t *testing.T, err error) { //nolint:thelper
+			if !errors.Is(err, jwa.ErrInvalidKeyReceived) {
+				t.Errorf("❌: err != jwa.ErrInvalidKeyReceived: %v", err)
+			}
+		},
+	},
 	//
 	// HS384
 	//

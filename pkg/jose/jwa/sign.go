@@ -16,6 +16,9 @@ func signHS(key any, signingInput string, hashNewFunc func() hash.Hash) (signatu
 	if !ok {
 		return "", ErrInvalidKeyReceived
 	}
+	if len(keyBytes) < 1 {
+		return "", fmt.Errorf("len(key)==%d: %w", len(keyBytes), ErrInvalidKeyReceived)
+	}
 	h := hmac.New(hashNewFunc, keyBytes)
 	h.Write([]byte(signingInput))
 	return base64.RawURLEncoding.EncodeToString(h.Sum(nil)), nil
