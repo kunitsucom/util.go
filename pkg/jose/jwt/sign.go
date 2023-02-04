@@ -16,7 +16,7 @@ import (
 //		jose.NewHeader(jwa.HS256, jose.WithType("JWT")),
 //		jwt.NewClaimsSet(jwt.WithSubject("userID"), jwt.WithExpirationTime(time.Now().Add(1*time.Hour))),
 //	)
-func Sign(key any, header *jose.Header, claimsSet *ClaimsSet) (token string, err error) {
+func Sign(keyOpt jws.SigningKeyOption, header *jose.Header, claimsSet *ClaimsSet) (token string, err error) {
 	headerEncoded, err := header.Encode()
 	if err != nil {
 		return "", fmt.Errorf("(*jose.Header).Encode: %w", err)
@@ -28,7 +28,7 @@ func Sign(key any, header *jose.Header, claimsSet *ClaimsSet) (token string, err
 	}
 
 	signingInput := headerEncoded + "." + claimsSetEncoded
-	signatureEncoded, err := jws.Sign(header.Algorithm, key, signingInput)
+	signatureEncoded, err := jws.Sign(header.Algorithm, keyOpt, signingInput)
 	if err != nil {
 		return "", fmt.Errorf("jws.Sign: %w", err)
 	}

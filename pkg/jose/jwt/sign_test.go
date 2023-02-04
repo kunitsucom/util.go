@@ -19,7 +19,7 @@ func TestSign(t *testing.T) {
 		t.Parallel()
 		hmacKey := []byte("test")
 		token, err := jwt.Sign(
-			hmacKey,
+			jws.WithHMACKey(hmacKey),
 			jose.NewHeader(
 				jwa.HS256,
 				jose.WithType("JWT"),
@@ -54,7 +54,7 @@ func TestSign(t *testing.T) {
 		t.Parallel()
 		hmacKey := []byte("test")
 		_, err := jwt.Sign(
-			hmacKey,
+			jws.WithHMACKey(hmacKey),
 			jose.NewHeader(
 				jwa.HS256,
 				jose.WithType("JWT"),
@@ -76,7 +76,7 @@ func TestSign(t *testing.T) {
 		t.Parallel()
 		hmacKey := []byte("test")
 		_, err := jwt.Sign(
-			hmacKey,
+			jws.WithHMACKey(hmacKey),
 			jose.NewHeader(
 				jwa.HS256,
 				jose.WithType("JWT"),
@@ -97,7 +97,7 @@ func TestSign(t *testing.T) {
 	t.Run("failure(jwa.ErrInvalidKeyReceived)", func(t *testing.T) {
 		t.Parallel()
 		_, err := jwt.Sign(
-			nil,
+			jws.WithHMACKey(nil),
 			jose.NewHeader(
 				jwa.HS256,
 				jose.WithType("JWT"),
@@ -111,7 +111,7 @@ func TestSign(t *testing.T) {
 			),
 		)
 		if err == nil || !errors.Is(err, jwa.ErrInvalidKeyReceived) {
-			t.Errorf("❌: jwt.New: err != jwa.ErrInvalidKeyReceived: %v", err)
+			t.Errorf("❌: jwt.Sign: err != jwa.ErrInvalidKeyReceived: %v", err)
 		}
 	})
 }

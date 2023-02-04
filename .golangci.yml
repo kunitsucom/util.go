@@ -27,7 +27,7 @@ linters:
 
 linters-settings:
   goimports:
-    local-prefixes: "github.com/kunitsuinc/certcounter"
+    local-prefixes: "github.com/kunitsuinc/util.go"
   # varnamelen:
   #   ignore-decls:
   #     - l *Logger
@@ -54,6 +54,7 @@ issues:
         - goconst
         - gocyclo
         - goerr113
+        - gosec
         - maintidx
         - noctx
         - varnamelen

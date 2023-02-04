@@ -18,7 +18,7 @@ func TestNew(t *testing.T) {
 
 		hmacKey := []byte("test")
 		token, err := jwt.New(
-			hmacKey,
+			jws.WithHMACKey(hmacKey),
 			jose.NewHeader(
 				jwa.HS256,
 				jose.WithType("JWT"),

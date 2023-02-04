@@ -34,7 +34,7 @@ func VerifyPrivateClaims(verifyPrivateClaimsFunc func(privateClaims PrivateClaim
 	}
 }
 
-func Verify(keyOption jws.KeyOption, jwt string, opts ...VerifyOption) (header *jose.Header, claimsSet *ClaimsSet, err error) {
+func Verify(keyOption jws.VerificationKeyOption, jwt string, opts ...VerifyOption) (header *jose.Header, claimsSet *ClaimsSet, err error) {
 	vo := new(verifyOption)
 	for _, opt := range opts {
 		opt(vo)
