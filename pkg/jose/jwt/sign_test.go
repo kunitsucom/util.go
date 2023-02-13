@@ -18,7 +18,7 @@ func TestSign(t *testing.T) {
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 		hmacKey := []byte("test")
-		token, err := jwt.Sign(
+		signingInput, signatureEncoded, err := jwt.Sign(
 			jws.WithHMACKey(hmacKey),
 			jose.NewHeader(
 				jwa.HS256,
@@ -33,11 +33,11 @@ func TestSign(t *testing.T) {
 			),
 		)
 		if err != nil {
-			t.Errorf("❌: jwt.New: err != nil: %v", err)
+			t.Errorf("❌: jwt.Sign: err != nil: %v", err)
 		}
 		if _, _, err := jwt.Verify(
 			jws.UseKey(hmacKey),
-			token,
+			signingInput+"."+signatureEncoded,
 			jwt.VerifyAudience("http://localhost/test/aud"),
 			jwt.VerifyPrivateClaims(func(pc jwt.PrivateClaims) error {
 				if _, ok := pc["testPrivateClaim"]; !ok {
@@ -53,7 +53,7 @@ func TestSign(t *testing.T) {
 	t.Run("failure(header.Encode)", func(t *testing.T) {
 		t.Parallel()
 		hmacKey := []byte("test")
-		_, err := jwt.Sign(
+		_, _, err := jwt.Sign(
 			jws.WithHMACKey(hmacKey),
 			jose.NewHeader(
 				jwa.HS256,
@@ -68,14 +68,14 @@ func TestSign(t *testing.T) {
 			),
 		)
 		if expect := "invalid private header parameters"; err == nil || !strings.Contains(err.Error(), expect) {
-			t.Errorf("❌: jwt.New: err != %s: %v", expect, err)
+			t.Errorf("❌: jwt.Sign: err != %s: %v", expect, err)
 		}
 	})
 
 	t.Run("failure(claimsSet.Encode)", func(t *testing.T) {
 		t.Parallel()
 		hmacKey := []byte("test")
-		_, err := jwt.Sign(
+		_, _, err := jwt.Sign(
 			jws.WithHMACKey(hmacKey),
 			jose.NewHeader(
 				jwa.HS256,
@@ -90,13 +90,13 @@ func TestSign(t *testing.T) {
 			),
 		)
 		if expect := "invalid private claims"; err == nil || !strings.Contains(err.Error(), expect) {
-			t.Errorf("❌: jwt.New: err != %s: %v", expect, err)
+			t.Errorf("❌: jwt.Sign: err != %s: %v", expect, err)
 		}
 	})
 
 	t.Run("failure(jwa.ErrInvalidKeyReceived)", func(t *testing.T) {
 		t.Parallel()
-		_, err := jwt.Sign(
+		_, _, err := jwt.Sign(
 			jws.WithHMACKey(nil),
 			jose.NewHeader(
 				jwa.HS256,
