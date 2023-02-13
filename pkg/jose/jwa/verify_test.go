@@ -422,7 +422,7 @@ var verifyTestCases = map[string]struct {
 	//
 	// none
 	//
-	fmt.Sprintf("failure(%s,jwa.ErrAlgorithmNoneIsNotSupported)", jwa.PS512): {
+	fmt.Sprintf("failure(%s,jwa.ErrAlgorithmNoneIsNotSupported)", jwa.None): {
 		alg: jwa.None,
 		errHandler: func(t *testing.T, err error) { //nolint:thelper
 			if !errors.Is(err, jwa.ErrAlgorithmNoneIsNotSupported) {

@@ -92,38 +92,22 @@ type (
 	_None  string
 )
 
-const (
-	JWSAlgorithmHS256 _HS256 = HS256
-	JWSAlgorithmHS384 _HS384 = HS384
-	JWSAlgorithmHS512 _HS512 = HS512
-	JWSAlgorithmRS256 _RS256 = RS256
-	JWSAlgorithmRS384 _RS384 = RS384
-	JWSAlgorithmRS512 _RS512 = RS512
-	JWSAlgorithmES256 _ES256 = ES256
-	JWSAlgorithmES384 _ES384 = ES384
-	JWSAlgorithmES512 _ES512 = ES512
-	JWSAlgorithmPS256 _PS256 = PS256
-	JWSAlgorithmPS384 _PS384 = PS384
-	JWSAlgorithmPS512 _PS512 = PS512
-	JWSAlgorithmNone  _None  = None
-)
-
 //nolint:gochecknoglobals
 var (
 	_JWSAlgorithm = map[string]JWSAlgorithm{
-		HS256: JWSAlgorithmHS256,
-		HS384: JWSAlgorithmHS384,
-		HS512: JWSAlgorithmHS512,
-		RS256: JWSAlgorithmRS256,
-		RS384: JWSAlgorithmRS384,
-		RS512: JWSAlgorithmRS512,
-		ES256: JWSAlgorithmES256,
-		ES384: JWSAlgorithmES384,
-		ES512: JWSAlgorithmES512,
-		PS256: JWSAlgorithmPS256,
-		PS384: JWSAlgorithmPS384,
-		PS512: JWSAlgorithmPS512,
-		None:  JWSAlgorithmNone,
+		HS256: _HS256(HS256),
+		HS384: _HS384(HS384),
+		HS512: _HS512(HS512),
+		RS256: _RS256(RS256),
+		RS384: _RS384(RS384),
+		RS512: _RS512(RS512),
+		ES256: _ES256(ES256),
+		ES384: _ES384(ES384),
+		ES512: _ES512(ES512),
+		PS256: _PS256(PS256),
+		PS384: _PS384(PS384),
+		PS512: _PS512(PS512),
+		None:  _None(None),
 	}
 	_JWSAlgorithmMu sync.Mutex
 )

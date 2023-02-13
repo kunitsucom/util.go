@@ -538,7 +538,7 @@ func (jwk *JSONWebKey) DecodePublicKey() (crypto.PublicKey, error) {
 	return nil, fmt.Errorf("kty=%s: %w", jwk.KeyType, ErrKeyIsNotForAlgorithm)
 }
 
-// TODO: impl
+// TODO: implement
 // func (jwk *JSONWebKey) DecodePrivateKey(alg string) (crypto.PrivateKey, error) {
 // }
 
