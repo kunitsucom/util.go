@@ -1,19 +1,26 @@
 package jwt
 
 import (
+	"fmt"
+
 	"github.com/kunitsuinc/util.go/pkg/jose"
 	"github.com/kunitsuinc/util.go/pkg/jose/jws"
 )
 
-// New is an alias of jwt.Sign.
+// New
 //
 // Example:
 //
 //	token, err := jwt.New(
-//		[]byte("YOUR_HMAC_KEY"),
+//		jws.WithHMACKey([]byte("YOUR_HMAC_KEY"),
 //		jose.NewHeader(jwa.HS256, jose.WithType("JWT")),
 //		jwt.NewClaimsSet(jwt.WithSubject("userID"), jwt.WithExpirationTime(time.Now().Add(1*time.Hour))),
 //	)
 func New(keyOpt jws.SigningKeyOption, header *jose.Header, claimsSet *ClaimsSet) (token string, err error) {
-	return Sign(keyOpt, header, claimsSet)
+	signingInput, signatureEncoded, err := Sign(keyOpt, header, claimsSet)
+	if err != nil {
+		return "", fmt.Errorf("jwt.Sign: %w", err)
+	}
+
+	return signingInput + "." + signatureEncoded, nil
 }

@@ -42,45 +42,45 @@ func TestVerify(t *testing.T) {
 
 	t.Run("failure(exp,jwt.ErrTokenIsExpired)", func(t *testing.T) {
 		t.Parallel()
-		token, err := jwt.Sign(jws.WithHMACKey(testHS256Key), jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithExpirationTime(time.Now().Add(-1*time.Hour))))
+		signingInput, signatureEncoded, err := jwt.Sign(jws.WithHMACKey(testHS256Key), jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithExpirationTime(time.Now().Add(-1*time.Hour))))
 		if err != nil {
 			t.Fatalf("❌: jwt.New: err != nil: %v", err)
 		}
-		if _, _, err := jwt.Verify(jws.UseKey(testHS256Key), token); err == nil || !errors.Is(err, jwt.ErrTokenIsExpired) {
+		if _, _, err := jwt.Verify(jws.UseKey(testHS256Key), signingInput+"."+signatureEncoded); err == nil || !errors.Is(err, jwt.ErrTokenIsExpired) {
 			t.Errorf("❌: jwt.Verify: err != jwt.ErrTokenIsExpired: %v", err)
 		}
 	})
 
 	t.Run("failure(nbf,jwt.ErrTokenIsExpired)", func(t *testing.T) {
 		t.Parallel()
-		token, err := jwt.Sign(jws.WithHMACKey(testHS256Key), jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithNotBefore(time.Now().Add(1*time.Hour))))
+		signingInput, signatureEncoded, err := jwt.Sign(jws.WithHMACKey(testHS256Key), jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithNotBefore(time.Now().Add(1*time.Hour))))
 		if err != nil {
 			t.Fatalf("❌: jwt.New: err != nil: %v", err)
 		}
-		if _, _, err := jwt.Verify(jws.UseKey(testHS256Key), token); err == nil || !errors.Is(err, jwt.ErrTokenIsExpired) {
+		if _, _, err := jwt.Verify(jws.UseKey(testHS256Key), signingInput+"."+signatureEncoded); err == nil || !errors.Is(err, jwt.ErrTokenIsExpired) {
 			t.Errorf("❌: jwt.Verify: err != jwt.ErrTokenIsExpired: %v", err)
 		}
 	})
 
 	t.Run("failure(aud,jwt.ErrAudienceIsNotMatch)", func(t *testing.T) {
 		t.Parallel()
-		token, err := jwt.Sign(jws.WithHMACKey(testHS256Key), jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithAudience("aud")))
+		signingInput, signatureEncoded, err := jwt.Sign(jws.WithHMACKey(testHS256Key), jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithAudience("aud")))
 		if err != nil {
 			t.Fatalf("❌: jwt.New: err != nil: %v", err)
 		}
-		if _, _, err := jwt.Verify(jws.UseKey(testHS256Key), token, jwt.VerifyAudience("notMatch")); err == nil || !errors.Is(err, jwt.ErrAudienceIsNotMatch) {
+		if _, _, err := jwt.Verify(jws.UseKey(testHS256Key), signingInput+"."+signatureEncoded, jwt.VerifyAudience("notMatch")); err == nil || !errors.Is(err, jwt.ErrAudienceIsNotMatch) {
 			t.Errorf("❌: jwt.Verify: err != jwt.ErrAudienceIsNotMatch: %v", err)
 		}
 	})
 
 	t.Run("failure(aud,jwt.ErrAudienceIsNotMatch)", func(t *testing.T) {
 		t.Parallel()
-		token, err := jwt.Sign(jws.WithHMACKey(testHS256Key), jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithPrivateClaim("privateClaim", "privateClaim")))
+		signingInput, signatureEncoded, err := jwt.Sign(jws.WithHMACKey(testHS256Key), jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithPrivateClaim("privateClaim", "privateClaim")))
 		if err != nil {
 			t.Fatalf("❌: jwt.New: err != nil: %v", err)
 		}
 		expect := "test private claim"
-		if _, _, err := jwt.Verify(jws.UseKey(testHS256Key), token, jwt.VerifyPrivateClaims(func(privateClaims jwt.PrivateClaims) error {
+		if _, _, err := jwt.Verify(jws.UseKey(testHS256Key), signingInput+"."+signatureEncoded, jwt.VerifyPrivateClaims(func(privateClaims jwt.PrivateClaims) error {
 			_, ok := privateClaims["privateClaimDoesNotExist"]
 			if !ok {
 				return errors.New(expect)
