@@ -12,7 +12,7 @@ import (
 // Example:
 //
 //	token, err := jwt.Sign(
-//		[]byte("YOUR_HMAC_KEY"),
+//		jws.WithHMACKey([]byte("YOUR_HMAC_KEY"),
 //		jose.NewHeader(jwa.HS256, jose.WithType("JWT")),
 //		jwt.NewClaimsSet(jwt.WithSubject("userID"), jwt.WithExpirationTime(time.Now().Add(1*time.Hour))),
 //	)

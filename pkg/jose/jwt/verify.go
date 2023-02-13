@@ -34,6 +34,14 @@ func VerifyPrivateClaims(verifyPrivateClaimsFunc func(privateClaims PrivateClaim
 	}
 }
 
+// Verify
+//
+// Example:
+//
+//	header, claimsSet, err := jwt.Verify(
+//		jws.UseHMACKey([]byte("YOUR_HMAC_KEY"),
+//		token,
+//	)
 func Verify(keyOption jws.VerificationKeyOption, jwt string, opts ...VerifyOption) (header *jose.Header, claimsSet *ClaimsSet, err error) {
 	vo := new(verifyOption)
 	for _, opt := range opts {
