@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2155
-# Apache License 2.0 Copyright (c) 2022 kunitsuinc https://github.com/versenv/versenv
+# LISENCE: https://github.com/versenv/versenv/blob/HEAD/LICENSE
 set -Eeu -o pipefail
 
 # versenv unique
 exe_filename=golangci-lint
-env_key_version=GOLANGCI_VERSION
+env_key_version=GOLANGCI_LINT_VERSION
 git_url_prefix=https://github.com/golangci/golangci-lint
 
 GetProgramLatestStableVersion() { HeadURL "${git_url_prefix:?}/releases/latest" | awk -F"/tag/" "/^[Ll]ocation:/ {print \$2}" | tr -d "[:cntrl:]" | tr -d "^v" | tail -n 1; }
@@ -19,7 +19,7 @@ FindTargetZipDownloadURL() {
   local path_suffix && path_suffix=$(
     GetURLs "${git_url_prefix:?}/releases/expanded_assets/"{,v}"${prog_version:?}" | grep -Eo "href=\"[^\"]+/v?${prog_version:?}/[^\"]*${prog_os:?}[^\"]*${prog_arch:?}[^\"]*\.(zip|tar|tgz|tar\.gz)" | sed 's/href="//'
   )
-  echo "https://github.com/${path_suffix:?}"
+  echo "https://github.com${path_suffix:?}"
 }
 
 Unzip() {
