@@ -12,7 +12,7 @@ import (
 
 func TestRange(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		rand.Seed(0)
+		rand.Seed(0) //nolint:staticcheck
 		expect := []int{2, 2, 1, 2, 3, 0}
 		actual := []int{
 			randz.Range(0, 3),
@@ -49,7 +49,7 @@ func TestRangeRand(t *testing.T) {
 
 func TestRange32(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		rand.Seed(0)
+		rand.Seed(0) //nolint:staticcheck
 		expect := []int32{2, 2, 1, 2, 3, 0}
 		actual := []int32{
 			randz.Range31(0, 3),
@@ -86,7 +86,7 @@ func TestRange32Rand(t *testing.T) {
 
 func TestRange64(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		rand.Seed(0)
+		rand.Seed(0) //nolint:staticcheck
 		expect := []int64{1, 0, 3, 2, 2, 3}
 		actual := []int64{
 			randz.Range63(0, 3),
@@ -123,7 +123,7 @@ func TestRange64Rand(t *testing.T) {
 
 func TestRangeDuration(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		rand.Seed(0)
+		rand.Seed(0) //nolint:staticcheck
 		expect := []time.Duration{1, 0, 3, 2, 2, 3}
 		actual := []time.Duration{
 			randz.RangeDuration(0, 3),
