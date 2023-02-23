@@ -12,20 +12,24 @@ import (
 
 var ErrDoNotUnzipAFileAtRiskOfZipSlip = errors.New("zipz: do not unzip a file at risk of zip slip")
 
-func Unzip(srcZipFilePath, dstDir string) error {
+func Unzip(srcZipFilePath, dstDir string) (paths []string, err error) {
 	r, err := zip.OpenReader(srcZipFilePath)
 	if err != nil {
-		return fmt.Errorf("zip.OpenReader: %w", err)
+		return nil, fmt.Errorf("zip.OpenReader: %w", err)
 	}
 	defer r.Close()
 
-	for _, f := range r.File {
-		if _, err := unzip(f, dstDir); err != nil {
-			return fmt.Errorf("unzip: %w", err)
+	paths = make([]string, len(r.File))
+	for i, f := range r.File {
+		path, err := unzip(f, dstDir)
+		if err != nil {
+			return nil, fmt.Errorf("unzip: %w", err)
 		}
+
+		paths[i] = path
 	}
 
-	return nil
+	return paths, nil
 }
 
 func unzip(zipfile *zip.File, dstDir string) (path string, err error) {
