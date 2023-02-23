@@ -180,8 +180,8 @@ var signTestCases = map[string]struct {
 			}
 		},
 		errHandler: func(t *testing.T, err error) { //nolint:thelper
-			if expect := "rsa: internal error"; err == nil || !strings.Contains(err.Error(), expect) {
-				t.Errorf("❌: err != expect(%s): %v", expect, err)
+			if !errors.Is(err, rsa.ErrDecryption) {
+				t.Errorf("❌: err != rsa.ErrDecryption: %v", err)
 			}
 		},
 	},
@@ -408,8 +408,8 @@ var signTestCases = map[string]struct {
 			}
 		},
 		errHandler: func(t *testing.T, err error) { //nolint:thelper
-			if expect := "rsa: internal error"; err == nil || !strings.Contains(err.Error(), expect) {
-				t.Errorf("❌: err != expect(%s): %v", expect, err)
+			if !errors.Is(err, rsa.ErrDecryption) {
+				t.Errorf("❌: err != rsa.ErrDecryption: %v", err)
 			}
 		},
 	},
