@@ -40,7 +40,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 			httpz.HeaderXForwardedFor,
 			true,
 			httpz.WithClientIPAddressHeader(header),
-		).Middleware
+		)
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(httpz.HeaderXForwardedFor, testXForwardedFor)
@@ -74,7 +74,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			testHeaderKey,
 			true,
-		).Middleware
+		)
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(testHeaderKey, testXForwardedFor)
@@ -106,7 +106,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			httpz.HeaderXForwardedFor,
 			true,
-		).Middleware
+		)
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(httpz.HeaderXForwardedFor, "")
@@ -138,7 +138,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 			[]*net.IPNet{netz.PrivateIPAddressClassA},
 			httpz.HeaderXForwardedFor,
 			false,
-		).Middleware
+		)
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))
 		r.Header.Set(httpz.HeaderXForwardedFor, testXForwardedFor)
