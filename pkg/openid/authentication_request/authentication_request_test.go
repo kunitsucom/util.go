@@ -82,7 +82,7 @@ func TestNewAuthenticationRequest(t *testing.T) {
 		}
 	})
 
-	t.Run(`failure(response_type=="")`, func(t *testing.T) {
+	t.Run(`failure(responseType=="")`, func(t *testing.T) {
 		t.Parallel()
 
 		_, err := New(
@@ -92,6 +92,66 @@ func TestNewAuthenticationRequest(t *testing.T) {
 			"client_id@server.example.com",
 			"http://localhost:8022/auth/oidc",
 			"state_very_very_secure_random_string",
+		)
+		if err == nil {
+			t.Errorf("❌: NewAuthenticationRequest: err == nil")
+		}
+		const expect = `openid: Authentication Request: parameter is empty`
+		if err != nil && !strings.Contains(err.Error(), expect) {
+			t.Errorf("❌: NewAuthenticationRequest: not contains `%s`: %v", expect, err)
+		}
+	})
+
+	t.Run(`failure(clientID=="")`, func(t *testing.T) {
+		t.Parallel()
+
+		_, err := New(
+			"https://server.example.com/connect/authorize",
+			[]string{"openid", "email"},
+			"code",
+			"",
+			"http://localhost:8022/auth/oidc",
+			"state_very_very_secure_random_string",
+		)
+		if err == nil {
+			t.Errorf("❌: NewAuthenticationRequest: err == nil")
+		}
+		const expect = `openid: Authentication Request: parameter is empty`
+		if err != nil && !strings.Contains(err.Error(), expect) {
+			t.Errorf("❌: NewAuthenticationRequest: not contains `%s`: %v", expect, err)
+		}
+	})
+
+	t.Run(`failure(redirectURI=="")`, func(t *testing.T) {
+		t.Parallel()
+
+		_, err := New(
+			"https://server.example.com/connect/authorize",
+			[]string{"openid", "email"},
+			"code",
+			"client_id@server.example.com",
+			"",
+			"state_very_very_secure_random_string",
+		)
+		if err == nil {
+			t.Errorf("❌: NewAuthenticationRequest: err == nil")
+		}
+		const expect = `openid: Authentication Request: parameter is empty`
+		if err != nil && !strings.Contains(err.Error(), expect) {
+			t.Errorf("❌: NewAuthenticationRequest: not contains `%s`: %v", expect, err)
+		}
+	})
+
+	t.Run(`failure(state=="")`, func(t *testing.T) {
+		t.Parallel()
+
+		_, err := New(
+			"https://server.example.com/connect/authorize",
+			[]string{"openid", "email"},
+			"code",
+			"client_id@server.example.com",
+			"http://localhost:8022/auth/oidc",
+			"",
 		)
 		if err == nil {
 			t.Errorf("❌: NewAuthenticationRequest: err == nil")
