@@ -400,11 +400,11 @@ func (a _PS512) Verify(key any, signingInput string, signatureEncoded string) (e
 //
 
 // Sign for none.
-func (a _None) Sign(key any, signingInput string) (signatureEncoded string, err error) {
+func (a _None) Sign(key any, _ string) (signatureEncoded string, err error) {
 	return "", fmt.Errorf("alg=%s key=%T: %w", a, key, ErrAlgorithmNoneIsNotSupported)
 }
 
 // Verify for none.
-func (a _None) Verify(key any, signingInput string, signatureEncoded string) (err error) {
+func (a _None) Verify(key any, _ string, _ string) (err error) {
 	return fmt.Errorf("alg=%s key=%T: %w", a, key, ErrAlgorithmNoneIsNotSupported)
 }
