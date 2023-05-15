@@ -12,7 +12,8 @@ import (
 	testz "github.com/kunitsuinc/util.go/pkg/test"
 )
 
-func ResponseWriterBufferHandlerTestOption(h *httpz.ResponseWriterBufferHandler) {
+func ResponseWriterBufferHandlerTestOption(_ *httpz.ResponseWriterBufferHandler) {
+	// noop
 }
 
 func TestResponseWriterBufferHandler(t *testing.T) {
