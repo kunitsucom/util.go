@@ -14,7 +14,7 @@ var (
 	_, PrivateIPAddressClassC, _ = net.ParseCIDR("192.168.0.0/16")
 )
 
-func CIDRToIPNet(cidr string) (*net.IPNet, error) {
+func ParseCIDR(cidr string) (*net.IPNet, error) {
 	ip, ipNet, err := net.ParseCIDR(cidr)
 	if err != nil {
 		return nil, fmt.Errorf("net.ParseCIDR: %w", err)
@@ -23,12 +23,12 @@ func CIDRToIPNet(cidr string) (*net.IPNet, error) {
 	return ipNet, nil
 }
 
-func CIDRsToIPNets(cidr []string) ([]*net.IPNet, error) {
+func ParseCIDRs(cidr []string) ([]*net.IPNet, error) {
 	ipNets := make([]*net.IPNet, len(cidr))
 	for idx, cidr := range cidr {
-		ipNet, err := CIDRToIPNet(cidr)
+		ipNet, err := ParseCIDR(cidr)
 		if err != nil {
-			return nil, fmt.Errorf("CIDRToIPNet: %w", err)
+			return nil, fmt.Errorf("ParseCIDR: %w", err)
 		}
 		ipNets[idx] = ipNet
 	}
