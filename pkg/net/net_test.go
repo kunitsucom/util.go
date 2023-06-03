@@ -13,7 +13,7 @@ func TestCIDRToIPNet(t *testing.T) {
 		t.Parallel()
 
 		cidr := "10.0.0.0/8"
-		ipNet, err := netz.CIDRToIPNet(cidr)
+		ipNet, err := netz.ParseCIDR(cidr)
 		if err != nil {
 			t.Errorf("❌: CIDRToIPNet(%s) returned an error: %s", cidr, err)
 		}
@@ -25,7 +25,7 @@ func TestCIDRToIPNet(t *testing.T) {
 		t.Parallel()
 
 		cidr := "FAILURE"
-		if _, err := netz.CIDRToIPNet(cidr); err == nil {
+		if _, err := netz.ParseCIDR(cidr); err == nil {
 			t.Errorf("❌: CIDRToIPNet(%s) returned an error: %s", cidr, err)
 		}
 	})
@@ -37,7 +37,7 @@ func TestCIDRsToIPNets(t *testing.T) {
 		t.Parallel()
 
 		cidrs := []string{"10.0.0.0/8"}
-		ipNets, err := netz.CIDRsToIPNets(cidrs)
+		ipNets, err := netz.ParseCIDRs(cidrs)
 		if err != nil {
 			t.Errorf("❌: CIDRsToIPNets(%s) returned an error: %s", cidrs, err)
 		}
@@ -49,7 +49,7 @@ func TestCIDRsToIPNets(t *testing.T) {
 		t.Parallel()
 
 		cidrs := []string{"FAILURE"}
-		if _, err := netz.CIDRsToIPNets(cidrs); err == nil {
+		if _, err := netz.ParseCIDRs(cidrs); err == nil {
 			t.Errorf("❌: CIDRsToIPNets(%s) returned an error: %s", cidrs, err)
 		}
 	})
