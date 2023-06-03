@@ -31,7 +31,7 @@ func (t *ReadWriter) Read(p []byte) (n int, err error) {
 		return t.N, t.Err
 	}
 
-	// nolint: wrapcheck
+	//nolint:wrapcheck
 	return t.Buffer.Read(p)
 }
 
@@ -40,7 +40,7 @@ func (t *ReadWriter) Write(p []byte) (n int, err error) {
 		return t.N, t.Err
 	}
 
-	// nolint: wrapcheck
+	//nolint:wrapcheck
 	return t.Buffer.Write(p)
 }
 
@@ -81,7 +81,7 @@ func (t *ResponseWriter) Write(p []byte) (n int, err error) {
 		return t.N, t.Err
 	}
 
-	// nolint: wrapcheck
+	//nolint:wrapcheck
 	return t.Buffer.Write(p)
 }
 

@@ -1,4 +1,4 @@
-// nolint: testpackage
+//nolint:testpackage
 package httpz
 
 import (
@@ -27,7 +27,7 @@ func TestListenAndServe(t *testing.T) {
 			portrangeFirst = 49152
 			portrangeLast  = 65535
 		)
-		// nolint: gosec
+		//nolint:gosec
 		port := rand.Intn(portrangeLast-portrangeFirst+1) + portrangeFirst
 		s := &http.Server{
 			Addr:              fmt.Sprintf("127.0.0.1:%d", port),

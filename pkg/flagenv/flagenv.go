@@ -8,7 +8,7 @@ import (
 	"github.com/kunitsuinc/util.go/pkg/env"
 )
 
-// nolint: revive
+//nolint:revive
 type FlagEnvSet struct {
 	*flag.FlagSet
 }
@@ -21,7 +21,7 @@ func NewFlagEnvSet(name string, errorHandling flag.ErrorHandling) *FlagEnvSet {
 // The top-level functions such as BoolVar, Arg, and so on are wrappers for the
 // methods of CommandLine.
 //
-// nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var CommandLine = NewFlagEnvSet(os.Args[0], flag.ExitOnError)
 
 //

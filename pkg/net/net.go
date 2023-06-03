@@ -1,16 +1,39 @@
 package netz
 
 import (
+	"fmt"
 	"net"
 )
 
-// nolint: revive,gochecknoglobals
+//nolint:revive,gochecknoglobals
 var (
 	_, LoopbackAddress, _        = net.ParseCIDR("127.0.0.0/8")
+	_, LinkLocalAddress, _       = net.ParseCIDR("169.254.0.0/16")
 	_, PrivateIPAddressClassA, _ = net.ParseCIDR("10.0.0.0/8")
 	_, PrivateIPAddressClassB, _ = net.ParseCIDR("172.16.0.0/12")
 	_, PrivateIPAddressClassC, _ = net.ParseCIDR("192.168.0.0/16")
 )
+
+func CIDRToIPNet(cidr string) (*net.IPNet, error) {
+	ip, ipNet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return nil, fmt.Errorf("net.ParseCIDR: %w", err)
+	}
+	ipNet.IP = ip
+	return ipNet, nil
+}
+
+func CIDRsToIPNets(cidr []string) ([]*net.IPNet, error) {
+	ipNets := make([]*net.IPNet, len(cidr))
+	for idx, cidr := range cidr {
+		ipNet, err := CIDRToIPNet(cidr)
+		if err != nil {
+			return nil, fmt.Errorf("CIDRToIPNet: %w", err)
+		}
+		ipNets[idx] = ipNet
+	}
+	return ipNets, nil
+}
 
 type IPNetSet []*net.IPNet
 

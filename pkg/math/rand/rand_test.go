@@ -1,4 +1,4 @@
-// nolint: paralleltest
+//nolint:paralleltest
 package randz_test
 
 import (
@@ -30,7 +30,7 @@ func TestRange(t *testing.T) {
 
 func TestRangeRand(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		// nolint: gosec
+		//nolint:gosec
 		r := rand.New(rand.NewSource(0))
 		expect := []int{2, 2, 1, 2, 3, 0}
 		actual := []int{
@@ -67,7 +67,7 @@ func TestRange32(t *testing.T) {
 
 func TestRange32Rand(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		// nolint: gosec
+		//nolint:gosec
 		r := rand.New(rand.NewSource(0))
 		expect := []int32{2, 2, 1, 2, 3, 0}
 		actual := []int32{
@@ -104,7 +104,7 @@ func TestRange64(t *testing.T) {
 
 func TestRange64Rand(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		// nolint: gosec
+		//nolint:gosec
 		r := rand.New(rand.NewSource(0))
 		expect := []int64{1, 0, 3, 2, 2, 3}
 		actual := []int64{
@@ -141,7 +141,7 @@ func TestRangeDuration(t *testing.T) {
 
 func TestRangeDurationRand(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
-		// nolint: gosec
+		//nolint:gosec
 		r := rand.New(rand.NewSource(0))
 		expect := []time.Duration{1, 0, 3, 2, 2, 3}
 		actual := []time.Duration{
