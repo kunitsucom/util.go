@@ -17,15 +17,15 @@ var (
 func ParseCIDR(cidr string) (*net.IPNet, error) {
 	ip, ipNet, err := net.ParseCIDR(cidr)
 	if err != nil {
-		return nil, fmt.Errorf("net.ParseCIDR: %w", err)
+		return nil, fmt.Errorf("net.ParseCIDR: %s: %w", cidr, err)
 	}
 	ipNet.IP = ip
 	return ipNet, nil
 }
 
-func ParseCIDRs(cidr []string) ([]*net.IPNet, error) {
-	ipNets := make([]*net.IPNet, len(cidr))
-	for idx, cidr := range cidr {
+func ParseCIDRs(cidrs []string) ([]*net.IPNet, error) {
+	ipNets := make([]*net.IPNet, len(cidrs))
+	for idx, cidr := range cidrs {
 		ipNet, err := ParseCIDR(cidr)
 		if err != nil {
 			return nil, fmt.Errorf("ParseCIDR: %w", err)
