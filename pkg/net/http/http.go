@@ -15,7 +15,7 @@ type httpServer interface {
 
 func listenAndServe(server httpServer) error {
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		// nolint: wrapcheck
+		//nolint:wrapcheck
 		return err
 	}
 

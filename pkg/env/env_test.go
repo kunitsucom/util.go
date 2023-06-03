@@ -1,4 +1,4 @@
-// nolint: paralleltest
+//nolint:paralleltest
 package env_test
 
 import (
@@ -9,7 +9,7 @@ import (
 	"github.com/kunitsuinc/util.go/pkg/env"
 )
 
-// nolint: revive,stylecheck
+//nolint:revive,stylecheck
 const TEST_ENV_KEY = "TEST_ENV_KEY"
 
 func TestString(t *testing.T) {

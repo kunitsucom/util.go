@@ -12,7 +12,7 @@ func DumpResponse(resp *http.Response) (dump []byte, body *bytes.Buffer, err err
 	return dumpResponse(resp, io.Copy, httputil.DumpResponse)
 }
 
-// nolint: revive,stylecheck
+//nolint:revive,stylecheck
 func dumpResponse(
 	resp *http.Response,
 	io_Copy func(dst io.Writer, src io.Reader) (written int64, err error),

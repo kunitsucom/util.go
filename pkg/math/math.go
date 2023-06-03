@@ -1,6 +1,6 @@
 package mathz
 
-// nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var float64Pow10 = [...]float64{
 	// NOTE: "1e-323" is min value because condition "1e-324 == 0" returns "true" (only variable case).
 	//       cf. https://github.com/golang/go/blob/12daabb9156adb73fda453cae939ab4e3cb8e52f/src/math/pow10.go#L40
@@ -86,7 +86,7 @@ func IsPow10(f float64) bool {
 	return false
 }
 
-// nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var int32Pow10 = [...]int32{
 	1e00, 1e01, 1e02, 1e03, 1e04, 1e05, 1e06, 1e07, 1e08, 1e09,
 }
@@ -100,7 +100,7 @@ func IsPow10Int32(z int32) bool {
 	return false
 }
 
-// nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var int64Pow10 = [...]int64{
 	1e00, 1e01, 1e02, 1e03, 1e04, 1e05, 1e06, 1e07, 1e08, 1e09,
 	1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18,
@@ -115,7 +115,7 @@ func IsPow10Int64(z int64) bool {
 	return false
 }
 
-// nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var uint32Pow10 = [...]uint32{
 	1e00, 1e01, 1e02, 1e03, 1e04, 1e05, 1e06, 1e07, 1e08, 1e09,
 }
@@ -129,7 +129,7 @@ func IsPow10Uint32(z uint32) bool {
 	return false
 }
 
-// nolint: gochecknoglobals
+//nolint:gochecknoglobals
 var uint64Pow10 = [...]uint64{
 	1e00, 1e01, 1e02, 1e03, 1e04, 1e05, 1e06, 1e07, 1e08, 1e09,
 	1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19,

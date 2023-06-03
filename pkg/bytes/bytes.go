@@ -56,7 +56,7 @@ func (b *ReadSeekBuffer) Read(p []byte) (n int, err error) {
 			b.completed = true
 		}
 
-		// nolint: wrapcheck
+		//nolint:wrapcheck
 		return n, err
 	}
 
