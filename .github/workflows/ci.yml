@@ -43,7 +43,7 @@ jobs:
         run: |
           go mod tidy
           git diff --exit-code go.mod go.sum
-      - uses: golangci/golangci-lint-action@v3.4.0 # ref. https://github.com/golangci/golangci-lint-action#how-to-use
+      - uses: golangci/golangci-lint-action@v3.5.0 # ref. https://github.com/golangci/golangci-lint-action#how-to-use
         with:
           version: latest
       - name: Run go test
