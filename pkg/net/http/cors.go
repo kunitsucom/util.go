@@ -22,10 +22,10 @@ const (
 )
 
 type CORSConfig struct {
-	AllowedOrigin        string
-	AllowedMethods       []string
-	AllowedHeaders       []string
-	ExposedHeaders       []string
+	AllowOrigin          string
+	AllowMethods         []string
+	AllowHeaders         []string
+	ExposeHeaders        []string
 	AllowCredentials     bool
 	AllowPrivateNetwork  bool
 	MaxAge               int
@@ -50,7 +50,6 @@ func NewCORSHandler(configs ...*CORSConfig) func(next http.Handler) http.Handler
 				next.ServeHTTP(w, r)
 				return
 			}
-
 			if r.Method == http.MethodOptions && r.Header.Get(HeaderAccessControlRequestMethod) != "" {
 				cors.handlePreflightRequest(w, r)
 			} else {
@@ -63,10 +62,10 @@ func NewCORSHandler(configs ...*CORSConfig) func(next http.Handler) http.Handler
 //nolint:gocognit,cyclop
 func (cors *CORS) handlePreflightRequest(w http.ResponseWriter, r *http.Request) {
 	origin := r.Header.Get(HeaderOrigin)
-	for _, c := range cors.configs {
-		if c.AllowedOrigin == origin || c.AllowedOrigin == "*" { //nolint:nestif
-			responseHeader := w.Header()
+	responseHeader := w.Header()
 
+	for _, c := range cors.configs {
+		if c.AllowOrigin == origin || c.AllowOrigin == "*" { //nolint:nestif
 			// handle Vary header
 			responseHeader.Add(HeaderVary, HeaderOrigin)
 			responseHeader.Add(HeaderVary, HeaderAccessControlRequestMethod)
@@ -91,8 +90,8 @@ func (cors *CORS) handlePreflightRequest(w http.ResponseWriter, r *http.Request)
 			}
 
 			// handle Access-Control-Allow-*
-			responseHeader.Set(HeaderAccessControlAllowOrigin, c.AllowedOrigin)
-			responseHeader.Set(HeaderAccessControlAllowMethods, strings.Join(c.AllowedMethods, ", "))
+			responseHeader.Set(HeaderAccessControlAllowOrigin, c.AllowOrigin)
+			responseHeader.Set(HeaderAccessControlAllowMethods, strings.ToUpper(strings.Join(c.AllowMethods, ", ")))
 			if len(requestHeaders) > 0 {
 				responseHeader.Add(HeaderAccessControlAllowHeaders, strings.Join(requestHeaders, ", "))
 			}
@@ -120,16 +119,16 @@ func (cors *CORS) handlePreflightRequest(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	// no config
+	// if no CORSConfig:
 	cors.next.ServeHTTP(w, r)
 }
 
 func (cors *CORS) handleRequest(w http.ResponseWriter, r *http.Request) {
 	origin := r.Header.Get(HeaderOrigin)
-	for _, c := range cors.configs {
-		if c.AllowedOrigin == origin || c.AllowedOrigin == "*" { //nolint:nestif
-			responseHeader := w.Header()
+	responseHeader := w.Header()
 
+	for _, c := range cors.configs {
+		if c.AllowOrigin == origin || c.AllowOrigin == "*" { //nolint:nestif
 			// handle Vary header
 			responseHeader.Add(HeaderVary, HeaderOrigin)
 
@@ -138,8 +137,9 @@ func (cors *CORS) handleRequest(w http.ResponseWriter, r *http.Request) {
 				cors.next.ServeHTTP(w, r)
 				return
 			}
-			if len(c.ExposedHeaders) > 0 {
-				responseHeader.Add(HeaderAccessControlExposeHeaders, strings.Join(c.ExposedHeaders, ", "))
+			responseHeader.Set(HeaderAccessControlAllowOrigin, c.AllowOrigin)
+			if len(c.ExposeHeaders) > 0 {
+				responseHeader.Add(HeaderAccessControlExposeHeaders, strings.Join(c.ExposeHeaders, ", "))
 			}
 			if c.AllowCredentials {
 				responseHeader.Set(HeaderAccessControlAllowCredentials, "true")
@@ -151,7 +151,7 @@ func (cors *CORS) handleRequest(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// no config
+	// if no CORSConfig:
 	cors.next.ServeHTTP(w, r)
 }
 
@@ -164,7 +164,7 @@ func canonicalHeaders(headers []string) []string {
 }
 
 func (c *CORSConfig) methodAllowed(method string) bool {
-	if len(c.AllowedMethods) == 0 {
+	if len(c.AllowMethods) == 0 {
 		// If no method allowed, always return false, even for preflight request
 		return false
 	}
@@ -172,7 +172,7 @@ func (c *CORSConfig) methodAllowed(method string) bool {
 	if method == http.MethodOptions {
 		return true
 	}
-	for _, m := range c.AllowedMethods {
+	for _, m := range c.AllowMethods {
 		if m == method {
 			return true
 		}
@@ -185,7 +185,7 @@ func (c *CORSConfig) headersAllowed(requestedHeaders []string) bool {
 	if len(requestedHeaders) == 0 {
 		return true
 	}
-	for _, allowed := range c.AllowedHeaders {
+	for _, allowed := range c.AllowHeaders {
 		if allowed == "*" {
 			return true
 		}

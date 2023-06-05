@@ -37,17 +37,17 @@ func TestNewCORSHandler(t *testing.T) {
 	t.Run("success(OPTIONS)", func(t *testing.T) {
 		t.Parallel()
 		const (
-			expectOrigin         = localhostOrigin
-			expectMethods        = http.MethodGet + ", " + http.MethodPost
-			expectHeaders        = "Content-Type, Content-Length"
-			expectCode           = http.StatusNoContent
-			expectCredentials    = "true"
-			expectPrivateNetwork = "true"
+			expectAllowOrigin         = localhostOrigin
+			expectMethods             = http.MethodGet + ", " + http.MethodPost
+			expectAllowMethods        = "Content-Type, Content-Length"
+			expectCode                = http.StatusNoContent
+			expectAllowCredentials    = "true"
+			expectAllowPrivateNetwork = "true"
 		)
 		handler := httpz.NewCORSHandler(&httpz.CORSConfig{
-			AllowedOrigin:       localhostOrigin,
-			AllowedMethods:      []string{http.MethodGet, http.MethodPost},
-			AllowedHeaders:      []string{"Content-Type", "Content-Length"},
+			AllowOrigin:         localhostOrigin,
+			AllowMethods:        []string{http.MethodGet, http.MethodPost},
+			AllowHeaders:        []string{"Content-Type", "Content-Length"},
 			AllowCredentials:    true,
 			AllowPrivateNetwork: true,
 			MaxAge:              86400,
@@ -64,37 +64,37 @@ func TestNewCORSHandler(t *testing.T) {
 		if actualCode := w.Code; !reflect.DeepEqual(expectCode, actualCode) {
 			t.Fatalf("❌: expectCode = %d, actualCode %d", expectCode, actualCode)
 		}
-		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectOrigin, actualOrigin) {
-			t.Fatalf("❌: expectOrigin = %q, actualOrigin = %q", expectOrigin, actualOrigin)
+		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectAllowOrigin, actualOrigin) {
+			t.Fatalf("❌: expectAllowOrigin = %q, actualOrigin = %q", expectAllowOrigin, actualOrigin)
 		}
 		if actualMethods := w.Header().Get(httpz.HeaderAccessControlAllowMethods); !reflect.DeepEqual(expectMethods, actualMethods) {
 			t.Fatalf("❌: expectMethods = %q, actualMethod = %q", expectMethods, actualMethods)
 		}
-		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectHeaders, actualHeaders) {
-			t.Fatalf("❌: expectHeaders = %q, actualHeaders = %q", expectHeaders, actualHeaders)
+		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectAllowMethods, actualHeaders) {
+			t.Fatalf("❌: expectAllowMethods = %q, actualHeaders = %q", expectAllowMethods, actualHeaders)
 		}
-		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectCredentials, actualCredentials) {
-			t.Fatalf("❌: expectCredentials = %q, actualCredentials = %q", expectCredentials, actualCredentials)
+		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectAllowCredentials, actualCredentials) {
+			t.Fatalf("❌: expectAllowCredentials = %q, actualCredentials = %q", expectAllowCredentials, actualCredentials)
 		}
-		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectPrivateNetwork, actualPrivateNetwork) {
-			t.Fatalf("❌: expectPrivateNetwork = %q, actualPrivateNetwork = %q", expectPrivateNetwork, actualPrivateNetwork)
+		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectAllowPrivateNetwork, actualPrivateNetwork) {
+			t.Fatalf("❌: expectAllowPrivateNetwork = %q, actualPrivateNetwork = %q", expectAllowPrivateNetwork, actualPrivateNetwork)
 		}
 	})
 
 	t.Run("success(OPTIONS,OptionsSuccessStatus)", func(t *testing.T) {
 		t.Parallel()
 		const (
-			expectOrigin         = localhostOrigin
-			expectMethods        = http.MethodGet + ", " + http.MethodPost
-			expectHeaders        = "Content-Type, Content-Length"
-			expectCode           = http.StatusNoContent
-			expectCredentials    = "true"
-			expectPrivateNetwork = ""
+			expectAllowOrigin         = localhostOrigin
+			expectMethods             = http.MethodGet + ", " + http.MethodPost
+			expectAllowMethods        = "Content-Type, Content-Length"
+			expectCode                = http.StatusNoContent
+			expectAllowCredentials    = "true"
+			expectAllowPrivateNetwork = ""
 		)
 		handler := httpz.NewCORSHandler(&httpz.CORSConfig{
-			AllowedOrigin:        localhostOrigin,
-			AllowedMethods:       []string{http.MethodGet, http.MethodPost},
-			AllowedHeaders:       []string{"Content-Type", "Content-Length"},
+			AllowOrigin:          localhostOrigin,
+			AllowMethods:         []string{http.MethodGet, http.MethodPost},
+			AllowHeaders:         []string{"Content-Type", "Content-Length"},
 			AllowCredentials:     true,
 			OptionsSuccessStatus: expectCode,
 		})
@@ -110,37 +110,37 @@ func TestNewCORSHandler(t *testing.T) {
 		if actualCode := w.Code; !reflect.DeepEqual(expectCode, actualCode) {
 			t.Fatalf("❌: expectCode = %d, actualCode %d", expectCode, actualCode)
 		}
-		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectOrigin, actualOrigin) {
-			t.Fatalf("❌: expectOrigin = %q, actualOrigin = %q", expectOrigin, actualOrigin)
+		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectAllowOrigin, actualOrigin) {
+			t.Fatalf("❌: expectAllowOrigin = %q, actualOrigin = %q", expectAllowOrigin, actualOrigin)
 		}
 		if actualMethods := w.Header().Get(httpz.HeaderAccessControlAllowMethods); !reflect.DeepEqual(expectMethods, actualMethods) {
 			t.Fatalf("❌: expectMethods = %q, actualMethod = %q", expectMethods, actualMethods)
 		}
-		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectHeaders, actualHeaders) {
-			t.Fatalf("❌: expectHeaders = %q, actualHeaders = %q", expectHeaders, actualHeaders)
+		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectAllowMethods, actualHeaders) {
+			t.Fatalf("❌: expectAllowMethods = %q, actualHeaders = %q", expectAllowMethods, actualHeaders)
 		}
-		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectCredentials, actualCredentials) {
-			t.Fatalf("❌: expectCredentials = %q, actualCredentials = %q", expectCredentials, actualCredentials)
+		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectAllowCredentials, actualCredentials) {
+			t.Fatalf("❌: expectAllowCredentials = %q, actualCredentials = %q", expectAllowCredentials, actualCredentials)
 		}
-		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectPrivateNetwork, actualPrivateNetwork) {
-			t.Fatalf("❌: expectPrivateNetwork = %q, actualPrivateNetwork = %q", expectPrivateNetwork, actualPrivateNetwork)
+		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectAllowPrivateNetwork, actualPrivateNetwork) {
+			t.Fatalf("❌: expectAllowPrivateNetwork = %q, actualPrivateNetwork = %q", expectAllowPrivateNetwork, actualPrivateNetwork)
 		}
 	})
 
 	t.Run("success(OPTIONS,OptionsPassthrough)", func(t *testing.T) {
 		t.Parallel()
 		const (
-			expectOrigin         = localhostOrigin
-			expectMethods        = http.MethodGet + ", " + http.MethodPost
-			expectHeaders        = "Content-Type, Content-Length"
-			expectCode           = http.StatusOK
-			expectCredentials    = "true"
-			expectPrivateNetwork = ""
+			expectAllowOrigin         = localhostOrigin
+			expectMethods             = http.MethodGet + ", " + http.MethodPost
+			expectAllowMethods        = "Content-Type, Content-Length"
+			expectCode                = http.StatusOK
+			expectAllowCredentials    = "true"
+			expectAllowPrivateNetwork = ""
 		)
 		handler := httpz.NewCORSHandler(&httpz.CORSConfig{
-			AllowedOrigin:      localhostOrigin,
-			AllowedMethods:     []string{http.MethodGet, http.MethodPost},
-			AllowedHeaders:     []string{"Content-Type", "Content-Length"},
+			AllowOrigin:        localhostOrigin,
+			AllowMethods:       []string{http.MethodGet, http.MethodPost},
+			AllowHeaders:       []string{"Content-Type", "Content-Length"},
 			AllowCredentials:   true,
 			MaxAge:             86400,
 			OptionsPassthrough: true,
@@ -159,20 +159,20 @@ func TestNewCORSHandler(t *testing.T) {
 		if actualCode := w.Code; !reflect.DeepEqual(expectCode, actualCode) {
 			t.Fatalf("❌: expectCode = %d, actualCode %d", expectCode, actualCode)
 		}
-		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectOrigin, actualOrigin) {
-			t.Fatalf("❌: expectOrigin = %q, actualOrigin = %q", expectOrigin, actualOrigin)
+		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectAllowOrigin, actualOrigin) {
+			t.Fatalf("❌: expectAllowOrigin = %q, actualOrigin = %q", expectAllowOrigin, actualOrigin)
 		}
 		if actualMethods := w.Header().Get(httpz.HeaderAccessControlAllowMethods); !reflect.DeepEqual(expectMethods, actualMethods) {
 			t.Fatalf("❌: expectMethods = %q, actualMethod = %q", expectMethods, actualMethods)
 		}
-		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectHeaders, actualHeaders) {
-			t.Fatalf("❌: expectHeaders = %q, actualHeaders = %q", expectHeaders, actualHeaders)
+		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectAllowMethods, actualHeaders) {
+			t.Fatalf("❌: expectAllowMethods = %q, actualHeaders = %q", expectAllowMethods, actualHeaders)
 		}
-		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectCredentials, actualCredentials) {
-			t.Fatalf("❌: expectCredentials = %q, actualCredentials = %q", expectCredentials, actualCredentials)
+		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectAllowCredentials, actualCredentials) {
+			t.Fatalf("❌: expectAllowCredentials = %q, actualCredentials = %q", expectAllowCredentials, actualCredentials)
 		}
-		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectPrivateNetwork, actualPrivateNetwork) {
-			t.Fatalf("❌: expectPrivateNetwork = %q, actualPrivateNetwork = %q", expectPrivateNetwork, actualPrivateNetwork)
+		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectAllowPrivateNetwork, actualPrivateNetwork) {
+			t.Fatalf("❌: expectAllowPrivateNetwork = %q, actualPrivateNetwork = %q", expectAllowPrivateNetwork, actualPrivateNetwork)
 		}
 	})
 }
@@ -183,17 +183,17 @@ func TestCORS_methodAllowed(t *testing.T) {
 	t.Run("success(OPTIONS,!methodAllowed,PUT)", func(t *testing.T) {
 		t.Parallel()
 		const (
-			expectOrigin         = ""
-			expectMethods        = ""
-			expectHeaders        = ""
-			expectCode           = http.StatusNotFound
-			expectCredentials    = ""
-			expectPrivateNetwork = ""
+			expectAllowOrigin         = ""
+			expectMethods             = ""
+			expectAllowMethods        = ""
+			expectCode                = http.StatusNotFound
+			expectAllowCredentials    = ""
+			expectAllowPrivateNetwork = ""
 		)
 		handler := httpz.NewCORSHandler(&httpz.CORSConfig{
-			AllowedOrigin:    localhostOrigin,
-			AllowedMethods:   []string{http.MethodGet, http.MethodPost},
-			AllowedHeaders:   []string{"Content-Type", "Content-Length"},
+			AllowOrigin:      localhostOrigin,
+			AllowMethods:     []string{http.MethodGet, http.MethodPost},
+			AllowHeaders:     []string{"Content-Type", "Content-Length"},
 			AllowCredentials: true,
 			MaxAge:           86400,
 		})
@@ -213,37 +213,37 @@ func TestCORS_methodAllowed(t *testing.T) {
 		if actualCode := w.Code; !reflect.DeepEqual(expectCode, actualCode) {
 			t.Fatalf("❌: expectCode = %d, actualCode %d", expectCode, actualCode)
 		}
-		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectOrigin, actualOrigin) {
-			t.Fatalf("❌: expectOrigin = %q, actualOrigin = %q", expectOrigin, actualOrigin)
+		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectAllowOrigin, actualOrigin) {
+			t.Fatalf("❌: expectAllowOrigin = %q, actualOrigin = %q", expectAllowOrigin, actualOrigin)
 		}
 		if actualMethods := w.Header().Get(httpz.HeaderAccessControlAllowMethods); !reflect.DeepEqual(expectMethods, actualMethods) {
 			t.Fatalf("❌: expectMethods = %q, actualMethod = %q", expectMethods, actualMethods)
 		}
-		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectHeaders, actualHeaders) {
-			t.Fatalf("❌: expectHeaders = %q, actualHeaders = %q", expectHeaders, actualHeaders)
+		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectAllowMethods, actualHeaders) {
+			t.Fatalf("❌: expectAllowMethods = %q, actualHeaders = %q", expectAllowMethods, actualHeaders)
 		}
-		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectCredentials, actualCredentials) {
-			t.Fatalf("❌: expectCredentials = %q, actualCredentials = %q", expectCredentials, actualCredentials)
+		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectAllowCredentials, actualCredentials) {
+			t.Fatalf("❌: expectAllowCredentials = %q, actualCredentials = %q", expectAllowCredentials, actualCredentials)
 		}
-		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectPrivateNetwork, actualPrivateNetwork) {
-			t.Fatalf("❌: expectPrivateNetwork = %q, actualPrivateNetwork = %q", expectPrivateNetwork, actualPrivateNetwork)
+		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectAllowPrivateNetwork, actualPrivateNetwork) {
+			t.Fatalf("❌: expectAllowPrivateNetwork = %q, actualPrivateNetwork = %q", expectAllowPrivateNetwork, actualPrivateNetwork)
 		}
 	})
 
 	t.Run("success(OPTIONS,!methodAllowed,AllowedMethods)", func(t *testing.T) {
 		t.Parallel()
 		const (
-			expectOrigin         = ""
-			expectMethods        = ""
-			expectHeaders        = ""
-			expectCode           = http.StatusNotFound
-			expectCredentials    = ""
-			expectPrivateNetwork = ""
+			expectAllowOrigin         = ""
+			expectMethods             = ""
+			expectAllowMethods        = ""
+			expectCode                = http.StatusNotFound
+			expectAllowCredentials    = ""
+			expectAllowPrivateNetwork = ""
 		)
 		handler := httpz.NewCORSHandler(&httpz.CORSConfig{
-			AllowedOrigin:    localhostOrigin,
-			AllowedMethods:   nil,
-			AllowedHeaders:   []string{"Content-Type", "Content-Length"},
+			AllowOrigin:      localhostOrigin,
+			AllowMethods:     nil,
+			AllowHeaders:     []string{"Content-Type", "Content-Length"},
 			AllowCredentials: true,
 			MaxAge:           86400,
 		})
@@ -263,20 +263,20 @@ func TestCORS_methodAllowed(t *testing.T) {
 		if actualCode := w.Code; !reflect.DeepEqual(expectCode, actualCode) {
 			t.Fatalf("❌: expectCode = %d, actualCode %d", expectCode, actualCode)
 		}
-		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectOrigin, actualOrigin) {
-			t.Fatalf("❌: expectOrigin = %q, actualOrigin = %q", expectOrigin, actualOrigin)
+		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectAllowOrigin, actualOrigin) {
+			t.Fatalf("❌: expectAllowOrigin = %q, actualOrigin = %q", expectAllowOrigin, actualOrigin)
 		}
 		if actualMethods := w.Header().Get(httpz.HeaderAccessControlAllowMethods); !reflect.DeepEqual(expectMethods, actualMethods) {
 			t.Fatalf("❌: expectMethods = %q, actualMethod = %q", expectMethods, actualMethods)
 		}
-		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectHeaders, actualHeaders) {
-			t.Fatalf("❌: expectHeaders = %q, actualHeaders = %q", expectHeaders, actualHeaders)
+		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectAllowMethods, actualHeaders) {
+			t.Fatalf("❌: expectAllowMethods = %q, actualHeaders = %q", expectAllowMethods, actualHeaders)
 		}
-		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectCredentials, actualCredentials) {
-			t.Fatalf("❌: expectCredentials = %q, actualCredentials = %q", expectCredentials, actualCredentials)
+		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectAllowCredentials, actualCredentials) {
+			t.Fatalf("❌: expectAllowCredentials = %q, actualCredentials = %q", expectAllowCredentials, actualCredentials)
 		}
-		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectPrivateNetwork, actualPrivateNetwork) {
-			t.Fatalf("❌: expectPrivateNetwork = %q, actualPrivateNetwork = %q", expectPrivateNetwork, actualPrivateNetwork)
+		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectAllowPrivateNetwork, actualPrivateNetwork) {
+			t.Fatalf("❌: expectAllowPrivateNetwork = %q, actualPrivateNetwork = %q", expectAllowPrivateNetwork, actualPrivateNetwork)
 		}
 	})
 }
@@ -287,17 +287,17 @@ func TestCORS_headersAllowed(t *testing.T) {
 	t.Run("success(OPTIONS,!headersAllowed,404)", func(t *testing.T) {
 		t.Parallel()
 		const (
-			expectOrigin         = ""
-			expectMethods        = ""
-			expectHeaders        = ""
-			expectCode           = http.StatusNotFound
-			expectCredentials    = ""
-			expectPrivateNetwork = ""
+			expectAllowOrigin         = ""
+			expectMethods             = ""
+			expectAllowMethods        = ""
+			expectCode                = http.StatusNotFound
+			expectAllowCredentials    = ""
+			expectAllowPrivateNetwork = ""
 		)
 		handler := httpz.NewCORSHandler(&httpz.CORSConfig{
-			AllowedOrigin:    localhostOrigin,
-			AllowedMethods:   []string{http.MethodGet, http.MethodPost},
-			AllowedHeaders:   []string{"Content-Type", "Content-Length"},
+			AllowOrigin:      localhostOrigin,
+			AllowMethods:     []string{http.MethodGet, http.MethodPost},
+			AllowHeaders:     []string{"Content-Type", "Content-Length"},
 			AllowCredentials: true,
 			MaxAge:           86400,
 		})
@@ -316,37 +316,37 @@ func TestCORS_headersAllowed(t *testing.T) {
 		if actualCode := w.Code; !reflect.DeepEqual(expectCode, actualCode) {
 			t.Fatalf("❌: expectCode = %d, actualCode %d", expectCode, actualCode)
 		}
-		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectOrigin, actualOrigin) {
-			t.Fatalf("❌: expectOrigin = %q, actualOrigin = %q", expectOrigin, actualOrigin)
+		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectAllowOrigin, actualOrigin) {
+			t.Fatalf("❌: expectAllowOrigin = %q, actualOrigin = %q", expectAllowOrigin, actualOrigin)
 		}
 		if actualMethods := w.Header().Get(httpz.HeaderAccessControlAllowMethods); !reflect.DeepEqual(expectMethods, actualMethods) {
 			t.Fatalf("❌: expectMethods = %q, actualMethod = %q", expectMethods, actualMethods)
 		}
-		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectHeaders, actualHeaders) {
-			t.Fatalf("❌: expectHeaders = %q, actualHeaders = %q", expectHeaders, actualHeaders)
+		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectAllowMethods, actualHeaders) {
+			t.Fatalf("❌: expectAllowMethods = %q, actualHeaders = %q", expectAllowMethods, actualHeaders)
 		}
-		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectCredentials, actualCredentials) {
-			t.Fatalf("❌: expectCredentials = %q, actualCredentials = %q", expectCredentials, actualCredentials)
+		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectAllowCredentials, actualCredentials) {
+			t.Fatalf("❌: expectAllowCredentials = %q, actualCredentials = %q", expectAllowCredentials, actualCredentials)
 		}
-		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectPrivateNetwork, actualPrivateNetwork) {
-			t.Fatalf("❌: expectPrivateNetwork = %q, actualPrivateNetwork = %q", expectPrivateNetwork, actualPrivateNetwork)
+		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectAllowPrivateNetwork, actualPrivateNetwork) {
+			t.Fatalf("❌: expectAllowPrivateNetwork = %q, actualPrivateNetwork = %q", expectAllowPrivateNetwork, actualPrivateNetwork)
 		}
 	})
 
 	t.Run("success(OPTIONS,headersAllowed,204)", func(t *testing.T) {
 		t.Parallel()
 		const (
-			expectOrigin         = localhostOrigin
-			expectMethods        = http.MethodGet + ", " + http.MethodPost
-			expectHeaders        = "Content-Type, Content-Length"
-			expectCode           = http.StatusNoContent
-			expectCredentials    = "true"
-			expectPrivateNetwork = ""
+			expectAllowOrigin         = localhostOrigin
+			expectMethods             = http.MethodGet + ", " + http.MethodPost
+			expectAllowMethods        = "Content-Type, Content-Length"
+			expectCode                = http.StatusNoContent
+			expectAllowCredentials    = "true"
+			expectAllowPrivateNetwork = ""
 		)
 		handler := httpz.NewCORSHandler(&httpz.CORSConfig{
-			AllowedOrigin:    localhostOrigin,
-			AllowedMethods:   []string{http.MethodGet, http.MethodPost},
-			AllowedHeaders:   []string{"Content-Type", "Content-Length"},
+			AllowOrigin:      localhostOrigin,
+			AllowMethods:     []string{http.MethodGet, http.MethodPost},
+			AllowHeaders:     []string{"Content-Type", "Content-Length"},
 			AllowCredentials: true,
 			MaxAge:           86400,
 		})
@@ -360,34 +360,34 @@ func TestCORS_headersAllowed(t *testing.T) {
 		if actualCode := w.Code; !reflect.DeepEqual(expectCode, actualCode) {
 			t.Fatalf("❌: expectCode = %d, actualCode %d", expectCode, actualCode)
 		}
-		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectOrigin, actualOrigin) {
-			t.Fatalf("❌: expectOrigin = %q, actualOrigin = %q", expectOrigin, actualOrigin)
+		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectAllowOrigin, actualOrigin) {
+			t.Fatalf("❌: expectAllowOrigin = %q, actualOrigin = %q", expectAllowOrigin, actualOrigin)
 		}
 		if actualMethods := w.Header().Get(httpz.HeaderAccessControlAllowMethods); !reflect.DeepEqual(expectMethods, actualMethods) {
 			t.Fatalf("❌: expectMethods = %q, actualMethod = %q", expectMethods, actualMethods)
 		}
-		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectCredentials, actualCredentials) {
-			t.Fatalf("❌: expectCredentials = %q, actualCredentials = %q", expectCredentials, actualCredentials)
+		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectAllowCredentials, actualCredentials) {
+			t.Fatalf("❌: expectAllowCredentials = %q, actualCredentials = %q", expectAllowCredentials, actualCredentials)
 		}
-		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectPrivateNetwork, actualPrivateNetwork) {
-			t.Fatalf("❌: expectPrivateNetwork = %q, actualPrivateNetwork = %q", expectPrivateNetwork, actualPrivateNetwork)
+		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectAllowPrivateNetwork, actualPrivateNetwork) {
+			t.Fatalf("❌: expectAllowPrivateNetwork = %q, actualPrivateNetwork = %q", expectAllowPrivateNetwork, actualPrivateNetwork)
 		}
 	})
 
 	t.Run("success(OPTIONS,headersAllowed,*)", func(t *testing.T) {
 		t.Parallel()
 		const (
-			expectOrigin         = localhostOrigin
-			expectMethods        = http.MethodGet + ", " + http.MethodPost
-			expectHeaders        = "Content-Type, Content-Length"
-			expectCode           = http.StatusNoContent
-			expectCredentials    = "true"
-			expectPrivateNetwork = ""
+			expectAllowOrigin         = localhostOrigin
+			expectMethods             = http.MethodGet + ", " + http.MethodPost
+			expectAllowMethods        = "Content-Type, Content-Length"
+			expectCode                = http.StatusNoContent
+			expectAllowCredentials    = "true"
+			expectAllowPrivateNetwork = ""
 		)
 		handler := httpz.NewCORSHandler(&httpz.CORSConfig{
-			AllowedOrigin:    localhostOrigin,
-			AllowedMethods:   []string{http.MethodGet, http.MethodPost},
-			AllowedHeaders:   []string{"*"},
+			AllowOrigin:      localhostOrigin,
+			AllowMethods:     []string{http.MethodGet, http.MethodPost},
+			AllowHeaders:     []string{"*"},
 			AllowCredentials: true,
 			MaxAge:           86400,
 		})
@@ -403,17 +403,17 @@ func TestCORS_headersAllowed(t *testing.T) {
 		if actualCode := w.Code; !reflect.DeepEqual(expectCode, actualCode) {
 			t.Fatalf("❌: expectCode = %d, actualCode %d", expectCode, actualCode)
 		}
-		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectOrigin, actualOrigin) {
-			t.Fatalf("❌: expectOrigin = %q, actualOrigin = %q", expectOrigin, actualOrigin)
+		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectAllowOrigin, actualOrigin) {
+			t.Fatalf("❌: expectAllowOrigin = %q, actualOrigin = %q", expectAllowOrigin, actualOrigin)
 		}
 		if actualMethods := w.Header().Get(httpz.HeaderAccessControlAllowMethods); !reflect.DeepEqual(expectMethods, actualMethods) {
 			t.Fatalf("❌: expectMethods = %q, actualMethod = %q", expectMethods, actualMethods)
 		}
-		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectCredentials, actualCredentials) {
-			t.Fatalf("❌: expectCredentials = %q, actualCredentials = %q", expectCredentials, actualCredentials)
+		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectAllowCredentials, actualCredentials) {
+			t.Fatalf("❌: expectAllowCredentials = %q, actualCredentials = %q", expectAllowCredentials, actualCredentials)
 		}
-		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectPrivateNetwork, actualPrivateNetwork) {
-			t.Fatalf("❌: expectPrivateNetwork = %q, actualPrivateNetwork = %q", expectPrivateNetwork, actualPrivateNetwork)
+		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectAllowPrivateNetwork, actualPrivateNetwork) {
+			t.Fatalf("❌: expectAllowPrivateNetwork = %q, actualPrivateNetwork = %q", expectAllowPrivateNetwork, actualPrivateNetwork)
 		}
 	})
 }
@@ -424,12 +424,12 @@ func TestCORS_handleRequest(t *testing.T) {
 	t.Run("success(GET,200,NoConfig)", func(t *testing.T) {
 		t.Parallel()
 		const (
-			expectOrigin         = ""
-			expectMethods        = ""
-			expectHeaders        = ""
-			expectCode           = http.StatusOK
-			expectCredentials    = ""
-			expectPrivateNetwork = ""
+			expectAllowOrigin         = ""
+			expectMethods             = ""
+			expectAllowMethods        = ""
+			expectCode                = http.StatusOK
+			expectAllowCredentials    = ""
+			expectAllowPrivateNetwork = ""
 		)
 		handler := httpz.NewCORSHandler()
 		w := httptest.NewRecorder()
@@ -446,20 +446,20 @@ func TestCORS_handleRequest(t *testing.T) {
 		if actualCode := w.Code; !reflect.DeepEqual(expectCode, actualCode) {
 			t.Fatalf("❌: expectCode = %d, actualCode %d", expectCode, actualCode)
 		}
-		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectOrigin, actualOrigin) {
-			t.Fatalf("❌: expectOrigin = %q, actualOrigin = %q", expectOrigin, actualOrigin)
+		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectAllowOrigin, actualOrigin) {
+			t.Fatalf("❌: expectAllowOrigin = %q, actualOrigin = %q", expectAllowOrigin, actualOrigin)
 		}
 		if actualMethods := w.Header().Get(httpz.HeaderAccessControlAllowMethods); !reflect.DeepEqual(expectMethods, actualMethods) {
 			t.Fatalf("❌: expectMethods = %q, actualMethod = %q", expectMethods, actualMethods)
 		}
-		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectHeaders, actualHeaders) {
-			t.Fatalf("❌: expectHeaders = %q, actualHeaders = %q", expectHeaders, actualHeaders)
+		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectAllowMethods, actualHeaders) {
+			t.Fatalf("❌: expectAllowMethods = %q, actualHeaders = %q", expectAllowMethods, actualHeaders)
 		}
-		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectCredentials, actualCredentials) {
-			t.Fatalf("❌: expectCredentials = %q, actualCredentials = %q", expectCredentials, actualCredentials)
+		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectAllowCredentials, actualCredentials) {
+			t.Fatalf("❌: expectAllowCredentials = %q, actualCredentials = %q", expectAllowCredentials, actualCredentials)
 		}
-		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectPrivateNetwork, actualPrivateNetwork) {
-			t.Fatalf("❌: expectPrivateNetwork = %q, actualPrivateNetwork = %q", expectPrivateNetwork, actualPrivateNetwork)
+		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectAllowPrivateNetwork, actualPrivateNetwork) {
+			t.Fatalf("❌: expectAllowPrivateNetwork = %q, actualPrivateNetwork = %q", expectAllowPrivateNetwork, actualPrivateNetwork)
 		}
 		buf := bytes.NewBuffer(nil)
 		if _, err := buf.ReadFrom(w.Result().Body); err != nil { //nolint:bodyclose
@@ -473,18 +473,18 @@ func TestCORS_handleRequest(t *testing.T) {
 	t.Run("success(GET,200)", func(t *testing.T) {
 		t.Parallel()
 		const (
-			expectOrigin         = ""
-			expectMethods        = ""
-			expectHeaders        = ""
-			expectCode           = http.StatusOK
-			expectCredentials    = "true"
-			expectPrivateNetwork = ""
+			expectAllowOrigin         = localhostOrigin
+			expectMethods             = ""
+			expectAllowMethods        = ""
+			expectCode                = http.StatusOK
+			expectAllowCredentials    = "true"
+			expectAllowPrivateNetwork = ""
 		)
 		handler := httpz.NewCORSHandler(&httpz.CORSConfig{
-			AllowedOrigin:       localhostOrigin,
-			AllowedMethods:      []string{http.MethodGet, http.MethodPost},
-			AllowedHeaders:      []string{"Content-Type", "Content-Length"},
-			ExposedHeaders:      []string{"Content-Type"},
+			AllowOrigin:         localhostOrigin,
+			AllowMethods:        []string{http.MethodGet, http.MethodPost},
+			AllowHeaders:        []string{"Content-Type", "Content-Length"},
+			ExposeHeaders:       []string{"Content-Type"},
 			AllowCredentials:    true,
 			AllowPrivateNetwork: true,
 			MaxAge:              86400,
@@ -503,20 +503,20 @@ func TestCORS_handleRequest(t *testing.T) {
 		if actualCode := w.Code; !reflect.DeepEqual(expectCode, actualCode) {
 			t.Fatalf("❌: expectCode = %d, actualCode %d", expectCode, actualCode)
 		}
-		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectOrigin, actualOrigin) {
-			t.Fatalf("❌: expectOrigin = %q, actualOrigin = %q", expectOrigin, actualOrigin)
+		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectAllowOrigin, actualOrigin) {
+			t.Fatalf("❌: expectAllowOrigin = %q, actualOrigin = %q", expectAllowOrigin, actualOrigin)
 		}
 		if actualMethods := w.Header().Get(httpz.HeaderAccessControlAllowMethods); !reflect.DeepEqual(expectMethods, actualMethods) {
 			t.Fatalf("❌: expectMethods = %q, actualMethod = %q", expectMethods, actualMethods)
 		}
-		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectHeaders, actualHeaders) {
-			t.Fatalf("❌: expectHeaders = %q, actualHeaders = %q", expectHeaders, actualHeaders)
+		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectAllowMethods, actualHeaders) {
+			t.Fatalf("❌: expectAllowMethods = %q, actualHeaders = %q", expectAllowMethods, actualHeaders)
 		}
-		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectCredentials, actualCredentials) {
-			t.Fatalf("❌: expectCredentials = %q, actualCredentials = %q", expectCredentials, actualCredentials)
+		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectAllowCredentials, actualCredentials) {
+			t.Fatalf("❌: expectAllowCredentials = %q, actualCredentials = %q", expectAllowCredentials, actualCredentials)
 		}
-		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectPrivateNetwork, actualPrivateNetwork) {
-			t.Fatalf("❌: expectPrivateNetwork = %q, actualPrivateNetwork = %q", expectPrivateNetwork, actualPrivateNetwork)
+		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectAllowPrivateNetwork, actualPrivateNetwork) {
+			t.Fatalf("❌: expectAllowPrivateNetwork = %q, actualPrivateNetwork = %q", expectAllowPrivateNetwork, actualPrivateNetwork)
 		}
 		buf := bytes.NewBuffer(nil)
 		if _, err := buf.ReadFrom(w.Result().Body); err != nil { //nolint:bodyclose
@@ -530,18 +530,18 @@ func TestCORS_handleRequest(t *testing.T) {
 	t.Run("success(GET,200)", func(t *testing.T) {
 		t.Parallel()
 		const (
-			expectOrigin         = ""
-			expectMethods        = ""
-			expectHeaders        = ""
-			expectCode           = http.StatusOK
-			expectCredentials    = ""
-			expectPrivateNetwork = ""
+			expectAllowOrigin         = ""
+			expectMethods             = ""
+			expectAllowMethods        = ""
+			expectCode                = http.StatusOK
+			expectAllowCredentials    = ""
+			expectAllowPrivateNetwork = ""
 		)
 		handler := httpz.NewCORSHandler(&httpz.CORSConfig{
-			AllowedOrigin:       localhostOrigin,
-			AllowedMethods:      []string{http.MethodGet, http.MethodPost},
-			AllowedHeaders:      []string{"Content-Type", "Content-Length"},
-			ExposedHeaders:      []string{"Content-Type"},
+			AllowOrigin:         localhostOrigin,
+			AllowMethods:        []string{http.MethodGet, http.MethodPost},
+			AllowHeaders:        []string{"Content-Type", "Content-Length"},
+			ExposeHeaders:       []string{"Content-Type"},
 			AllowCredentials:    true,
 			AllowPrivateNetwork: true,
 			MaxAge:              86400,
@@ -560,20 +560,20 @@ func TestCORS_handleRequest(t *testing.T) {
 		if actualCode := w.Code; !reflect.DeepEqual(expectCode, actualCode) {
 			t.Fatalf("❌: expectCode = %d, actualCode %d", expectCode, actualCode)
 		}
-		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectOrigin, actualOrigin) {
-			t.Fatalf("❌: expectOrigin = %q, actualOrigin = %q", expectOrigin, actualOrigin)
+		if actualOrigin := w.Header().Get(httpz.HeaderAccessControlAllowOrigin); !reflect.DeepEqual(expectAllowOrigin, actualOrigin) {
+			t.Fatalf("❌: expectAllowOrigin = %q, actualOrigin = %q", expectAllowOrigin, actualOrigin)
 		}
 		if actualMethods := w.Header().Get(httpz.HeaderAccessControlAllowMethods); !reflect.DeepEqual(expectMethods, actualMethods) {
 			t.Fatalf("❌: expectMethods = %q, actualMethod = %q", expectMethods, actualMethods)
 		}
-		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectHeaders, actualHeaders) {
-			t.Fatalf("❌: expectHeaders = %q, actualHeaders = %q", expectHeaders, actualHeaders)
+		if actualHeaders := w.Header().Get(httpz.HeaderAccessControlAllowHeaders); !reflect.DeepEqual(expectAllowMethods, actualHeaders) {
+			t.Fatalf("❌: expectAllowMethods = %q, actualHeaders = %q", expectAllowMethods, actualHeaders)
 		}
-		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectCredentials, actualCredentials) {
-			t.Fatalf("❌: expectCredentials = %q, actualCredentials = %q", expectCredentials, actualCredentials)
+		if actualCredentials := w.Header().Get(httpz.HeaderAccessControlAllowCredentials); !reflect.DeepEqual(expectAllowCredentials, actualCredentials) {
+			t.Fatalf("❌: expectAllowCredentials = %q, actualCredentials = %q", expectAllowCredentials, actualCredentials)
 		}
-		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectPrivateNetwork, actualPrivateNetwork) {
-			t.Fatalf("❌: expectPrivateNetwork = %q, actualPrivateNetwork = %q", expectPrivateNetwork, actualPrivateNetwork)
+		if actualPrivateNetwork := w.Header().Get(httpz.HeaderAccessControlAllowPrivateNetwork); !reflect.DeepEqual(expectAllowPrivateNetwork, actualPrivateNetwork) {
+			t.Fatalf("❌: expectAllowPrivateNetwork = %q, actualPrivateNetwork = %q", expectAllowPrivateNetwork, actualPrivateNetwork)
 		}
 		buf := bytes.NewBuffer(nil)
 		if _, err := buf.ReadFrom(w.Result().Body); err != nil { //nolint:bodyclose
