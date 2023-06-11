@@ -26,20 +26,3 @@ func (cookies Cookies) Get(name string) (cookie *http.Cookie, ok bool) {
 	}
 	return nil, false
 }
-
-func NewCookieHandler(cookieName string, handler func(next http.Handler, w http.ResponseWriter, r *http.Request, cookie *http.Cookie)) func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			if rawCookies := r.Header.Get(HeaderCookie); rawCookies != "" {
-				cookies := Cookies(ParseCookies(rawCookies))
-				if cookie, ok := cookies.Get(cookieName); ok {
-					handler(next, rw, r, cookie)
-					return
-				}
-			}
-
-			// noop
-			next.ServeHTTP(rw, r)
-		})
-	}
-}
