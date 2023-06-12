@@ -100,7 +100,7 @@ func TestBool(t *testing.T) {
 		}
 	})
 
-	t.Run("failure(fail-to-atoi)", func(t *testing.T) {
+	t.Run("failure(fail-to-format)", func(t *testing.T) {
 		const expect = false
 		t.Setenv(TEST_ENV_KEY, "test string")
 		actual, err := env.Bool(TEST_ENV_KEY)
@@ -176,7 +176,7 @@ func TestInt(t *testing.T) {
 		}
 	})
 
-	t.Run("failure(fail-to-atoi)", func(t *testing.T) {
+	t.Run("failure(fail-to-format)", func(t *testing.T) {
 		const expect = 0
 		t.Setenv(TEST_ENV_KEY, "test string")
 		actual, err := env.Int(TEST_ENV_KEY)
@@ -228,6 +228,82 @@ func TestMustInt(t *testing.T) {
 	})
 }
 
+func TestInt32(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		const expect = 2000000000
+		t.Setenv(TEST_ENV_KEY, strconv.Itoa(expect))
+		actual, err := env.Int32(TEST_ENV_KEY)
+		if err != nil {
+			t.Errorf("❌: env.Int32: %v", err)
+		}
+		if expect != int(actual) {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure(env-not-set)", func(t *testing.T) {
+		const expect = 0
+		actual, err := env.Int32(TEST_ENV_KEY)
+		if err == nil {
+			t.Errorf("❌: env.Int32: err == nil")
+		}
+		if expect != int(actual) {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure(fail-to-format)", func(t *testing.T) {
+		const expect = 0
+		t.Setenv(TEST_ENV_KEY, "test string")
+		actual, err := env.Int32(TEST_ENV_KEY)
+		if err == nil {
+			t.Errorf("❌: env.Int32: err == nil")
+		}
+		if expect != int(actual) {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+}
+
+func TestInt32OrDefault(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		const expect = 2000000000
+		t.Setenv(TEST_ENV_KEY, strconv.Itoa(expect))
+		actual := env.Int32OrDefault(TEST_ENV_KEY, 1)
+		if expect != int(actual) {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("success(default)", func(t *testing.T) {
+		const expect = 2000000000
+		actual := env.Int32OrDefault(TEST_ENV_KEY, expect)
+		if expect != int(actual) {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+}
+
+func TestMustInt32(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		const expect = 2000000000
+		t.Setenv(TEST_ENV_KEY, strconv.Itoa(expect))
+		actual := env.MustInt32(TEST_ENV_KEY)
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure", func(t *testing.T) {
+		defer func() {
+			if err := recover(); err == nil {
+				t.Errorf("❌: recover: err == nil")
+			}
+		}()
+		_ = env.MustInt32(TEST_ENV_KEY)
+	})
+}
+
 func TestInt64(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		const expect = 100000000000
@@ -252,7 +328,7 @@ func TestInt64(t *testing.T) {
 		}
 	})
 
-	t.Run("failure(fail-to-atoi)", func(t *testing.T) {
+	t.Run("failure(fail-to-format)", func(t *testing.T) {
 		const expect = 0
 		t.Setenv(TEST_ENV_KEY, "test string")
 		actual, err := env.Int64(TEST_ENV_KEY)
@@ -328,7 +404,7 @@ func TestUint(t *testing.T) {
 		}
 	})
 
-	t.Run("failure(fail-to-atoi)", func(t *testing.T) {
+	t.Run("failure(fail-to-format)", func(t *testing.T) {
 		const expect = 0
 		t.Setenv(TEST_ENV_KEY, "test string")
 		actual, err := env.Uint(TEST_ENV_KEY)
@@ -380,6 +456,82 @@ func TestMustUint(t *testing.T) {
 	})
 }
 
+func TestUint32(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		const expect = 4290000000
+		t.Setenv(TEST_ENV_KEY, strconv.FormatUint(expect, 10))
+		actual, err := env.Uint32(TEST_ENV_KEY)
+		if err != nil {
+			t.Errorf("❌: env.Env: %v", err)
+		}
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure(env-not-set)", func(t *testing.T) {
+		const expect = 0
+		actual, err := env.Uint32(TEST_ENV_KEY)
+		if err == nil {
+			t.Errorf("❌: env.Env: err == nil")
+		}
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure(fail-to-format)", func(t *testing.T) {
+		const expect = 0
+		t.Setenv(TEST_ENV_KEY, "test string")
+		actual, err := env.Uint32(TEST_ENV_KEY)
+		if err == nil {
+			t.Errorf("❌: env.Env: err == nil")
+		}
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+}
+
+func TestUint32OrDefault(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		const expect = 4290000000
+		t.Setenv(TEST_ENV_KEY, strconv.FormatUint(expect, 10))
+		actual := env.Uint32OrDefault(TEST_ENV_KEY, 1)
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("success(default)", func(t *testing.T) {
+		const expect = 4290000000
+		actual := env.Uint32OrDefault(TEST_ENV_KEY, expect)
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+}
+
+func TestMustUint32(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		const expect = 4290000000
+		t.Setenv(TEST_ENV_KEY, strconv.FormatUint(expect, 10))
+		actual := env.MustUint32(TEST_ENV_KEY)
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure", func(t *testing.T) {
+		defer func() {
+			if err := recover(); err == nil {
+				t.Errorf("❌: recover: err == nil")
+			}
+		}()
+		_ = env.MustUint32(TEST_ENV_KEY)
+	})
+}
+
 func TestUint64(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		const expect = 100000000000
@@ -404,7 +556,7 @@ func TestUint64(t *testing.T) {
 		}
 	})
 
-	t.Run("failure(fail-to-atoi)", func(t *testing.T) {
+	t.Run("failure(fail-to-format)", func(t *testing.T) {
 		const expect = 0
 		t.Setenv(TEST_ENV_KEY, "test string")
 		actual, err := env.Uint64(TEST_ENV_KEY)
@@ -456,6 +608,91 @@ func TestMustUint64(t *testing.T) {
 	})
 }
 
+func TestFloat32(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		const expect = 100000000000.1
+		t.Setenv(TEST_ENV_KEY, strconv.FormatFloat(expect, 'f', -1, 32))
+		actual, err := env.Float32(TEST_ENV_KEY)
+		if err != nil {
+			t.Errorf("❌: env.Env: %v", err)
+		}
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure(env-not-set)", func(t *testing.T) {
+		const expect = 0
+		actual, err := env.Float32(TEST_ENV_KEY)
+		if err == nil {
+			t.Errorf("❌: env.Env: err == nil")
+		}
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure(fail-to-format)", func(t *testing.T) {
+		const expect = 0
+		t.Setenv(TEST_ENV_KEY, "test string")
+		actual, err := env.Float32(TEST_ENV_KEY)
+		if err == nil {
+			t.Errorf("❌: env.Env: err == nil")
+		}
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+}
+
+func TestFloat32OrDefault(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		const expect = 100000000000.1
+		t.Setenv(TEST_ENV_KEY, strconv.FormatFloat(expect, 'f', -1, 32))
+		actual := env.Float32OrDefault(TEST_ENV_KEY, 1)
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("success(default)", func(t *testing.T) {
+		const expect = 100000000000.1
+		actual := env.Float32OrDefault(TEST_ENV_KEY, expect)
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure(fail-to-format)", func(t *testing.T) {
+		const expect = 0
+		t.Setenv(TEST_ENV_KEY, "test string")
+		actual := env.Float32OrDefault(TEST_ENV_KEY, expect)
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+}
+
+func TestMustFloat32(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		const expect = 100000000000.1
+		t.Setenv(TEST_ENV_KEY, strconv.FormatFloat(expect, 'f', -1, 32))
+		actual := env.MustFloat32(TEST_ENV_KEY)
+		if expect != actual {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+	})
+
+	t.Run("failure(fail-to-format)", func(t *testing.T) {
+		defer func() {
+			if err := recover(); err == nil {
+				t.Errorf("❌: recover: err == nil")
+			}
+		}()
+		_ = env.MustFloat32(TEST_ENV_KEY)
+	})
+}
+
 func TestFloat64(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		const expect = 100000000000.1
@@ -480,7 +717,7 @@ func TestFloat64(t *testing.T) {
 		}
 	})
 
-	t.Run("failure(fail-to-atoi)", func(t *testing.T) {
+	t.Run("failure(fail-to-format)", func(t *testing.T) {
 		const expect = 0
 		t.Setenv(TEST_ENV_KEY, "test string")
 		actual, err := env.Float64(TEST_ENV_KEY)
