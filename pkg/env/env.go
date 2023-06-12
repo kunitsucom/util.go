@@ -101,6 +101,38 @@ func MustInt(key string) int {
 	return env
 }
 
+func Int32(key string) (int32, error) {
+	env, found := os.LookupEnv(key)
+	if !found {
+		return 0, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
+	}
+
+	value, err := strconv.ParseInt(env, 10, 32)
+	if err != nil {
+		return 0, fmt.Errorf("strconv.ParseInt: %w", err)
+	}
+
+	return int32(value), nil
+}
+
+func Int32OrDefault(key string, defaultValue int32) int32 {
+	value, err := Int32(key)
+	if err != nil {
+		return defaultValue
+	}
+
+	return value
+}
+
+func MustInt32(key string) int32 {
+	env, err := Int32(key)
+	if err != nil {
+		panic(err)
+	}
+
+	return env
+}
+
 func Int64(key string) (int64, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
@@ -165,6 +197,38 @@ func MustUint(key string) uint {
 	return env
 }
 
+func Uint32(key string) (uint32, error) {
+	env, found := os.LookupEnv(key)
+	if !found {
+		return 0, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
+	}
+
+	value, err := strconv.ParseUint(env, 10, 32)
+	if err != nil {
+		return 0, fmt.Errorf("strconv.ParseInt: %w", err)
+	}
+
+	return uint32(value), nil
+}
+
+func Uint32OrDefault(key string, defaultValue uint32) uint32 {
+	value, err := Uint32(key)
+	if err != nil {
+		return defaultValue
+	}
+
+	return value
+}
+
+func MustUint32(key string) uint32 {
+	env, err := Uint32(key)
+	if err != nil {
+		panic(err)
+	}
+
+	return env
+}
+
 func Uint64(key string) (uint64, error) {
 	env, found := os.LookupEnv(key)
 	if !found {
@@ -190,6 +254,38 @@ func Uint64OrDefault(key string, defaultValue uint64) uint64 {
 
 func MustUint64(key string) uint64 {
 	env, err := Uint64(key)
+	if err != nil {
+		panic(err)
+	}
+
+	return env
+}
+
+func Float32(key string) (float32, error) {
+	env, found := os.LookupEnv(key)
+	if !found {
+		return 0, fmt.Errorf("%s: %w", key, ErrEnvironmentVariableIsEmpty)
+	}
+
+	value, err := strconv.ParseFloat(env, 32)
+	if err != nil {
+		return 0, fmt.Errorf("strconv.ParseFloat: %w", err)
+	}
+
+	return float32(value), nil
+}
+
+func Float32OrDefault(key string, defaultValue float32) float32 {
+	value, err := Float32(key)
+	if err != nil {
+		return defaultValue
+	}
+
+	return value
+}
+
+func MustFloat32(key string) float32 {
+	env, err := Float32(key)
 	if err != nil {
 		panic(err)
 	}
