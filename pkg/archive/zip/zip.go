@@ -12,7 +12,42 @@ import (
 
 var ErrDoNotUnzipAFileAtRiskOfZipSlip = errors.New("zipz: do not unzip a file at risk of zip slip")
 
-func Unzip(srcZipFilePath, dstDir string) (paths []string, err error) {
+func ZipDir(srcDir string, w io.Writer) error {
+	zipWriter := zip.NewWriter(w)
+	defer zipWriter.Close()
+
+	if err := filepath.Walk(srcDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		cleaned := filepath.Clean(path)
+		file, err := os.Open(cleaned)
+		if err != nil {
+			return fmt.Errorf("os.Open: name=%s: %w", cleaned, err)
+		}
+		defer file.Close()
+
+		f, err := zipWriter.Create(cleaned)
+		if err != nil {
+			return fmt.Errorf("(*zip.Writer).Create: name=%s: %w", cleaned, err)
+		}
+
+		if _, err = io.Copy(f, file); err != nil {
+			return fmt.Errorf("io.Copy: %w", err)
+		}
+
+		return nil
+	}); err != nil {
+		return fmt.Errorf("filepath.Walk: root=%s: %w", srcDir, err)
+	}
+
+	return nil
+}
+
+func UnzipFile(srcZipFilePath, dstDir string) (paths []string, err error) {
 	r, err := zip.OpenReader(srcZipFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("zip.OpenReader: %w", err)
@@ -34,12 +69,12 @@ func Unzip(srcZipFilePath, dstDir string) (paths []string, err error) {
 
 func unzip(zipfile *zip.File, dstDir string) (path string, err error) {
 	if strings.Contains(zipfile.Name, "..") {
-		return "", fmt.Errorf("zipfile.Name=%s: %w", zipfile.Name, ErrDoNotUnzipAFileAtRiskOfZipSlip)
+		return "", fmt.Errorf("(*zip.File).Name=%s: %w", zipfile.Name, ErrDoNotUnzipAFileAtRiskOfZipSlip)
 	}
 
 	r, err := zipfile.Open()
 	if err != nil {
-		return "", fmt.Errorf("zipfile.Open: %w", err)
+		return "", fmt.Errorf("(*zip.File).Open: %w", err)
 	}
 	defer r.Close()
 
@@ -47,14 +82,14 @@ func unzip(zipfile *zip.File, dstDir string) (path string, err error) {
 
 	if zipfile.FileInfo().IsDir() {
 		if err := os.MkdirAll(path, zipfile.Mode()); err != nil {
-			return "", fmt.Errorf("name=%s: os.MkdirAll: %w", path, err)
+			return "", fmt.Errorf("os.MkdirAll: name=%s: %w", path, err)
 		}
 		return path, nil
 	}
 
 	w, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zipfile.Mode())
 	if err != nil {
-		return "", fmt.Errorf("name=%s: os.OpenFile: %w", path, err)
+		return "", fmt.Errorf("os.OpenFile: name=%s: %w", path, err)
 	}
 	defer w.Close()
 
