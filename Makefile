@@ -16,11 +16,16 @@ githooks:
 .PHONY: setup
 setup: githooks ## Setup tools for development
 	# == SETUP =====================================================
+	# versenv
+	make versenv
+	# --------------------------------------------------------------
+
+.PHONY: versenv
+versenv:
 	# direnv
 	direnv allow .
 	# golangci-lint
 	golangci-lint --version
-	# --------------------------------------------------------------
 
 .PHONY: clean
 clean:  ## Clean up cache, etc
