@@ -14,7 +14,6 @@ import (
 
 var (
 	ErrJSONWebKeyIsEmpty                    = errors.New(`jose: jwk is empty`)
-	ErrJWKSetIsEmpty                        = errors.New(`jose: jku is empty`)
 	ErrPrivateHeaderParameterIsNotFound     = errors.New(`jose: private header parameter is not found`)
 	ErrVIsNotPointerOrInterface             = errors.New(`jose: v is not pointer or interface`)
 	ErrPrivateHeaderParameterTypeIsNotMatch = errors.New(`jose: private header parameter type is not match`)
