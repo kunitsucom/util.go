@@ -14,7 +14,14 @@ import (
 )
 
 const (
-	Google ProviderMetadataURL = "https://accounts.google.com/.well-known/openid-configuration"
+	Apple         ProviderMetadataURL = "https://appleid.apple.com/.well-known/openid-configuration"
+	GitHubActions ProviderMetadataURL = "https://token.actions.githubusercontent.com/.well-known/openid-configuration"
+	Google        ProviderMetadataURL = "https://accounts.google.com/.well-known/openid-configuration"
+	LINE          ProviderMetadataURL = "https://access.line.me/.well-known/openid-configuration"
+	Microsoft     ProviderMetadataURL = "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration"
+	Slack         ProviderMetadataURL = "https://slack.com/.well-known/openid-configuration"
+	Yahoo         ProviderMetadataURL = "https://api.login.yahoo.com/.well-known/openid-configuration"
+	YahooJapan    ProviderMetadataURL = "https://auth.login.yahoo.co.jp/yconnect/v2/.well-known/openid-configuration"
 
 	ProviderMetadataURLPath = "/.well-known/openid-configuration"
 )
