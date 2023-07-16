@@ -37,7 +37,7 @@ defaults:
     shell: bash
 
 jobs:
-  test:
+  golang-test: # NOTE: for Branch protection rule `Status checks that are required.`
     runs-on: ubuntu-latest # ref. https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
     steps:
       - uses: actions/checkout@v3
