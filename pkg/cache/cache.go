@@ -56,7 +56,7 @@ func (s *Store[T]) startRefresher(ctx context.Context) {
 			select {
 			case <-ctx.Done():
 				return
-			default:
+			case <-s.ticker.C:
 				now := time.Now()
 				s.mu.Lock()
 				for k, v := range s.cache {
@@ -65,7 +65,6 @@ func (s *Store[T]) startRefresher(ctx context.Context) {
 					}
 				}
 				s.mu.Unlock()
-				<-s.ticker.C
 			}
 		}
 	}()
