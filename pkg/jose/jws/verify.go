@@ -20,10 +20,12 @@ var (
 )
 
 type VerificationKeyOption struct {
-	key           any
-	useJSONWebKey bool
-	useJWKSetURL  bool
-	ctx           context.Context //nolint:containedctx
+	key                         any
+	useJSONWebKey               bool
+	useJWKSetURLHeaderParameter bool
+	useJWKSetURL                bool
+	ctx                         context.Context //nolint:containedctx
+	jwkSetURL                   string
 }
 
 func UseKey(key any) VerificationKeyOption {
@@ -50,10 +52,19 @@ func UseJSONWebKey() VerificationKeyOption {
 	}
 }
 
-func UseJWKSetURL(ctx context.Context) VerificationKeyOption {
+func UseJWKSetURLHeaderParameter(ctx context.Context) VerificationKeyOption {
 	return VerificationKeyOption{
-		useJWKSetURL: true,
+		ctx:                         ctx,
+		useJWKSetURLHeaderParameter: true,
+	}
+}
+
+// UseJWKSetURL is a VerificationKeyOption to verify with jwkSetURL.
+func UseJWKSetURL(ctx context.Context, jwkSetURL string) VerificationKeyOption {
+	return VerificationKeyOption{
 		ctx:          ctx,
+		useJWKSetURL: true,
+		jwkSetURL:    jwkSetURL,
 	}
 }
 
@@ -78,8 +89,12 @@ func Verify(keyOption VerificationKeyOption, jwt string) (header *jose.Header, e
 		return nil, verifyWithJSONWebKey(h, signingInput, signatureEncoded)
 	}
 
+	if keyOption.useJWKSetURLHeaderParameter {
+		return nil, verifyWithJWKSetURL(keyOption.ctx, h.JWKSetURL, h, signingInput, signatureEncoded)
+	}
+
 	if keyOption.useJWKSetURL {
-		return nil, verifyWithJWKSetURL(keyOption.ctx, h, signingInput, signatureEncoded)
+		return nil, verifyWithJWKSetURL(keyOption.ctx, keyOption.jwkSetURL, h, signingInput, signatureEncoded)
 	}
 
 	return nil, ErrInvalidKeyOption
@@ -102,12 +117,8 @@ func verifyWithJSONWebKey(header *jose.Header, signingInput, signatureEncoded st
 	return jwa.JWS(header.Algorithm).Verify(pub, signingInput, signatureEncoded) //nolint:wrapcheck
 }
 
-func verifyWithJWKSetURL(ctx context.Context, header *jose.Header, signingInput, signatureEncoded string) error {
-	if header.JWKSetURL == "" {
-		return jose.ErrJWKSetIsEmpty
-	}
-
-	jwks, err := jwk.GetJWKSet(ctx, header.JWKSetURL)
+func verifyWithJWKSetURL(ctx context.Context, jwkSetURL string, header *jose.Header, signingInput, signatureEncoded string) error {
+	jwks, err := jwk.GetJWKSet(ctx, jwkSetURL)
 	if err != nil {
 		return fmt.Errorf("jwk.GetJWKSet: %w", err)
 	}
