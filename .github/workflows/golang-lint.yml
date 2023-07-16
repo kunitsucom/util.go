@@ -4,14 +4,14 @@ name: golang-lint
 #                                             ~~~~~~~~~~~
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  #   paths-ignore:
-  #     - '.github/dependabot.yml'
-  #     - '.github/pull_request_template.md'
-  #     - '.github/release.yml'
-  #     - 'README.md'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '.github/dependabot.yml'
+      - '.github/pull_request_template.md'
+      - '.github/release.yml'
+      - 'README.md'
   pull_request:
     # branches:
     #   - main
