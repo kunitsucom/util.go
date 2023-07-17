@@ -28,6 +28,7 @@ func TestSign(t *testing.T) {
 			jwt.NewClaimsSet(
 				jwt.WithSubject("userID"),
 				jwt.WithAudience("http://localhost/test/aud"),
+				jwt.WithIssuer("http://localhost/test/iss"),
 				jwt.WithExpirationTime(time.Now().Add(1*time.Hour)),
 				jwt.WithPrivateClaim("testPrivateClaim", "testPrivateClaim"),
 			),
@@ -39,6 +40,7 @@ func TestSign(t *testing.T) {
 			jws.UseKey(hmacKey),
 			signingInput+"."+signatureEncoded,
 			jwt.VerifyAudience("http://localhost/test/aud"),
+			jwt.VerifyIssuer("http://localhost/test/iss"),
 			jwt.VerifyPrivateClaims(func(pc jwt.PrivateClaims) error {
 				if _, ok := pc["testPrivateClaim"]; !ok {
 					return errors.New("testPrivateClaim")
