@@ -13,10 +13,12 @@ var (
 	ErrTokenIsExpired     = errors.New("jwt: token is expired")
 	ErrTokenIsNotBefore   = errors.New("jwt: token is not before")
 	ErrAudienceIsNotMatch = errors.New("jwt: audience is not match")
+	ErrIssuerIsNotMatch   = errors.New("jwt: issuer is not match")
 )
 
 type verifyOption struct {
 	aud                     string
+	iss                     string
 	verifyPrivateClaimsFunc func(privateClaims PrivateClaims) error
 }
 
@@ -25,6 +27,12 @@ type VerifyOption func(*verifyOption)
 func VerifyAudience(aud string) VerifyOption {
 	return func(vo *verifyOption) {
 		vo.aud = aud
+	}
+}
+
+func VerifyIssuer(iss string) VerifyOption {
+	return func(vo *verifyOption) {
+		vo.iss = iss
 	}
 }
 
@@ -58,7 +66,7 @@ func Verify(keyOption jws.VerificationKeyOption, jwt string, opts ...VerifyOptio
 		return nil, nil, fmt.Errorf("(*jwt.ClaimsSet).Decode: %w", err)
 	}
 
-	if err := verifyClaimsSet(cs, vo, time.Now()); err != nil {
+	if err := verifyClaimsSet(cs, vo, time.Now().UTC()); err != nil {
 		return nil, nil, err
 	}
 
@@ -85,6 +93,12 @@ func verifyClaimsSet(cs *ClaimsSet, vo *verifyOption, now time.Time) error {
 		}
 	}
 
+	if vo.iss != "" {
+		if err := verifyIssuer(cs, vo.iss); err != nil {
+			return err
+		}
+	}
+
 	if vo.verifyPrivateClaimsFunc != nil {
 		if err := vo.verifyPrivateClaimsFunc(cs.PrivateClaims); err != nil {
 			return err
@@ -101,4 +115,12 @@ func verifyAudience(cs *ClaimsSet, aud string) error {
 		}
 	}
 	return fmt.Errorf("want=%v got=%v: %w", aud, cs.Audience, ErrAudienceIsNotMatch)
+}
+
+func verifyIssuer(cs *ClaimsSet, iss string) error {
+	if iss == cs.Issuer {
+		return nil
+	}
+
+	return fmt.Errorf("want=%v got=%v: %w", iss, cs.Issuer, ErrIssuerIsNotMatch)
 }

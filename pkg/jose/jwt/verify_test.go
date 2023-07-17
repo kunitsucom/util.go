@@ -73,6 +73,17 @@ func TestVerify(t *testing.T) {
 		}
 	})
 
+	t.Run("failure(aud,jwt.ErrIssuerIsNotMatch)", func(t *testing.T) {
+		t.Parallel()
+		signingInput, signatureEncoded, err := jwt.Sign(jws.WithHMACKey(testHS256Key), jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithIssuer("iss")))
+		if err != nil {
+			t.Fatalf("❌: jwt.New: err != nil: %v", err)
+		}
+		if _, _, err := jwt.Verify(jws.UseKey(testHS256Key), signingInput+"."+signatureEncoded, jwt.VerifyIssuer("notMatch")); err == nil || !errors.Is(err, jwt.ErrIssuerIsNotMatch) {
+			t.Errorf("❌: jwt.Verify: err != jwt.ErrIssuerIsNotMatch: %v", err)
+		}
+	})
+
 	t.Run("failure(aud,jwt.ErrAudienceIsNotMatch)", func(t *testing.T) {
 		t.Parallel()
 		signingInput, signatureEncoded, err := jwt.Sign(jws.WithHMACKey(testHS256Key), jose.NewHeader(jwa.HS256), jwt.NewClaimsSet(jwt.WithPrivateClaim("privateClaim", "privateClaim")))
