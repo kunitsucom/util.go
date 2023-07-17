@@ -26,5 +26,5 @@ func DoRequest(ctx context.Context, client *http.Client, method, url string, hea
 		return nil, fmt.Errorf("NewRequest: %w", err)
 	}
 
-	return client.Do(r)
+	return client.Do(r) //nolint:wrapcheck
 }

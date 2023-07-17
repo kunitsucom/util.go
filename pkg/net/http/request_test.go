@@ -35,6 +35,7 @@ func TestDoRequest(t *testing.T) {
 			httpz.NewHeader(httpz.Set("Content-Type", "application/x-www-form-urlencoded")),
 			strings.NewReader(urlz.NewValues(urlz.Add("key1", "value1"), urlz.Add("key2", "value2")).Encode()),
 		)
+		t.Cleanup(func() { _ = response.Body.Close() })
 		if err != nil {
 			t.Errorf("❌: httpz.DoRequest: err != nil: %v", err)
 		}
@@ -55,7 +56,7 @@ func TestDoRequest(t *testing.T) {
 	t.Run("abnormal", func(t *testing.T) {
 		t.Parallel()
 
-		if _, err := httpz.DoRequest(
+		if _, err := httpz.DoRequest( //nolint:bodyclose
 			context.Background(),
 			http.DefaultClient,
 			string(byte(0x7f)),
