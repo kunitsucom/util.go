@@ -78,6 +78,7 @@ func Verify(keyOption jws.VerificationKeyOption, jwt string, opts ...VerifyOptio
 	return h, cs, nil
 }
 
+//nolint:cyclop
 func verifyClaimsSet(cs *ClaimsSet, vo *verifyOption, now time.Time) error {
 	if cs.ExpirationTime != 0 && cs.ExpirationTime <= now.Unix() {
 		return fmt.Errorf("exp=%d <= now=%d: %w", cs.ExpirationTime, now.Unix(), ErrTokenIsExpired)
