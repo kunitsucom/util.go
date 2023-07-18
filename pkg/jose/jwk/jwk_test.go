@@ -8,15 +8,16 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"math/big"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/kunitsuinc/util.go/pkg/cache"
 	x509z "github.com/kunitsuinc/util.go/pkg/crypto/x509"
+	errorz "github.com/kunitsuinc/util.go/pkg/errors"
 	"github.com/kunitsuinc/util.go/pkg/jose/jwk"
 	"github.com/kunitsuinc/util.go/pkg/must"
 	testz "github.com/kunitsuinc/util.go/pkg/test"
@@ -37,7 +38,7 @@ func TestJSONWebKey_DecodeRSAPublicKey(t *testing.T) {
 		if err != nil {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeRSAPublicKey: err != nil: %v", err)
 		}
-		if expect, actual := k1.E, base64.RawURLEncoding.EncodeToString([]byte(strconv.Itoa(k2.E))); expect != actual {
+		if expect, actual := k1.E, base64.RawURLEncoding.EncodeToString(big.NewInt(int64(k2.E)).Bytes()); expect != actual {
 			t.Errorf("❌: (*jwk.JSONWebKey).DecodeRSAPublicKey: E: %v", actual)
 		}
 		if expect, actual := k1.N, base64.RawURLEncoding.EncodeToString(k2.N.Bytes()); expect != actual {
@@ -50,15 +51,15 @@ func TestJSONWebKey_DecodeRSAPublicKey(t *testing.T) {
 			must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM))),
 		)
 		k1.E = "inv@lid"
-		if _, err := k1.DecodeRSAPublicKey(); err == nil || !strings.Contains(err.Error(), "base64.RawURLEncoding.DecodeString: JSONWebKey.E: illegal base64 data at input byte 3") {
+		if _, err := k1.DecodeRSAPublicKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.E=inv@lid: illegal base64 data at input byte 3") {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeRSAPublicKey: err != nil: %v", err)
 		}
-		k1.E = "invalid"
-		if _, err := k1.DecodeRSAPublicKey(); err == nil || !strings.Contains(err.Error(), "invalid syntax") {
+		k1.E = "inv@lid"
+		if _, err := k1.DecodeRSAPublicKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.E=inv@lid: illegal base64 data at input byte 3") {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeRSAPublicKey: err != nil: %v", err)
 		}
 		k1.N = "inv@lid"
-		if _, err := k1.DecodeRSAPublicKey(); err == nil || !strings.Contains(err.Error(), "base64.RawURLEncoding.DecodeString: JSONWebKey.N: illegal base64 data at input byte 3") {
+		if _, err := k1.DecodeRSAPublicKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.N=inv@lid: illegal base64 data at input byte 3") {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeRSAPublicKey: err != nil: %v", err)
 		}
 	})
@@ -76,7 +77,7 @@ func TestJSONWebKey_DecodeRSAPrivateKey(t *testing.T) {
 		if err != nil {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeRSAPrivateKey: err != nil: %v", err)
 		}
-		if expect, actual := k1.E, base64.RawURLEncoding.EncodeToString([]byte(strconv.Itoa(k2.E))); expect != actual {
+		if expect, actual := k1.E, base64.RawURLEncoding.EncodeToString(big.NewInt(int64(k2.E)).Bytes()); expect != actual {
 			t.Errorf("❌: (*jwk.JSONWebKey).DecodeRSAPrivateKey: E: %v", actual)
 		}
 		if expect, actual := k1.N, base64.RawURLEncoding.EncodeToString(k2.N.Bytes()); expect != actual {
@@ -92,19 +93,19 @@ func TestJSONWebKey_DecodeRSAPrivateKey(t *testing.T) {
 			must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
 		)
 		k1.Q = "inv@lid"
-		if _, err := k1.DecodeRSAPrivateKey(); err == nil || !strings.Contains(err.Error(), "base64.RawURLEncoding.DecodeString: JSONWebKey.Q: illegal base64 data at input byte 3") {
+		if _, err := k1.DecodeRSAPrivateKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.Q: illegal base64 data at input byte 3") {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeRSAPrivateKey: err != nil: %v", err)
 		}
 		k1.P = "inv@lid"
-		if _, err := k1.DecodeRSAPrivateKey(); err == nil || !strings.Contains(err.Error(), "base64.RawURLEncoding.DecodeString: JSONWebKey.P: illegal base64 data at input byte 3") {
+		if _, err := k1.DecodeRSAPrivateKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.P: illegal base64 data at input byte 3") {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeRSAPrivateKey: err != nil: %v", err)
 		}
 		k1.D = "inv@lid"
-		if _, err := k1.DecodeRSAPrivateKey(); err == nil || !strings.Contains(err.Error(), "base64.RawURLEncoding.DecodeString: JSONWebKey.D: illegal base64 data at input byte 3") {
+		if _, err := k1.DecodeRSAPrivateKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.D: illegal base64 data at input byte 3") {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeRSAPrivateKey: err != nil: %v", err)
 		}
 		k1.N = "inv@lid"
-		if _, err := k1.DecodeRSAPrivateKey(); err == nil || !strings.Contains(err.Error(), "base64.RawURLEncoding.DecodeString: JSONWebKey.N: illegal base64 data at input byte 3") {
+		if _, err := k1.DecodeRSAPrivateKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.N=inv@lid: illegal base64 data at input byte 3") {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeRSAPrivateKey: err != nil: %v", err)
 		}
 	})
@@ -178,15 +179,15 @@ func TestJSONWebKey_DecodeECDSAPublicKey(t *testing.T) {
 			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey256BitPEM))),
 		)
 		k1.Y = "inv@lid"
-		if _, err := k1.DecodeECDSAPublicKey(); err == nil || !strings.Contains(err.Error(), "base64.RawURLEncoding.DecodeString: JSONWebKey.Y: illegal base64 data at input byte 3") {
+		if _, err := k1.DecodeECDSAPublicKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.Y=inv@lid: illegal base64 data at input byte 3") {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeECDSAPublicKey: err != nil: %v", err)
 		}
 		k1.X = "inv@lid"
-		if _, err := k1.DecodeECDSAPublicKey(); err == nil || !strings.Contains(err.Error(), "base64.RawURLEncoding.DecodeString: JSONWebKey.X: illegal base64 data at input byte 3") {
+		if _, err := k1.DecodeECDSAPublicKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.X=inv@lid: illegal base64 data at input byte 3") {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeECDSAPublicKey: err != nil: %v", err)
 		}
 		k1.Crv = "invalid"
-		if _, err := k1.DecodeECDSAPublicKey(); err == nil || !strings.Contains(err.Error(), "crv=invalid: jwk: specified curve parameter is not supported") {
+		if _, err := k1.DecodeECDSAPublicKey(); !errorz.Contains(err, "crv=invalid: jwk: specified curve parameter is not supported") {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeECDSAPublicKey: err != nil: %v", err)
 		}
 	})
@@ -214,11 +215,11 @@ func TestJSONWebKey_DecodeECDSAPrivateKey(t *testing.T) {
 			must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testz.TestECDSAPrivateKey256BitPEM))),
 		)
 		k1.D = "inv@lid"
-		if _, err := k1.DecodeECDSAPrivateKey(); err == nil || !strings.Contains(err.Error(), "base64.RawURLEncoding.DecodeString: JSONWebKey.D: illegal base64 data at input byte 3") {
+		if _, err := k1.DecodeECDSAPrivateKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.D: illegal base64 data at input byte 3") {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeECDSAPrivateKey: err != nil: %v", err)
 		}
 		k1.Crv = "invalid"
-		if _, err := k1.DecodeECDSAPrivateKey(); err == nil || !strings.Contains(err.Error(), "rv=invalid: jwk: specified curve parameter is not supported") {
+		if _, err := k1.DecodeECDSAPrivateKey(); !errorz.Contains(err, "rv=invalid: jwk: specified curve parameter is not supported") {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodeECDSAPrivateKey: err != nil: %v", err)
 		}
 	})
@@ -268,6 +269,28 @@ func TestJSONWebKey_DecodePublicKey(t *testing.T) {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodePublicKey: N: %s", pub1.X)
 		}
 	})
+	t.Run("failure,jwk.DecodeRSAPublicKey", func(t *testing.T) {
+		t.Parallel()
+		rsa1 := &jwk.JSONWebKey{
+			KeyType: "RSA",
+			E:       "inv@lid",
+		}
+		const expect = `base64.RawURLEncoding.DecodeString: JSONWebKey.E=inv@lid: illegal base64 data at input byte 3`
+		if _, err := rsa1.DecodePublicKey(); !errorz.Contains(err, expect) {
+			t.Fatalf("❌: (*jwk.JSONWebKey).DecodePublicKey: expect(%v) != actual(%s)", expect, err)
+		}
+	})
+	t.Run("failure,jwk.DecodeECDSAPublicKey", func(t *testing.T) {
+		t.Parallel()
+		rsa1 := &jwk.JSONWebKey{
+			KeyType: "EC",
+			Crv:     "ERROR",
+		}
+		const expect = `jwk.DecodeRSAPublicKey: crv=ERROR: jwk: specified curve parameter is not supported`
+		if _, err := rsa1.DecodePublicKey(); !errorz.Contains(err, expect) {
+			t.Fatalf("❌: (*jwk.JSONWebKey).DecodePublicKey: expect(%v) != actual(%s)", expect, err)
+		}
+	})
 	t.Run("failure(oct)", func(t *testing.T) {
 		t.Parallel()
 		var k0 *jwk.JSONWebKey
@@ -279,7 +302,7 @@ func TestJSONWebKey_DecodePublicKey(t *testing.T) {
 		)
 
 		const expect = "kty=oct: jwk: key is not for algorithm"
-		if _, err := rsa1.DecodePublicKey(); err == nil || !strings.Contains(err.Error(), expect) {
+		if _, err := rsa1.DecodePublicKey(); !errorz.Contains(err, expect) {
 			t.Fatalf("❌: (*jwk.JSONWebKey).DecodePublicKey: err != %s: %v", expect, err)
 		}
 	})
@@ -397,7 +420,7 @@ func TestClient_GetJSONWebKey(t *testing.T) {
 		c := jwk.NewClient(context.Background())
 		_, err := c.GetJWKSet(context.Background(), foundURI)
 		expect := `code=302 body="Found": jwk: response is not cacheable`
-		if err == nil || !strings.Contains(err.Error(), expect) {
+		if !errorz.Contains(err, expect) {
 			t.Errorf("❌: expect != err: (%v) != (%v)", expect, err)
 		}
 	})
