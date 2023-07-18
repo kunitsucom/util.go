@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	errorz "github.com/kunitsuinc/util.go/pkg/errors"
 	testz "github.com/kunitsuinc/util.go/pkg/test"
 )
 
@@ -37,6 +38,75 @@ var (
 	// testClaimsString  = fmt.Sprintf(`{"iss":"http://localhost/iss","sub":"userID","aud":"http://localhost/test/aud","exp":1671745431,"nbf":1671745431,"iat":1671745431,"jti":"jwtID","%s":"%s"}`, testPrivateClaim1Key, testPrivateClaim1Value)
 	// testClaimsEncoded = "eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2lzcyIsInN1YiI6InVzZXJJRCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3QvdGVzdC9hdWQiLCJleHAiOjE2NzE3NDU0MzEsIm5iZiI6MTY3MTc0NTQzMSwiaWF0IjoxNjcxNzQ1NDMxLCJqdGkiOiJqd3RJRCIsIm5hbWUiOiJ2YWx1ZSJ9"
 )
+
+func TestAudience_UnmarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success,string_to_string", func(t *testing.T) {
+		t.Parallel()
+		aud := make(Audience, 0)
+		if err := aud.UnmarshalJSON([]byte(`"http://localhost/test/aud"`)); err != nil {
+			t.Fatalf("❌: aud.UnmarshalJSON: err != nil: %v", err)
+		}
+		if expect, actual := "http://localhost/test/aud", aud[0]; expect != actual {
+			t.Fatalf("❌: expect(%v) != actual(%v)", expect, actual)
+		}
+	})
+
+	t.Run("success,array_to_string", func(t *testing.T) {
+		t.Parallel()
+		aud := make(Audience, 0)
+		if err := aud.UnmarshalJSON([]byte(`["http://localhost/test/aud"]`)); err != nil {
+			t.Fatalf("❌: aud.UnmarshalJSON: err != nil: %v", err)
+		}
+		if expect, actual := "http://localhost/test/aud", aud[0]; expect != actual {
+			t.Fatalf("❌: expect(%v) != actual(%v)", expect, actual)
+		}
+	})
+
+	t.Run("success,array_to_array", func(t *testing.T) {
+		t.Parallel()
+		aud := make(Audience, 0)
+		if err := aud.UnmarshalJSON([]byte(`["http://localhost/test/aud","http://localhost/test/aud/2"]`)); err != nil {
+			t.Fatalf("❌: aud.UnmarshalJSON: err != nil: %v", err)
+		}
+		if expect, actual := Audience([]string{"http://localhost/test/aud", "http://localhost/test/aud/2"}), aud; !reflect.DeepEqual(expect, actual) {
+			t.Fatalf("❌: expect(%v) != actual(%v)", expect, actual)
+		}
+	})
+
+	t.Run("failure,jwt.ErrAudienceIsNil", func(t *testing.T) {
+		t.Parallel()
+		aud := (*Audience)(nil)
+		if expect, err := ErrAudienceIsNil, aud.UnmarshalJSON([]byte(`"aud"`)); !errors.Is(err, expect) {
+			t.Fatalf("❌: aud.UnmarshalJSON: expect(%v) != actual(%v)", expect, err)
+		}
+	})
+
+	t.Run("failure,json.Unmarshal", func(t *testing.T) {
+		t.Parallel()
+		aud := make(Audience, 0)
+		if err := aud.UnmarshalJSON([]byte(`]`)); !errorz.Contains(err, "invalid character ']' looking for beginning of value") {
+			t.Fatalf("❌: aud.UnmarshalJSON: err != nil: %v", err)
+		}
+	})
+
+	t.Run("failure,not_string_array", func(t *testing.T) {
+		t.Parallel()
+		aud := make(Audience, 0)
+		if err := aud.UnmarshalJSON([]byte(`[0]`)); !errors.Is(err, ErrUnsupportedType) {
+			t.Fatalf("❌: aud.UnmarshalJSON: err != nil: %v", err)
+		}
+	})
+
+	t.Run("failure,number", func(t *testing.T) {
+		t.Parallel()
+		aud := make(Audience, 0)
+		if err := aud.UnmarshalJSON([]byte(`0`)); !errors.Is(err, ErrUnsupportedType) {
+			t.Fatalf("❌: aud.UnmarshalJSON: err != nil: %v", err)
+		}
+	})
+}
 
 func TestClaims_UnmarshalJSON(t *testing.T) {
 	t.Parallel()

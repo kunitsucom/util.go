@@ -15,12 +15,16 @@ var (
 	ErrPrivateClaimIsNotFound     = errors.New(`jwt: private claim is not found`)
 	ErrVIsNotPointerOrInterface   = errors.New(`jwt: v is not pointer or interface`)
 	ErrPrivateClaimTypeIsNotMatch = errors.New(`jwt: private claim type is not match`)
+	ErrAudienceIsNil              = errors.New(`jwt: aud is nil`)
 	ErrUnsupportedType            = errors.New(`jwt: unsupported type`)
 )
 
 type Audience []string
 
 func (aud *Audience) UnmarshalJSON(data []byte) error {
+	if aud == nil {
+		return ErrAudienceIsNil
+	}
 	var object interface{}
 	if err := json.Unmarshal(data, &object); err != nil {
 		return err
@@ -34,7 +38,7 @@ func (aud *Audience) UnmarshalJSON(data []byte) error {
 		for _, v := range v {
 			value, ok := v.(string)
 			if !ok {
-				return ErrUnsupportedType
+				return fmt.Errorf("aud=%s: %w", data, ErrUnsupportedType)
 			}
 			s = append(s, value)
 		}
@@ -42,7 +46,7 @@ func (aud *Audience) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	return ErrUnsupportedType
+	return fmt.Errorf("aud=%s: %w", data, ErrUnsupportedType)
 }
 
 // NOTE: backup for handling "aud" claim as string
