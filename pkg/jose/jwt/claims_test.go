@@ -35,8 +35,8 @@ var (
 	testClaimsString  = fmt.Sprintf(`{"iss":"http://localhost/iss","sub":"userID","aud":["http://localhost/test/aud"],"exp":1671745431,"nbf":1671745431,"iat":1671745431,"jti":"jwtID","%s":"%s"}`, testPrivateClaim1Key, testPrivateClaim1Value)
 	testClaimsEncoded = "eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2lzcyIsInN1YiI6InVzZXJJRCIsImF1ZCI6WyJodHRwOi8vbG9jYWxob3N0L3Rlc3QvYXVkIl0sImV4cCI6MTY3MTc0NTQzMSwibmJmIjoxNjcxNzQ1NDMxLCJpYXQiOjE2NzE3NDU0MzEsImp0aSI6Imp3dElEIiwibmFtZSI6InZhbHVlIn0"
 	// NOTE: backup for handling "aud" claim as string
-	// testClaimsString  = fmt.Sprintf(`{"iss":"http://localhost/iss","sub":"userID","aud":"http://localhost/test/aud","exp":1671745431,"nbf":1671745431,"iat":1671745431,"jti":"jwtID","%s":"%s"}`, testPrivateClaim1Key, testPrivateClaim1Value)
-	// testClaimsEncoded = "eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2lzcyIsInN1YiI6InVzZXJJRCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3QvdGVzdC9hdWQiLCJleHAiOjE2NzE3NDU0MzEsIm5iZiI6MTY3MTc0NTQzMSwiaWF0IjoxNjcxNzQ1NDMxLCJqdGkiOiJqd3RJRCIsIm5hbWUiOiJ2YWx1ZSJ9"
+	//	testClaimsString  = fmt.Sprintf(`{"iss":"http://localhost/iss","sub":"userID","aud":"http://localhost/test/aud","exp":1671745431,"nbf":1671745431,"iat":1671745431,"jti":"jwtID","%s":"%s"}`, testPrivateClaim1Key, testPrivateClaim1Value)
+	//	testClaimsEncoded = "eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2lzcyIsInN1YiI6InVzZXJJRCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3QvdGVzdC9hdWQiLCJleHAiOjE2NzE3NDU0MzEsIm5iZiI6MTY3MTc0NTQzMSwiaWF0IjoxNjcxNzQ1NDMxLCJqdGkiOiJqd3RJRCIsIm5hbWUiOiJ2YWx1ZSJ9"
 )
 
 func TestAudience_UnmarshalJSON(t *testing.T) {

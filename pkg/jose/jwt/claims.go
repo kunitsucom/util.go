@@ -27,7 +27,7 @@ func (aud *Audience) UnmarshalJSON(data []byte) error {
 	}
 	var object interface{}
 	if err := json.Unmarshal(data, &object); err != nil {
-		return err
+		return err //nolint:wrapcheck
 	}
 	switch v := object.(type) {
 	case string:
