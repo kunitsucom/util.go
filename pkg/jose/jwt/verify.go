@@ -17,16 +17,16 @@ var (
 )
 
 type verifyOption struct {
-	aud                     string
+	aud                     []string
 	iss                     string
 	verifyPrivateClaimsFunc func(privateClaims PrivateClaims) error
 }
 
 type VerifyOption func(*verifyOption)
 
-func VerifyAudience(aud string) VerifyOption {
+func VerifyAudience(aud ...string) VerifyOption {
 	return func(vo *verifyOption) {
-		vo.aud = aud
+		vo.aud = append(vo.aud, aud...)
 	}
 }
 
@@ -88,7 +88,7 @@ func verifyClaimsSet(cs *ClaimsSet, vo *verifyOption, now time.Time) error {
 		return fmt.Errorf("nbf=%d >= now=%d: %w", cs.NotBefore, now.Unix(), ErrTokenIsExpired)
 	}
 
-	if vo.aud != "" {
+	if len(vo.aud) > 0 {
 		if err := verifyAudience(cs, vo.aud); err != nil {
 			return err
 		}
@@ -109,10 +109,12 @@ func verifyClaimsSet(cs *ClaimsSet, vo *verifyOption, now time.Time) error {
 	return nil
 }
 
-func verifyAudience(cs *ClaimsSet, aud string) error {
-	for _, got := range cs.Audience {
-		if aud == got {
-			return nil
+func verifyAudience(cs *ClaimsSet, aud []string) error {
+	for _, want := range aud {
+		for _, got := range cs.Audience {
+			if want == got {
+				return nil
+			}
 		}
 	}
 	return fmt.Errorf("want=%v got=%v: %w", aud, cs.Audience, ErrAudienceIsNotMatch)

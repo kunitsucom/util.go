@@ -15,7 +15,57 @@ var (
 	ErrPrivateClaimIsNotFound     = errors.New(`jwt: private claim is not found`)
 	ErrVIsNotPointerOrInterface   = errors.New(`jwt: v is not pointer or interface`)
 	ErrPrivateClaimTypeIsNotMatch = errors.New(`jwt: private claim type is not match`)
+	ErrAudienceIsNil              = errors.New(`jwt: aud is nil`)
+	ErrUnsupportedType            = errors.New(`jwt: unsupported type`)
 )
+
+type Audience []string
+
+func (aud *Audience) UnmarshalJSON(data []byte) error {
+	if aud == nil {
+		return ErrAudienceIsNil
+	}
+	var object interface{}
+	if err := json.Unmarshal(data, &object); err != nil {
+		return err //nolint:wrapcheck
+	}
+	switch v := object.(type) {
+	case string:
+		*aud = append(*aud, v)
+		return nil
+	case []interface{}:
+		s := make([]string, 0, len(v))
+		for _, v := range v {
+			value, ok := v.(string)
+			if !ok {
+				return fmt.Errorf("aud=%s: %w", data, ErrUnsupportedType)
+			}
+			s = append(s, value)
+		}
+		*aud = append(*aud, s...)
+		return nil
+	}
+
+	return fmt.Errorf("aud=%s: %w", data, ErrUnsupportedType)
+}
+
+// NOTE: backup for handling "aud" claim as string
+// func (aud *Audience) MarshalJSON() (data []byte, err error) {
+// 	if len(*aud) == 0 {
+// 		return nil, nil
+// 	}
+//
+// 	if len(*aud) == 1 {
+// 		d, err := json.Marshal((*aud)[0])
+// 		return d, err
+// 	}
+//
+// 	// avoid recursion
+// 	type _Audience Audience
+// 	_audience := _Audience(*aud)
+//
+// 	return json.Marshal(_audience)
+// }
 
 //   - ref. JOSE Header - JSON Web Token (JWT) https://www.rfc-editor.org/rfc/rfc7519#section-5
 
@@ -56,7 +106,7 @@ type ClaimsSet struct {
 	// Use of this claim is OPTIONAL.
 	//
 	//   - ref. https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3
-	Audience []string `json:"aud,omitempty"`
+	Audience Audience `json:"aud,omitempty"`
 
 	// ExpirationTime
 	//
