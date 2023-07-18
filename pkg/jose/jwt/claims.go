@@ -45,22 +45,23 @@ func (aud *Audience) UnmarshalJSON(data []byte) error {
 	return ErrUnsupportedType
 }
 
-func (aud *Audience) MarshalJSON() (data []byte, err error) {
-	if len(*aud) == 0 {
-		return nil, nil
-	}
-
-	if len(*aud) == 1 {
-		d, err := json.Marshal((*aud)[0])
-		return d, err
-	}
-
-	// avoid recursion
-	type _Audience Audience
-	_audience := _Audience(*aud)
-
-	return json.Marshal(_audience)
-}
+// NOTE: backup for handling "aud" claim as string
+// func (aud *Audience) MarshalJSON() (data []byte, err error) {
+// 	if len(*aud) == 0 {
+// 		return nil, nil
+// 	}
+//
+// 	if len(*aud) == 1 {
+// 		d, err := json.Marshal((*aud)[0])
+// 		return d, err
+// 	}
+//
+// 	// avoid recursion
+// 	type _Audience Audience
+// 	_audience := _Audience(*aud)
+//
+// 	return json.Marshal(_audience)
+// }
 
 //   - ref. JOSE Header - JSON Web Token (JWT) https://www.rfc-editor.org/rfc/rfc7519#section-5
 
