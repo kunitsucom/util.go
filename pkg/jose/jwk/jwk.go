@@ -13,7 +13,6 @@ import (
 	"io"
 	"math/big"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/kunitsuinc/util.go/pkg/cache"
@@ -390,29 +389,24 @@ func (jwk *JSONWebKey) EncodeRSAPublicKey(key *rsa.PublicKey, opts ...JSONWebKey
 	}
 	jwk.KeyType = "RSA"
 	jwk.N = base64.RawURLEncoding.EncodeToString(key.N.Bytes())
-	jwk.E = base64.RawURLEncoding.EncodeToString([]byte(strconv.Itoa(key.E)))
+	jwk.E = base64.RawURLEncoding.EncodeToString(big.NewInt(int64(key.E)).Bytes())
 	return jwk
 }
 
 func (jwk *JSONWebKey) DecodeRSAPublicKey() (*rsa.PublicKey, error) {
 	n, err := base64.RawURLEncoding.DecodeString(jwk.N)
 	if err != nil {
-		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.N: %w", err)
+		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.N=%s: %w", jwk.N, err)
 	}
 
-	eBytes, err := base64.RawURLEncoding.DecodeString(jwk.E)
+	e, err := base64.RawURLEncoding.DecodeString(jwk.E)
 	if err != nil {
-		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.E: %w", err)
-	}
-
-	e, err := strconv.Atoi(string(eBytes))
-	if err != nil {
-		return nil, fmt.Errorf("strconv.Atoi: JSONWebKey.E: %w", err)
+		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.E=%s: %w", jwk.E, err)
 	}
 
 	return &rsa.PublicKey{
 		N: big.NewInt(0).SetBytes(n),
-		E: e,
+		E: int(big.NewInt(0).SetBytes(e).Uint64()),
 	}, nil
 }
 
@@ -486,12 +480,12 @@ func (jwk *JSONWebKey) DecodeECDSAPublicKey() (*ecdsa.PublicKey, error) {
 
 	x, err := base64.RawURLEncoding.DecodeString(jwk.X)
 	if err != nil {
-		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.X: %w", err)
+		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.X=%s: %w", jwk.X, err)
 	}
 
 	y, err := base64.RawURLEncoding.DecodeString(jwk.Y)
 	if err != nil {
-		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.Y: %w", err)
+		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.Y=%s: %w", jwk.Y, err)
 	}
 
 	return &ecdsa.PublicKey{
@@ -530,9 +524,17 @@ func (jwk *JSONWebKey) DecodeECDSAPrivateKey() (*ecdsa.PrivateKey, error) {
 func (jwk *JSONWebKey) DecodePublicKey() (crypto.PublicKey, error) {
 	switch jwk.KeyType {
 	case "RSA":
-		return jwk.DecodeRSAPublicKey()
+		key, err := jwk.DecodeRSAPublicKey()
+		if err != nil {
+			return nil, fmt.Errorf("jwk.DecodeRSAPublicKey: %w", err)
+		}
+		return key, nil
 	case "EC":
-		return jwk.DecodeECDSAPublicKey()
+		key, err := jwk.DecodeECDSAPublicKey()
+		if err != nil {
+			return nil, fmt.Errorf("jwk.DecodeRSAPublicKey: %w", err)
+		}
+		return key, nil
 	}
 
 	return nil, fmt.Errorf("kty=%s: %w", jwk.KeyType, ErrKeyIsNotForAlgorithm)
