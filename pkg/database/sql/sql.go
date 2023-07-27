@@ -7,12 +7,7 @@ import (
 	"reflect"
 )
 
-type DB interface {
-	QueryStructSliceContext(ctx context.Context, structTag string, destStructSlicePointer interface{}, query string, args ...any) error
-	QueryStructContext(ctx context.Context, structTag string, destStructPointer interface{}, query string, args ...any) error
-}
-
-type SQLDB interface {
+type SQLQueryer interface {
 	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
 }
 
@@ -24,13 +19,18 @@ type Rows interface {
 	Err() error
 }
 
-type _DB struct {
-	SQLDB
+type Queryer interface {
+	QueryStructSliceContext(ctx context.Context, structTag string, destStructSlicePointer interface{}, query string, args ...any) error
+	QueryStructContext(ctx context.Context, structTag string, destStructPointer interface{}, query string, args ...any) error
 }
 
-func NewDB(db SQLDB) DB { //nolint:ireturn
+type _DB struct {
+	SQLQueryer
+}
+
+func NewDB(db SQLQueryer) Queryer { //nolint:ireturn
 	return &_DB{
-		SQLDB: db,
+		SQLQueryer: db,
 	}
 }
 
@@ -152,4 +152,16 @@ func scanRowsToStruct(rows Rows, destStruct reflect.Value, structTag string) err
 	}
 
 	return nil
+}
+
+type SQLBeginner interface {
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
+}
+
+func MustBeginTx(ctx context.Context, db SQLBeginner, opts *sql.TxOptions) *sql.Tx {
+	tx, err := db.BeginTx(ctx, opts)
+	if err != nil {
+		panic(err)
+	}
+	return tx
 }
