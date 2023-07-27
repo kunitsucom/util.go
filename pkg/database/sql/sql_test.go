@@ -11,7 +11,7 @@ import (
 
 type mockDB struct {
 	SQLQueryer
-	SQLBeginner
+	SQLTxBeginner
 
 	Rows  *sql.Rows
 	Error error
@@ -28,7 +28,7 @@ func (m *mockDB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, err
 }
 
 type mockRows struct {
-	Rows
+	SQLRows
 	CloseError    error
 	ColumnsReturn []string
 	ColumnsError  error

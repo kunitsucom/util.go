@@ -11,7 +11,7 @@ type SQLQueryer interface {
 	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
 }
 
-type Rows interface {
+type SQLRows interface {
 	Close() error
 	Columns() ([]string, error)
 	Next() bool
@@ -39,7 +39,7 @@ func (s *_DB) QueryStructSliceContext(ctx context.Context, structTag string, des
 	return s.queryStructSliceContext(rows, err, structTag, destStructSlicePointer)
 }
 
-func (s *_DB) queryStructSliceContext(rows Rows, queryContextErr error, structTag string, destStructSlicePointer interface{}) error {
+func (s *_DB) queryStructSliceContext(rows SQLRows, queryContextErr error, structTag string, destStructSlicePointer interface{}) error {
 	if queryContextErr != nil {
 		return fmt.Errorf("QueryContext: %w", queryContextErr)
 	}
@@ -53,7 +53,7 @@ func (s *_DB) QueryStructContext(ctx context.Context, structTag string, destStru
 	return s.queryStructContext(rows, err, structTag, destStructPointer)
 }
 
-func (s *_DB) queryStructContext(rows Rows, queryContextErr error, structTag string, destStructPointer interface{}) error {
+func (s *_DB) queryStructContext(rows SQLRows, queryContextErr error, structTag string, destStructPointer interface{}) error {
 	if queryContextErr != nil {
 		return fmt.Errorf("QueryContext: %w", queryContextErr)
 	}
@@ -66,7 +66,7 @@ func (s *_DB) queryStructContext(rows Rows, queryContextErr error, structTag str
 	return ScanRows(rows, structTag, destStructPointer)
 }
 
-func ScanRows(rows Rows, structTag string, destPointer interface{}) error {
+func ScanRows(rows SQLRows, structTag string, destPointer interface{}) error {
 	pointer := reflect.ValueOf(destPointer) // *Type or *[]Type or *[]*Type
 	if pointer.Kind() != reflect.Ptr {
 		return fmt.Errorf("structSlicePointer.Kind=%s: %w", pointer.Kind(), ErrMustBePointer)
@@ -91,7 +91,7 @@ func ScanRows(rows Rows, structTag string, destPointer interface{}) error {
 	return nil
 }
 
-func scanRowsToStructSlice(rows Rows, destStructSlice reflect.Value, structTag string) error { // destStructSlice: []Type (or []*Type)
+func scanRowsToStructSlice(rows SQLRows, destStructSlice reflect.Value, structTag string) error { // destStructSlice: []Type (or []*Type)
 	sliceContentType := destStructSlice.Type().Elem() // sliceContentType: Type (or *Type)
 	var sliceContentIsPointer bool
 	if sliceContentType.Kind() == reflect.Ptr {
@@ -120,7 +120,7 @@ func scanRowsToStructSlice(rows Rows, destStructSlice reflect.Value, structTag s
 	return nil
 }
 
-func scanRowsToStruct(rows Rows, destStruct reflect.Value, structTag string) error {
+func scanRowsToStruct(rows SQLRows, destStruct reflect.Value, structTag string) error {
 	columns, err := rows.Columns()
 	if err != nil {
 		return fmt.Errorf("rows.Columns: %w", err)
@@ -154,11 +154,11 @@ func scanRowsToStruct(rows Rows, destStruct reflect.Value, structTag string) err
 	return nil
 }
 
-type SQLBeginner interface {
+type SQLTxBeginner interface {
 	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
 }
 
-func MustBeginTx(ctx context.Context, db SQLBeginner, opts *sql.TxOptions) *sql.Tx {
+func MustBeginTx(ctx context.Context, db SQLTxBeginner, opts *sql.TxOptions) *sql.Tx {
 	tx, err := db.BeginTx(ctx, opts)
 	if err != nil {
 		panic(err)
