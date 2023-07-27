@@ -10,13 +10,21 @@ import (
 )
 
 type mockDB struct {
-	SQLDB
+	SQLQueryer
+	SQLBeginner
+
 	Rows  *sql.Rows
 	Error error
+
+	BeginTxFunc func(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
 }
 
 func (m *mockDB) QueryContext(_ context.Context, _ string, _ ...interface{}) (*sql.Rows, error) {
 	return m.Rows, m.Error
+}
+
+func (m *mockDB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
+	return m.BeginTxFunc(ctx, opts)
 }
 
 type mockRows struct {
@@ -350,5 +358,35 @@ func Test_ScanRows(t *testing.T) {
 		if err := ScanRows(rows, "db", &user); !errors.Is(err, ErrDataTypeNotSupported) {
 			t.Fatalf("❌: ScanRows: expect(%v) != actual(%v)", ErrDataTypeNotSupported, err)
 		}
+	})
+}
+
+func TestMustBeginTx(t *testing.T) {
+	t.Parallel()
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+		db := &mockDB{
+			BeginTxFunc: func(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
+				return &sql.Tx{}, nil
+			},
+		}
+		tx := MustBeginTx(context.Background(), db, &sql.TxOptions{})
+		if tx == nil {
+			t.Fatalf("❌: MustBeginTx: tx == nil")
+		}
+	})
+	t.Run("failure", func(t *testing.T) {
+		t.Parallel()
+		db := &mockDB{
+			BeginTxFunc: func(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
+				return nil, sql.ErrConnDone
+			},
+		}
+		defer func() {
+			if err := recover(); err == nil {
+				t.Errorf("❌: recover: err == nil")
+			}
+		}()
+		_ = MustBeginTx(context.Background(), db, &sql.TxOptions{})
 	})
 }
