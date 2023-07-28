@@ -1,9 +1,11 @@
 package netz_test
 
 import (
+	"fmt"
 	"net"
 	"testing"
 
+	errorz "github.com/kunitsuinc/util.go/pkg/errors"
 	netz "github.com/kunitsuinc/util.go/pkg/net"
 )
 
@@ -52,6 +54,34 @@ func TestCIDRsToIPNets(t *testing.T) {
 		if _, err := netz.ParseCIDRs(cidrs); err == nil {
 			t.Errorf("❌: CIDRsToIPNets(%s) returned an error: %s", cidrs, err)
 		}
+	})
+}
+
+func TestMustParseCIDRs(t *testing.T) {
+	t.Parallel()
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		const expect = "10.0.0.0/8"
+		ipNets := netz.MustParseCIDRs(expect)
+		if actual := ipNets[0].String(); expect != actual {
+			t.Fatalf("❌: MustParseCIDRs: expect(%s) != actual(%s)", expect, actual)
+		}
+	})
+	t.Run("failure", func(t *testing.T) {
+		t.Parallel()
+
+		const cidr = "FAILURE"
+		defer func() {
+			err, ok := recover().(error)
+			if !ok {
+				t.Fatalf("❌: MustParseCIDRs should panic with an error")
+			}
+			if expect := fmt.Sprintf("ParseCIDRs: ParseCIDR: net.ParseCIDR: cidr=%s: invalid CIDR address: %s", cidr, cidr); !errorz.Contains(err, expect) {
+				t.Fatalf("❌: recover: expect(%s) != actual(%v)", expect, err)
+			}
+		}()
+		netz.MustParseCIDRs(cidr)
 	})
 }
 
