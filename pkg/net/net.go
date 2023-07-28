@@ -23,8 +23,8 @@ func ParseCIDR(cidr string) (*net.IPNet, error) {
 	return ipNet, nil
 }
 
-func MustParseCIDRs(cidr string) []*net.IPNet {
-	ipNets, err := ParseCIDRs([]string{cidr})
+func MustParseCIDRs(cidrs []string) []*net.IPNet {
+	ipNets, err := ParseCIDRs(cidrs)
 	if err != nil {
 		panic(fmt.Errorf("ParseCIDRs: %w", err))
 	}
