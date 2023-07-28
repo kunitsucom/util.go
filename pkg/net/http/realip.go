@@ -21,11 +21,13 @@ const (
 //
 // XRealIP returns <ClientIP>.
 //
+// NOTE: Argument naming conforms to NGINX configuration naming.
+//
 //nolint:revive,stylecheck
 func XRealIP(r *http.Request, set_real_ip_from []*net.IPNet, real_ip_header string, real_ip_recursive bool) string {
 	xff := strings.Split(r.Header.Get(real_ip_header), ",")
 
-	// NOTE: If real_ip_recursive=on, return X-Forwarded-For tail value.
+	// NOTE: If real_ip_recursive=off, return X-Forwarded-For tail value.
 	if !real_ip_recursive {
 		return strings.TrimSpace(xff[len(xff)-1])
 	}
