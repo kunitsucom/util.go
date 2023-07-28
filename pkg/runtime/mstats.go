@@ -40,8 +40,7 @@ func (s *MemStatsTicker) start(ctx context.Context) {
 			select {
 			case <-ctx.Done():
 				return
-			default:
-				<-s.ticker.C
+			case <-s.ticker.C:
 				s.ReadMemStats()
 			}
 		}
