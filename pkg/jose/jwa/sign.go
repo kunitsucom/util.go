@@ -17,7 +17,7 @@ func signHS(key any, signingInput string, hashNewFunc func() hash.Hash) (signatu
 		return "", ErrInvalidKeyReceived
 	}
 	if len(keyBytes) < 1 {
-		return "", fmt.Errorf("len(key)==%d: %w", len(keyBytes), ErrInvalidKeyReceived)
+		return "", fmt.Errorf("len(key)=%d: %w", len(keyBytes), ErrInvalidKeyReceived)
 	}
 	h := hmac.New(hashNewFunc, keyBytes)
 	h.Write([]byte(signingInput))

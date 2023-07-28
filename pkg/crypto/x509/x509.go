@@ -22,7 +22,7 @@ func ParseRSAPrivateKeyPEM(pemBytes []byte) (*rsa.PrivateKey, error) {
 
 	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("x509.ParsePKCS1PrivateKey: %w", err)
+		return nil, fmt.Errorf("x509.ParsePKCS8PrivateKey: %w", err)
 	}
 
 	rsaPrivateKey, ok := key.(*rsa.PrivateKey)
@@ -60,7 +60,7 @@ func ParseECDSAPrivateKeyPEM(pemBytes []byte) (*ecdsa.PrivateKey, error) {
 
 	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("x509.ParsePKCS1PrivateKey: %w", err)
+		return nil, fmt.Errorf("x509.ParsePKCS8PrivateKey: %w", err)
 	}
 
 	ecdsaPrivateKey, ok := key.(*ecdsa.PrivateKey)
