@@ -62,10 +62,18 @@ func TestMustParseCIDRs(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		const expect = "10.0.0.0/8"
-		ipNets := netz.MustParseCIDRs(expect)
-		if actual := ipNets[0].String(); expect != actual {
-			t.Fatalf("❌: MustParseCIDRs: expect(%s) != actual(%s)", expect, actual)
+		cidrs := []string{
+			netz.LoopbackAddress.String(),
+			netz.LinkLocalAddress.String(),
+			netz.PrivateIPAddressClassA.String(),
+			netz.PrivateIPAddressClassB.String(),
+			netz.PrivateIPAddressClassC.String(),
+		}
+		ipNets := netz.MustParseCIDRs(cidrs)
+		for i := range ipNets {
+			if expect, actual := cidrs[i], ipNets[i].String(); expect != actual {
+				t.Fatalf("❌: MustParseCIDRs: expect(%s) != actual(%s)", cidrs, actual)
+			}
 		}
 	})
 	t.Run("failure", func(t *testing.T) {
@@ -81,7 +89,7 @@ func TestMustParseCIDRs(t *testing.T) {
 				t.Fatalf("❌: recover: expect(%s) != actual(%v)", expect, err)
 			}
 		}()
-		netz.MustParseCIDRs(cidr)
+		netz.MustParseCIDRs([]string{cidr})
 	})
 }
 
