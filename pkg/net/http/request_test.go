@@ -32,7 +32,7 @@ func TestDoRequest(t *testing.T) {
 			http.DefaultClient,
 			http.MethodPost,
 			s.URL,
-			httpz.NewHeader(httpz.Set("Content-Type", "application/x-www-form-urlencoded")),
+			httpz.NewHeaderBuilder().Set("Content-Type", "application/x-www-form-urlencoded").Build(),
 			strings.NewReader(urlz.NewValues(urlz.Add("key1", "value1"), urlz.Add("key2", "value2")).Encode()),
 		)
 		t.Cleanup(func() { _ = response.Body.Close() })
@@ -61,7 +61,7 @@ func TestDoRequest(t *testing.T) {
 			http.DefaultClient,
 			string(byte(0x7f)),
 			s.URL,
-			httpz.NewHeader(httpz.Set("Content-Type", "application/x-www-form-urlencoded")),
+			httpz.NewHeaderBuilder().Set("Content-Type", "application/x-www-form-urlencoded").Build(),
 			strings.NewReader(urlz.NewValues(urlz.Add("key1", "value1"), urlz.Add("key2", "value2")).Encode()),
 		); err == nil {
 			t.Errorf("❌: httpz.DoRequest: err == nil")
