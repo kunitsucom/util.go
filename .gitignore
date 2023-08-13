@@ -6,6 +6,7 @@ Thumbs.db
 :*
 *~
 .*~
+/.tmp/
 
 # codecov
 coverage.txt
