@@ -32,8 +32,8 @@ versenv:
 .PHONY: clean
 clean:  ## Clean up cache, etc
 	# reset tmp
-	rm -rf ./.tmp
-	git checkout ./.tmp
+	rm -rf ${MAKEFILE_DIR}/.tmp
+	mkdir -p ${MAKEFILE_DIR}/.tmp
 	# go build cache
 	go env GOCACHE
 	go clean -x -cache -testcache -modcache -fuzzcache
