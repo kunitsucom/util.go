@@ -1,7 +1,7 @@
 name: golang-test
 #     ~~~~~~~~~~~
-# https://github.com/ginokent/util.go/workflows/golang-test/badge.svg
-#                                               ~~~~~~~~~~~
+# https://github.com/kunitsuinc/util.go/workflows/golang-test/badge.svg
+#                                                 ~~~~~~~~~~~
 
 on:
   push:

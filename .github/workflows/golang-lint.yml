@@ -1,7 +1,7 @@
 name: golang-lint
 #     ~~~~~~~~~~~
-# https://github.com/ginokent/util.go/workflows/golang-lint/badge.svg
-#                                               ~~~~~~~~~~~
+# https://github.com/kunitsuinc/util.go/workflows/golang-lint/badge.svg
+#                                                 ~~~~~~~~~~~
 
 on:
   push:
