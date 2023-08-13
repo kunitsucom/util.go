@@ -1,7 +1,7 @@
 name: golang-test
 #     ~~~~~~~~~~~
-# https://github.com/ginokent/exapp/workflows/golang-test/badge.svg
-#                                             ~~~~~~~~~~~
+# https://github.com/ginokent/util.go/workflows/golang-test/badge.svg
+#                                               ~~~~~~~~~~~
 
 on:
   push:
@@ -31,6 +31,9 @@ concurrency:
 permissions:
   id-token: write
   contents: read
+
+env:
+  WORKDIR: .
 
 defaults:
   run:
@@ -66,6 +69,7 @@ jobs:
         run: |
           # Update GITHUB_PATH
           cat <<GITHUB_PATH >> $GITHUB_PATH
+          ${PWD}/${{ env.WORKDIR }}/.local/bin
           ${PWD}/.bin
           GITHUB_PATH
           # Update GITHUB_ENV
@@ -73,13 +77,13 @@ jobs:
       - name: Setup versenv
         run: |
           # Setup versenv
-          direnv allow .
+          direnv allow ${{ env.WORKDIR }}
           make versenv
       - uses: actions/setup-go@v4 # ref. https://github.com/actions/setup-go#usage
         id: setup-go
         with:
           cache: false
-          go-version-file: go.mod
+          go-version-file: ${{ env.WORKDIR }}/go.mod
       - name: Get Golang info
         id: golang-info
         run: |
@@ -97,10 +101,12 @@ jobs:
             ${{ runner.os }}-go-${{ steps.golang-info.outputs.GOVERSION }}-
             ${{ runner.os }}-go-
       - name: Run go test
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+        working-directory: ${{ env.WORKDIR }}
         run: |
-          go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./...
-          go tool cover -func=./coverage.txt
+          direnv exec . make test
       - uses: codecov/codecov-action@v3 # ref. https://github.com/codecov/codecov-action#example-workflowyml-with-codecov-action
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.txt
+          files: ${{ env.WORKDIR }}/coverage.txt

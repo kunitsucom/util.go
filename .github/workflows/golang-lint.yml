@@ -1,7 +1,7 @@
 name: golang-lint
 #     ~~~~~~~~~~~
-# https://github.com/ginokent/exapp/workflows/golang-lint/badge.svg
-#                                             ~~~~~~~~~~~
+# https://github.com/ginokent/util.go/workflows/golang-lint/badge.svg
+#                                               ~~~~~~~~~~~
 
 on:
   push:
@@ -31,6 +31,9 @@ concurrency:
 permissions:
   id-token: write
   contents: read
+
+env:
+  WORKDIR: .
 
 defaults:
   run:
@@ -66,6 +69,7 @@ jobs:
         run: |
           # Update GITHUB_PATH
           cat <<GITHUB_PATH >> $GITHUB_PATH
+          ${PWD}/${{ env.WORKDIR }}/.local/bin
           ${PWD}/.bin
           GITHUB_PATH
           # Update GITHUB_ENV
@@ -73,13 +77,13 @@ jobs:
       - name: Setup versenv
         run: |
           # Setup versenv
-          direnv allow .
+          direnv allow ${{ env.WORKDIR }}
           make versenv
       - uses: actions/setup-go@v4 # ref. https://github.com/actions/setup-go#usage
         id: setup-go
         with:
           cache: false
-          go-version-file: go.mod
+          go-version-file: ${{ env.WORKDIR }}/go.mod
       - name: Get Golang info
         id: golang-info
         run: |
@@ -100,11 +104,12 @@ jobs:
         if: ${{ steps.setup-go.outputs.cache-hit != 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
-          GOPRIVATE: github.com/ginokent
+        working-directory: ${{ env.WORKDIR }}
         run: |
-          go mod tidy
+          direnv exec . go mod tidy
           git diff --exit-code go.mod go.sum
       - uses: golangci/golangci-lint-action@v3.6.0 # ref. https://github.com/golangci/golangci-lint-action#how-to-use
         with:
+          working-directory: ${{ env.WORKDIR }}
           args: --timeout=600s
           version: latest # or v${{ env.GOLANGCI_LINT_VERSION }}
