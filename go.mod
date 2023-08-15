@@ -1,3 +1,3 @@
-module github.com/kunitsuinc/util.go
+module github.com/kunitsucom/util.go
 
 go 1.20
