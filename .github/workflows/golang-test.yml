@@ -1,6 +1,6 @@
 name: golang-test
 #     ~~~~~~~~~~~
-# https://github.com/kunitsuinc/util.go/workflows/golang-test/badge.svg
+# https://github.com/kunitsucom/util.go/workflows/golang-test/badge.svg
 #                                                 ~~~~~~~~~~~
 
 on:
