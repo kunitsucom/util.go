@@ -108,7 +108,7 @@ jobs:
         run: |
           direnv exec . go mod tidy
           git diff --exit-code go.mod go.sum
-      - uses: golangci/golangci-lint-action@v3.6.0 # ref. https://github.com/golangci/golangci-lint-action#how-to-use
+      - uses: golangci/golangci-lint-action@v3.7.0 # ref. https://github.com/golangci/golangci-lint-action#how-to-use
         with:
           working-directory: ${{ env.WORKDIR }}
           args: --timeout=600s
