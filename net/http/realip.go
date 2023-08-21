@@ -14,6 +14,16 @@ const (
 	HeaderXRealIP       = "X-Real-IP"
 )
 
+func DefaultSetRealIPFrom() []*net.IPNet {
+	return []*net.IPNet{
+		netz.LoopbackAddress,
+		netz.LinkLocalAddress,
+		netz.PrivateIPAddressClassA,
+		netz.PrivateIPAddressClassB,
+		netz.PrivateIPAddressClassC,
+	}
+}
+
 // XRealIP returns X-Real-IP value from real_ip_header.
 // If real_ip_header is X-Forwarded-For and it has below values:
 //
@@ -22,6 +32,15 @@ const (
 // XRealIP returns <ClientIP>.
 //
 // NOTE: Argument naming conforms to NGINX configuration naming.
+//
+// Example:
+//
+//	realip := httpz.XRealIP(
+//		r,
+//		httpz.DefaultSetRealIPFrom(),
+//		httpz.HeaderXForwardedFor,
+//		true,
+//	)
 //
 //nolint:revive,stylecheck
 func XRealIP(r *http.Request, set_real_ip_from []*net.IPNet, real_ip_header string, real_ip_recursive bool) string {
@@ -80,14 +99,29 @@ type xRealIPHandlerConfig struct {
 	clientIPAddressHeader string
 }
 
-type XRealIPHandlerOption func(h *xRealIPHandlerConfig)
+type XRealIPHandlerOption interface {
+	apply(*xRealIPHandlerConfig)
+}
+type xRealIPHandlerOption func(h *xRealIPHandlerConfig)
 
-// NewXRealIPHandler returns *realip.Handler that appends X-Real-IP header.
+func (f xRealIPHandlerOption) apply(h *xRealIPHandlerConfig) { f(h) }
+
+// NewXRealIPHandler returns realip handler that appends X-Real-IP header.
 // If set_real_ip_from is X-Forwarded-For and it has below values:
 //
 //	X-Forwarded-For: <SpoofingIP>, <ClientIP>, <ProxyIP>, <Proxy2IP>
 //
-// *realip.Handler set <ClientIP> to X-Real-IP header.
+// realip handler set <ClientIP> to X-Real-IP header.
+//
+// NOTE: Argument naming conforms to NGINX configuration naming.
+//
+// Example:
+//
+//	httpz.NewXRealIPHandler(
+//		httpz.DefaultSetRealIPFrom(),
+//		httpz.HeaderXForwardedFor,
+//		true,
+//	)
 //
 //nolint:revive,stylecheck
 func NewXRealIPHandler(set_real_ip_from []*net.IPNet, real_ip_header string, real_ip_recursive bool, opts ...XRealIPHandlerOption) func(next http.Handler) http.Handler {
@@ -99,7 +133,7 @@ func NewXRealIPHandler(set_real_ip_from []*net.IPNet, real_ip_header string, rea
 	}
 
 	for _, opt := range opts {
-		opt(c)
+		opt.apply(c)
 	}
 
 	return func(next http.Handler) http.Handler {
@@ -113,10 +147,10 @@ func NewXRealIPHandler(set_real_ip_from []*net.IPNet, real_ip_header string, rea
 	}
 }
 
-func WithClientIPAddressHeader(header string) XRealIPHandlerOption {
-	return func(h *xRealIPHandlerConfig) {
+func WithClientIPAddressHeader(header string) XRealIPHandlerOption { //nolint:ireturn
+	return xRealIPHandlerOption(func(h *xRealIPHandlerConfig) {
 		h.clientIPAddressHeader = header
-	}
+	})
 }
 
 func RemoteIP(r *http.Request) string {
