@@ -41,7 +41,7 @@ func TestSortStringKey(t *testing.T) {
 			{Key: "c", Value: 12},
 		}
 
-		actual := mapz.SortStringKey(src)
+		actual := mapz.SortMapStringKey(src)
 
 		if !slicez.Equal(expect, actual) {
 			t.Errorf("❌: expect(%v) != actual(%v)", expect, actual)
@@ -80,7 +80,7 @@ func TestSortIntKey(t *testing.T) {
 			{Key: 12, Value: "c"},
 		}
 
-		actual := mapz.SortIntKey(src)
+		actual := mapz.SortMapIntKey(src)
 
 		if !slicez.Equal(expect, actual) {
 			t.Errorf("❌: expect(%v) != actual(%v)", expect, actual)

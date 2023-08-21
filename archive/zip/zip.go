@@ -38,13 +38,13 @@ func ZipDirWithPathInZipHandler(f func(path string) string) ZipDirOption { //nol
 }
 
 //nolint:cyclop
-func ZipDir(srcDir string, w io.Writer, opts ...ZipDirOption) error {
+func ZipDir(dst io.Writer, srcDir string, opts ...ZipDirOption) error {
 	cfg := new(zipDirConfig)
 	for _, opt := range opts {
 		opt.apply(cfg)
 	}
 
-	zipWriter := zip.NewWriter(w)
+	zipWriter := zip.NewWriter(dst)
 	defer zipWriter.Close()
 
 	if err := filepath.Walk(srcDir, func(path string, info os.FileInfo, err error) error {
