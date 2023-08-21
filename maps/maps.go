@@ -13,7 +13,7 @@ var (
 	ErrValueTypeIsNotMatch      = errors.New(`mapz: value type is not match`)
 )
 
-func SortStringKey[V any](m map[string]V) (sorted []struct {
+func SortMapStringKey[V any](m map[string]V) (sorted []struct {
 	Key   string
 	Value V
 },
@@ -44,7 +44,7 @@ func SortStringKey[V any](m map[string]V) (sorted []struct {
 	return sorted
 }
 
-func SortIntKey[V any](m map[int]V) (sorted []struct {
+func SortMapIntKey[V any](m map[int]V) (sorted []struct {
 	Key   int
 	Value V
 },
