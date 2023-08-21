@@ -23,7 +23,7 @@ func TestCIDRToIPNet(t *testing.T) {
 			t.Errorf("❌: ipNet.String(%s) != cidr: %s != %s", cidr, actual, cidr)
 		}
 	})
-	t.Run("failure", func(t *testing.T) {
+	t.Run("failure(FAILURE)", func(t *testing.T) {
 		t.Parallel()
 
 		cidr := "FAILURE"
@@ -39,7 +39,7 @@ func TestCIDRsToIPNets(t *testing.T) {
 		t.Parallel()
 
 		cidrs := []string{"10.0.0.0/8"}
-		ipNets, err := netz.ParseCIDRs(cidrs)
+		ipNets, err := netz.ParseCIDRs(cidrs...)
 		if err != nil {
 			t.Errorf("❌: CIDRsToIPNets(%s) returned an error: %s", cidrs, err)
 		}
@@ -47,12 +47,19 @@ func TestCIDRsToIPNets(t *testing.T) {
 			t.Errorf("❌: ipNets[0].String(%s) != cidrs[0]: %s != %s", cidrs[0], actual, cidrs[0])
 		}
 	})
-	t.Run("failure", func(t *testing.T) {
+	t.Run("failure(FAILURE)", func(t *testing.T) {
 		t.Parallel()
 
 		cidrs := []string{"FAILURE"}
-		if _, err := netz.ParseCIDRs(cidrs); err == nil {
+		if _, err := netz.ParseCIDRs(cidrs...); err == nil {
 			t.Errorf("❌: CIDRsToIPNets(%s) returned an error: %s", cidrs, err)
+		}
+	})
+	t.Run("failure(empty)", func(t *testing.T) {
+		t.Parallel()
+
+		if _, err := netz.ParseCIDRs(); err == nil {
+			t.Errorf("❌: CIDRsToIPNets() returned an error: %s", err)
 		}
 	})
 }
@@ -69,7 +76,7 @@ func TestMustParseCIDRs(t *testing.T) {
 			netz.PrivateIPAddressClassB.String(),
 			netz.PrivateIPAddressClassC.String(),
 		}
-		ipNets := netz.MustParseCIDRs(cidrs)
+		ipNets := netz.MustParseCIDRs(cidrs...)
 		for i := range ipNets {
 			if expect, actual := cidrs[i], ipNets[i].String(); expect != actual {
 				t.Fatalf("❌: MustParseCIDRs: expect(%s) != actual(%s)", cidrs, actual)
@@ -89,7 +96,7 @@ func TestMustParseCIDRs(t *testing.T) {
 				t.Fatalf("❌: recover: expect(%s) != actual(%v)", expect, err)
 			}
 		}()
-		netz.MustParseCIDRs([]string{cidr})
+		netz.MustParseCIDRs([]string{cidr}...)
 	})
 }
 
