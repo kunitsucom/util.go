@@ -13,59 +13,39 @@ var (
 	ErrValueTypeIsNotMatch      = errors.New(`mapz: value type is not match`)
 )
 
-func SortMapStringKey[V any](m map[string]V) (sorted []struct {
-	Key   string
-	Value V
-},
-) {
-	sorted = make([]struct {
-		Key   string
-		Value V
-	}, len(m))
-
-	sortedKeys := make([]string, len(m))
-	i := 0
-	for key := range m {
-		sortedKeys[i] = key
-		i++
-	}
-	sort.Strings(sortedKeys)
-
-	for i, key := range sortedKeys {
-		sorted[i] = struct {
-			Key   string
-			Value V
-		}{
-			Key:   key,
-			Value: m[key],
-		}
-	}
-
-	return sorted
+type ordered interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+		~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+		~float32 | ~float64 |
+		~string
 }
 
-func SortMapIntKey[V any](m map[int]V) (sorted []struct {
-	Key   int
-	Value V
+func SortMapByKey[Key ordered, Value any](m map[Key]Value) (sorted []struct {
+	Key   Key
+	Value Value
 },
 ) {
 	sorted = make([]struct {
-		Key   int
-		Value V
+		Key   Key
+		Value Value
 	}, len(m))
 
-	sortedKeys := make([]int, len(m))
+	sortedKeys := make([]Key, len(m))
 	i := 0
 	for key := range m {
 		sortedKeys[i] = key
 		i++
 	}
-	sort.Ints(sortedKeys)
+	sort.SliceStable(sortedKeys, func(i, j int) bool {
+		return func(k1, k2 Key) bool {
+			return k1 < k2
+		}(sortedKeys[i], sortedKeys[j])
+	})
 
 	for i, key := range sortedKeys {
 		sorted[i] = struct {
-			Key   int
-			Value V
+			Key   Key
+			Value Value
 		}{
 			Key:   key,
 			Value: m[key],

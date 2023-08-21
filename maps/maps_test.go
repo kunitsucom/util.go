@@ -7,52 +7,12 @@ import (
 	"testing"
 
 	mapz "github.com/kunitsucom/util.go/maps"
-	slicez "github.com/kunitsucom/util.go/slices"
 )
 
-func TestSortStringKey(t *testing.T) {
+func TestSortMapByKey(t *testing.T) {
 	t.Parallel()
 
-	t.Run("success()", func(t *testing.T) {
-		t.Parallel()
-
-		src := map[string]int{
-			"2": 2,
-			"4": 4,
-			"a": 10,
-			"c": 12,
-			"b": 11,
-			"5": 5,
-			"3": 3,
-			"1": 1,
-		}
-
-		expect := []struct {
-			Key   string
-			Value int
-		}{
-			{Key: "1", Value: 1},
-			{Key: "2", Value: 2},
-			{Key: "3", Value: 3},
-			{Key: "4", Value: 4},
-			{Key: "5", Value: 5},
-			{Key: "a", Value: 10},
-			{Key: "b", Value: 11},
-			{Key: "c", Value: 12},
-		}
-
-		actual := mapz.SortMapStringKey(src)
-
-		if !slicez.Equal(expect, actual) {
-			t.Errorf("❌: expect(%v) != actual(%v)", expect, actual)
-		}
-	})
-}
-
-func TestSortIntKey(t *testing.T) {
-	t.Parallel()
-
-	t.Run("success()", func(t *testing.T) {
+	t.Run("success(int)", func(t *testing.T) {
 		t.Parallel()
 
 		src := map[int]string{
@@ -80,9 +40,79 @@ func TestSortIntKey(t *testing.T) {
 			{Key: 12, Value: "c"},
 		}
 
-		actual := mapz.SortMapIntKey(src)
+		actual := mapz.SortMapByKey(src)
 
-		if !slicez.Equal(expect, actual) {
+		if !reflect.DeepEqual(expect, actual) {
+			t.Errorf("❌: expect(%v) != actual(%v)", expect, actual)
+		}
+	})
+
+	t.Run("success(string)", func(t *testing.T) {
+		t.Parallel()
+
+		src := map[string]int{
+			"2": 2,
+			"4": 4,
+			"a": 10,
+			"c": 12,
+			"b": 11,
+			"5": 5,
+			"3": 3,
+			"1": 1,
+		}
+
+		expect := []struct {
+			Key   string
+			Value int
+		}{
+			{Key: "1", Value: 1},
+			{Key: "2", Value: 2},
+			{Key: "3", Value: 3},
+			{Key: "4", Value: 4},
+			{Key: "5", Value: 5},
+			{Key: "a", Value: 10},
+			{Key: "b", Value: 11},
+			{Key: "c", Value: 12},
+		}
+
+		actual := mapz.SortMapByKey(src)
+
+		if !reflect.DeepEqual(expect, actual) {
+			t.Errorf("❌: expect(%v) != actual(%v)", expect, actual)
+		}
+	})
+
+	t.Run("success(float64)", func(t *testing.T) {
+		t.Parallel()
+
+		src := map[float64]string{
+			2.111111:  "2",
+			4.111111:  "4",
+			10.111111: "a",
+			12.111111: "c",
+			11.111111: "b",
+			5.111111:  "5",
+			3.111111:  "3",
+			1.111111:  "1",
+		}
+
+		expect := []struct {
+			Key   float64
+			Value string
+		}{
+			{Key: 1.111111, Value: "1"},
+			{Key: 2.111111, Value: "2"},
+			{Key: 3.111111, Value: "3"},
+			{Key: 4.111111, Value: "4"},
+			{Key: 5.111111, Value: "5"},
+			{Key: 10.111111, Value: "a"},
+			{Key: 11.111111, Value: "b"},
+			{Key: 12.111111, Value: "c"},
+		}
+
+		actual := mapz.SortMapByKey(src)
+
+		if !reflect.DeepEqual(expect, actual) {
 			t.Errorf("❌: expect(%v) != actual(%v)", expect, actual)
 		}
 	})
