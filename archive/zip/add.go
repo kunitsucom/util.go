@@ -50,7 +50,7 @@ func AddFileToZip(dstZipFile string, entryName string, src io.Reader, opts ...Ad
 	defer zr.Close()
 
 	// NOTE: 2. Create a buffer
-	buf := new(bytes.Buffer)
+	buf := bytes.NewBuffer(nil)
 	zw := zip.NewWriter(buf)
 
 	// NOTE: 3. Copy all entries from the existing zip file to the buffer
