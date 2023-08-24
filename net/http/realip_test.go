@@ -3,12 +3,10 @@ package httpz_test
 import (
 	"bytes"
 	"context"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	netz "github.com/kunitsucom/util.go/net"
 	httpz "github.com/kunitsucom/util.go/net/http"
 )
 
@@ -36,7 +34,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 		actualResponse := &httptest.ResponseRecorder{}
 
 		middleware := httpz.NewXRealIPHandler(
-			[]*net.IPNet{netz.PrivateIPAddressClassA},
+			httpz.DefaultSetRealIPFrom(),
 			httpz.HeaderXForwardedFor,
 			true,
 			httpz.WithClientIPAddressHeader(header),
@@ -71,7 +69,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 		actualResponse := &httptest.ResponseRecorder{}
 
 		middleware := httpz.NewXRealIPHandler(
-			[]*net.IPNet{netz.PrivateIPAddressClassA},
+			httpz.DefaultSetRealIPFrom(),
 			testHeaderKey,
 			true,
 		)
@@ -103,7 +101,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 		actualResponse := &httptest.ResponseRecorder{}
 
 		middleware := httpz.NewXRealIPHandler(
-			[]*net.IPNet{netz.PrivateIPAddressClassA},
+			httpz.DefaultSetRealIPFrom(),
 			httpz.HeaderXForwardedFor,
 			true,
 		)
@@ -135,7 +133,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 		actualResponse := &httptest.ResponseRecorder{}
 
 		middleware := httpz.NewXRealIPHandler(
-			[]*net.IPNet{netz.PrivateIPAddressClassA},
+			httpz.DefaultSetRealIPFrom(),
 			httpz.HeaderXForwardedFor,
 			false,
 		)
