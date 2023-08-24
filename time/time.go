@@ -9,15 +9,16 @@ import (
 type ctxKeyNow struct{}
 
 func Now(ctx context.Context) time.Time {
-	nowFuncRWMu.RLock()
-	defer nowFuncRWMu.RUnlock()
-	return nowFunc(ctx)
+	_nowFuncRWMu.RLock()
+	t := _nowFunc(ctx)
+	_nowFuncRWMu.RUnlock()
+	return t
 }
 
 //nolint:gochecknoglobals
 var (
-	nowFunc     = DefaultNowFunc
-	nowFuncRWMu sync.RWMutex
+	_nowFunc     NowFunc = DefaultNowFunc //nolint:revive
+	_nowFuncRWMu sync.RWMutex
 )
 
 type NowFunc = func(ctx context.Context) time.Time
@@ -30,11 +31,11 @@ func DefaultNowFunc(ctx context.Context) time.Time {
 	return time.Now()
 }
 
-func SetNowFunc(now NowFunc) (backup NowFunc) {
-	nowFuncRWMu.Lock()
-	defer nowFuncRWMu.Unlock()
-	backup = nowFunc
-	nowFunc = now
+func SetNowFunc(nowFunc NowFunc) (backup NowFunc) {
+	_nowFuncRWMu.Lock()
+	backup = _nowFunc
+	_nowFunc = nowFunc
+	_nowFuncRWMu.Unlock()
 	return backup
 }
 
