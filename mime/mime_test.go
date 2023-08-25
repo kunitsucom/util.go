@@ -1,7 +1,6 @@
 package mime_test
 
 import (
-	"bytes"
 	"strings"
 	"testing"
 
@@ -25,7 +24,11 @@ func TestDetectContentType(t *testing.T) {
 
 	t.Run("failure", func(t *testing.T) {
 		t.Parallel()
-		r := testz.NewReadWriter(bytes.NewBuffer(nil), 0, testz.ErrTestError)
+		r := &testz.Reader{
+			ReadFunc: func(p []byte) (n int, err error) {
+				return 0, testz.ErrTestError
+			},
+		}
 		if _, err := mime.DetectContentType(r); err == nil {
 			t.Errorf("❌: err == nil")
 		}

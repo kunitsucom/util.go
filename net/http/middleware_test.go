@@ -41,12 +41,25 @@ func TestMiddlewares(t *testing.T) {
 		expect := "middleware 5 preProcess\nmiddleware 4 preProcess\nmiddleware 3 preProcess\nmiddleware 2 preProcess\nmiddleware 1 preProcess\ntest_request_body\nmiddleware 1 postProcess\nmiddleware 2 postProcess\nmiddleware 3 postProcess\nmiddleware 4 postProcess\nmiddleware 5 postProcess\n"
 		request := bytes.NewBufferString("test_request_body\n")
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", request)
-		hander := mids(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handler := mids(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			_, _ = io.Copy(w, r.Body)
 		}))
 
 		response := bytes.NewBuffer(nil)
-		hander.ServeHTTP(testz.NewResponseWriter(response, nil, 0, nil), r)
+		handler.ServeHTTP(
+			&testz.ResponseWriter{
+				WriteFunc: func(p []byte) (n int, err error) {
+					return response.Write(p)
+				},
+				HeaderFunc: func() http.Header {
+					return http.Header{}
+				},
+				WriteHeaderFunc: func(statusCode int) {
+					// do nothing
+				},
+			},
+			r,
+		)
 
 		actual := response.String()
 		if expect != actual {

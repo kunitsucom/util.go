@@ -15,7 +15,7 @@ type _Queryer struct {
 	SQLQueryer
 }
 
-func NewDB(db SQLQueryer) Queryer { //nolint:ireturn
+func NewDB(db SQLQueryer) Queryer {
 	return &_Queryer{
 		SQLQueryer: db,
 	}

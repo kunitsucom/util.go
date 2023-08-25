@@ -19,7 +19,7 @@ type addFileToZipConfig struct {
 	decompressionBombLimit int64
 }
 
-func AddFileToZipWithDecompressionBombLimit(decompressionBombLimit int64) AddFileToZipOption { //nolint:ireturn
+func AddFileToZipWithDecompressionBombLimit(decompressionBombLimit int64) AddFileToZipOption {
 	return addFileToZipOptionFunc(func(cfg *addFileToZipConfig) {
 		cfg.decompressionBombLimit = decompressionBombLimit
 	})

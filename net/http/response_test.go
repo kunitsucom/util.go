@@ -1,7 +1,7 @@
 package httpz_test
 
 import (
-	"bytes"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -36,9 +36,13 @@ func TestReadResponseBody(t *testing.T) {
 		t.Parallel()
 
 		_, err := httpz.NewBufferFromResponseBody(&http.Response{
-			Body: io.NopCloser(testz.NewReadWriter(bytes.NewBuffer(nil), 0, testz.ErrTestError)),
+			Body: io.NopCloser(&testz.ReadWriter{
+				ReadFunc: func(p []byte) (n int, err error) {
+					return 0, testz.ErrTestError
+				},
+			}),
 		})
-		if err == nil {
+		if !errors.Is(err, testz.ErrTestError) {
 			t.Errorf("❌: httpz.NewBufferFromResponseBody: err == nil")
 		}
 	})

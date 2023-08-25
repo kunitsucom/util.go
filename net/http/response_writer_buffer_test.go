@@ -59,6 +59,7 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 			ResponseWriterBufferHandlerTestOption,
 		).Middleware
 
+		header := http.Header{}
 		middleware(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				rw.WriteHeader(http.StatusOK)
@@ -66,12 +67,22 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 				_, _ = io.Copy(rw, r.Body)
 			},
 		)).ServeHTTP(
-			testz.NewResponseWriter(bytes.NewBuffer(nil), nil, 0, testz.ErrTestError),
+			&testz.ResponseWriter{
+				WriteFunc: func(p []byte) (n int, err error) {
+					return 0, testz.ErrTestError
+				},
+				HeaderFunc: func() http.Header {
+					return header
+				},
+				WriteHeaderFunc: func(statusCode int) {
+					// do nothing
+				},
+			},
 			httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body")),
 		)
 
 		if expect != actual {
-			t.Errorf("❌: expect != actual: %s", actual)
+			t.Errorf("❌: expect(%s) != actual(%s)", expect, actual)
 		}
 	})
 }
