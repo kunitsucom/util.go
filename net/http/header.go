@@ -13,23 +13,23 @@ type headerBuilder struct {
 	header http.Header
 }
 
-func NewHeaderBuilder() HeaderBuilder {
+func NewHeaderBuilder() HeaderBuilder { //nolint:ireturn
 	return &headerBuilder{
 		header: make(http.Header),
 	}
 }
 
-func (h *headerBuilder) Add(key, value string) HeaderBuilder {
+func (h *headerBuilder) Add(key, value string) HeaderBuilder { //nolint:ireturn
 	h.header.Add(key, value)
 	return h
 }
 
-func (h *headerBuilder) Set(key, value string) HeaderBuilder {
+func (h *headerBuilder) Set(key, value string) HeaderBuilder { //nolint:ireturn
 	h.header.Set(key, value)
 	return h
 }
 
-func (h *headerBuilder) Merge(header http.Header) HeaderBuilder {
+func (h *headerBuilder) Merge(header http.Header) HeaderBuilder { //nolint:ireturn
 	for key, values := range header {
 		for _, value := range values {
 			h.Add(key, value)

@@ -9,20 +9,21 @@ import (
 )
 
 type (
-	AddFileToZipOption     interface{ apply(*addFileToZipConfig) }
-	addFileToZipOptionFunc func(*addFileToZipConfig)
-)
+	AddFileToZipOption interface{ apply(*addFileToZipConfig) }
 
-func (f addFileToZipOptionFunc) apply(cfg *addFileToZipConfig) { f(cfg) }
+	addFileToZipDecompressionBombLimit int64
+)
 
 type addFileToZipConfig struct {
 	decompressionBombLimit int64
 }
 
-func AddFileToZipWithDecompressionBombLimit(decompressionBombLimit int64) AddFileToZipOption {
-	return addFileToZipOptionFunc(func(cfg *addFileToZipConfig) {
-		cfg.decompressionBombLimit = decompressionBombLimit
-	})
+func (f addFileToZipDecompressionBombLimit) apply(cfg *addFileToZipConfig) {
+	cfg.decompressionBombLimit = int64(f)
+}
+
+func WithAddFileToZipDecompressionBombLimit(decompressionBombLimit int64) AddFileToZipOption { //nolint:ireturn
+	return addFileToZipDecompressionBombLimit(decompressionBombLimit)
 }
 
 // AddFileToZip is a function to add a file to an existing zip file.
