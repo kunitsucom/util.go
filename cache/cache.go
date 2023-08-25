@@ -80,17 +80,17 @@ func (s *Store[T]) StopRefresher() {
 
 // GetOrSet gets cache value T, or set the value T that returns getValue.
 // If getValue does not return err, cache the value T.
-func (s *Store[T]) GetOrSet(key string, getValue func() (T, error)) (T, error) { //nolint:ireturn
+func (s *Store[T]) GetOrSet(key string, getValue func() (T, error)) (T, error) {
 	return s.GetOrSetWithTTL(key, getValue, s.defaultTTL)
 }
 
 // GetOrSet gets cache value T, or set the value T that returns getValue with TTL.
 // If getValue does not return err, cache the value T.
-func (s *Store[T]) GetOrSetWithTTL(key string, getValue func() (T, error), ttl time.Duration) (T, error) { //nolint:ireturn
+func (s *Store[T]) GetOrSetWithTTL(key string, getValue func() (T, error), ttl time.Duration) (T, error) {
 	return s.getOrSet(key, getValue, ttl, time.Now())
 }
 
-func (s *Store[T]) getOrSet(key string, getValue func() (T, error), ttl time.Duration, now time.Time) (T, error) { //nolint:ireturn
+func (s *Store[T]) getOrSet(key string, getValue func() (T, error), ttl time.Duration, now time.Time) (T, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

@@ -18,6 +18,8 @@ linters:
     - gomnd # https://github.com/tommy-muehle/go-mnd
     - ifshort # for readability
     - interfacer # deprecated https://github.com/mvdan/interfacer
+    - interfacebloat # unnecessary
+    - ireturn # unnecessary
     - lll # unnecessary
     - maligned # deprecated https://github.com/mdempsky/maligned
     - nlreturn # ignore "return with no blank line before"
@@ -33,13 +35,6 @@ linters:
 linters-settings:
   goimports:
     local-prefixes: "github.com/kunitsucom/util.go"
-  # varnamelen:
-  #   ignore-decls:
-  #     - l *Logger
-  #     - l *rec.Logger
-  #     - rw http.ResponseWriter
-  #     - w http.ResponseWriter
-  #     - r *http.Request
   wrapcheck:
     ignoreSigs:
       - func errors.New(text string) error
@@ -62,4 +57,6 @@ issues:
         - gosec
         - maintidx
         - noctx
+        - revive
         - varnamelen
+        - wrapcheck

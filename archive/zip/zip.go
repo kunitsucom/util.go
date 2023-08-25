@@ -25,13 +25,13 @@ type zipDirOptionFunc func(*zipDirConfig)
 
 func (f zipDirOptionFunc) apply(cfg *zipDirConfig) { f(cfg) }
 
-func ZipDirWithWalkHandler(f func(path string, info os.FileInfo, err error) error) ZipDirOption { //nolint:ireturn
+func ZipDirWithWalkHandler(f func(path string, info os.FileInfo, err error) error) ZipDirOption {
 	return zipDirOptionFunc(func(cfg *zipDirConfig) {
 		cfg.walkHandler = f
 	})
 }
 
-func ZipDirWithPathInZipHandler(f func(path string) string) ZipDirOption { //nolint:ireturn
+func ZipDirWithPathInZipHandler(f func(path string) string) ZipDirOption {
 	return zipDirOptionFunc(func(cfg *zipDirConfig) {
 		cfg.pathInZipHandler = f
 	})
@@ -97,7 +97,7 @@ type unzipFileOptionFunc func(*unzipFileConfig)
 
 func (f unzipFileOptionFunc) apply(cfg *unzipFileConfig) { f(cfg) }
 
-func UnzipFileWithFileInZipHandler(f func(zipfile *zip.File, dstDir string) error) UnzipFileOption { //nolint:ireturn
+func UnzipFileWithFileInZipHandler(f func(zipfile *zip.File, dstDir string) error) UnzipFileOption {
 	return unzipFileOptionFunc(func(cfg *unzipFileConfig) {
 		cfg.unzipFileFileInZipHandler = f
 	})

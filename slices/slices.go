@@ -111,7 +111,7 @@ func Select[Source, Selected any](s []Source, generator func(index int, source S
 	return gen
 }
 
-func First[T any](s []T) T { //nolint:ireturn
+func First[T any](s []T) T {
 	if len(s) == 0 {
 		var zero T
 		return zero
@@ -119,7 +119,7 @@ func First[T any](s []T) T { //nolint:ireturn
 	return s[0]
 }
 
-func Last[T any](s []T) T { //nolint:ireturn
+func Last[T any](s []T) T {
 	if len(s) == 0 {
 		var zero T
 		return zero

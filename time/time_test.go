@@ -24,7 +24,7 @@ func TestNow(t *testing.T) {
 
 		backup := timez.SetNowFunc(func(_ context.Context) time.Time { return time.Now() })
 		current := timez.Now(context.Background())
-		if current.After(constant) {
+		if !current.After(constant) {
 			t.Errorf("❌: current(%v) after constant(%v)", current, constant)
 		}
 

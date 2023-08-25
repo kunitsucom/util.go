@@ -147,7 +147,7 @@ func NewXRealIPHandler(set_real_ip_from []*net.IPNet, real_ip_header string, rea
 	}
 }
 
-func WithClientIPAddressHeader(header string) XRealIPHandlerOption { //nolint:ireturn
+func WithClientIPAddressHeader(header string) XRealIPHandlerOption {
 	return xRealIPHandlerOption(func(h *xRealIPHandlerConfig) {
 		h.clientIPAddressHeader = header
 	})
