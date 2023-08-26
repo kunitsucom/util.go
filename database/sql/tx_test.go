@@ -10,7 +10,7 @@ func TestMustBeginTx(t *testing.T) {
 	t.Parallel()
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		db := &mockDB{
+		db := &sqlDBMock{
 			BeginTxFunc: func(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
 				return &sql.Tx{}, nil
 			},
@@ -22,7 +22,7 @@ func TestMustBeginTx(t *testing.T) {
 	})
 	t.Run("failure", func(t *testing.T) {
 		t.Parallel()
-		db := &mockDB{
+		db := &sqlDBMock{
 			BeginTxFunc: func(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
 				return nil, sql.ErrConnDone
 			},
