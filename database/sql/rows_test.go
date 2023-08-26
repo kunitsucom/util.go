@@ -18,12 +18,12 @@ func Test_ScanRows(t *testing.T) {
 		}
 		var u []user
 		i := 0
-		rows := &mockRows{
+		rows := &sqlRowsMock{
 			NextFunc: func() bool {
 				i++
 				return i < 3
 			},
-			ColumnsReturn: []string{"user_id", "username"},
+			ColumnsFunc: func() ([]string, error) { return []string{"user_id", "username"}, nil },
 			ScanFunc: func(dest ...interface{}) error {
 				for i := range dest {
 					reflect.ValueOf(dest[i]).Elem().SetString("column" + strconv.Itoa(i))
@@ -44,12 +44,12 @@ func Test_ScanRows(t *testing.T) {
 		}
 		var u []*user
 		i := 0
-		rows := &mockRows{
+		rows := &sqlRowsMock{
 			NextFunc: func() bool {
 				i++
 				return i < 3
 			},
-			ColumnsReturn: []string{"user_id", "username"},
+			ColumnsFunc: func() ([]string, error) { return []string{"user_id", "username"}, nil },
 			ScanFunc: func(dest ...interface{}) error {
 				for i := range dest {
 					reflect.ValueOf(dest[i]).Elem().SetString("column" + strconv.Itoa(i))
@@ -70,12 +70,12 @@ func Test_ScanRows(t *testing.T) {
 		}
 		var u user
 		i := 0
-		rows := &mockRows{
+		rows := &sqlRowsMock{
 			NextFunc: func() bool {
 				i++
 				return i < 2
 			},
-			ColumnsReturn: []string{"user_id", "username"},
+			ColumnsFunc: func() ([]string, error) { return []string{"user_id", "username"}, nil },
 			ScanFunc: func(dest ...interface{}) error {
 				for i := range dest {
 					reflect.ValueOf(dest[i]).Elem().SetString("column" + strconv.Itoa(i))
@@ -96,7 +96,7 @@ func Test_ScanRows(t *testing.T) {
 		}
 		var notPointer user
 		i := 0
-		rows := &mockRows{
+		rows := &sqlRowsMock{
 			NextFunc: func() bool {
 				i++
 				return i < 2
@@ -114,7 +114,7 @@ func Test_ScanRows(t *testing.T) {
 		}
 		var nilPointer *user
 		i := 0
-		rows := &mockRows{
+		rows := &sqlRowsMock{
 			NextFunc: func() bool {
 				i++
 				return i < 2
@@ -132,12 +132,12 @@ func Test_ScanRows(t *testing.T) {
 		}
 		var u []*user
 		i := 0
-		rows := &mockRows{
+		rows := &sqlRowsMock{
 			NextFunc: func() bool {
 				i++
 				return i < 3
 			},
-			ColumnsReturn: []string{"user_id", "username"},
+			ColumnsFunc: func() ([]string, error) { return []string{"user_id", "username"}, nil },
 			ScanFunc: func(dest ...interface{}) error {
 				return sql.ErrConnDone
 			},
@@ -149,7 +149,9 @@ func Test_ScanRows(t *testing.T) {
 	t.Run("failure,reflect.Slice_ErrDataTypeNotSupported", func(t *testing.T) {
 		t.Parallel()
 		var u []string
-		if err := ScanRows(&mockRows{}, "db", &u); !errors.Is(err, ErrDataTypeNotSupported) {
+		if err := ScanRows(&sqlRowsMock{
+			NextFunc: func() bool { return true },
+		}, "db", &u); !errors.Is(err, ErrDataTypeNotSupported) {
 			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", ErrDataTypeNotSupported, err)
 		}
 	})
@@ -161,12 +163,12 @@ func Test_ScanRows(t *testing.T) {
 		}
 		var u user
 		i := 0
-		rows := &mockRows{
+		rows := &sqlRowsMock{
 			NextFunc: func() bool {
 				i++
 				return i < 2
 			},
-			ColumnsReturn: []string{"user_id", "username"},
+			ColumnsFunc: func() ([]string, error) { return []string{"user_id", "username"}, nil },
 			ScanFunc: func(dest ...interface{}) error {
 				return sql.ErrConnDone
 			},
@@ -183,12 +185,12 @@ func Test_ScanRows(t *testing.T) {
 		}
 		var u user
 		i := 0
-		rows := &mockRows{
+		rows := &sqlRowsMock{
 			NextFunc: func() bool {
 				i++
 				return i < 2
 			},
-			ColumnsError: sql.ErrNoRows,
+			ColumnsFunc: func() ([]string, error) { return nil, sql.ErrNoRows },
 		}
 		if err := ScanRows(rows, "db", &u); !errors.Is(err, sql.ErrNoRows) {
 			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", sql.ErrNoRows, err)
@@ -198,7 +200,7 @@ func Test_ScanRows(t *testing.T) {
 		t.Parallel()
 		var user string
 		i := 0
-		rows := &mockRows{
+		rows := &sqlRowsMock{
 			NextFunc: func() bool {
 				i++
 				return i < 2

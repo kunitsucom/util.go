@@ -19,7 +19,7 @@ linters:
     - ifshort # for readability
     - interfacer # deprecated https://github.com/mvdan/interfacer
     - interfacebloat # unnecessary
-    - ireturn # unnecessary
+    - ireturn # TODO: enable
     - lll # unnecessary
     - maligned # deprecated https://github.com/mdempsky/maligned
     - nlreturn # ignore "return with no blank line before"
@@ -58,5 +58,6 @@ issues:
         - maintidx
         - noctx
         - revive
+        - testpackage
         - varnamelen
         - wrapcheck
