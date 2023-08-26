@@ -33,7 +33,7 @@ func Test_DB_queryContext(t *testing.T) {
 			Username string `db:"username"`
 		}
 		var u user
-		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag("db"))
+		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag(defaultStructTag))
 		i := 0
 		rows := &sqlRowsMock{
 			NextFunc: func() bool {
@@ -80,7 +80,7 @@ func Test_DB_queryRowContext(t *testing.T) {
 			Username string `db:"username"`
 		}
 		var u user
-		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag("db"))
+		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag(defaultStructTag))
 		i := 0
 		rows := &sqlRowsMock{
 			NextFunc: func() bool {
@@ -107,7 +107,7 @@ func Test_DB_queryRowContext(t *testing.T) {
 			Username string `db:"username"`
 		}
 		var u user
-		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag("db"))
+		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag(defaultStructTag))
 		rows := &sqlRowsMock{
 			NextFunc: func() bool { return false },
 			ErrFunc:  func() error { return nil },
@@ -123,7 +123,7 @@ func Test_DB_queryRowContext(t *testing.T) {
 			Username string `db:"username"`
 		}
 		var u user
-		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag("db"))
+		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag(defaultStructTag))
 		rows := &sqlRowsMock{
 			NextFunc: func() bool { return false },
 			ErrFunc:  func() error { return context.Canceled },

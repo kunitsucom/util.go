@@ -28,8 +28,6 @@ type queryerContext struct {
 
 type NewDBOption func(qc *queryerContext)
 
-const defaultStructTag = "db"
-
 func WithNewDBOptionStructTag(structTag string) NewDBOption {
 	return func(qc *queryerContext) {
 		qc.structTag = structTag
@@ -39,6 +37,8 @@ func WithNewDBOptionStructTag(structTag string) NewDBOption {
 func NewDB(db sqlQueryerContext, opts ...NewDBOption) QueryerContext { //nolint:ireturn
 	return newDB(db, opts...)
 }
+
+const defaultStructTag = "db"
 
 func newDB(db sqlQueryerContext, opts ...NewDBOption) *queryerContext {
 	qc := &queryerContext{
