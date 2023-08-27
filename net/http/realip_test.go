@@ -37,7 +37,7 @@ func TestNewXRealIPHandler(t *testing.T) {
 			httpz.DefaultSetRealIPFrom(),
 			httpz.HeaderXForwardedFor,
 			true,
-			httpz.WithClientIPAddressHeader(header),
+			httpz.WithNewXRealIPHandlerOptionClientIPAddressHeader(header),
 		)
 
 		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", bytes.NewBufferString("test_request_body"))

@@ -14,27 +14,30 @@ import (
 
 var ErrDoNotUnzipAFileAtRiskOfZipSlip = errors.New("zipz: do not unzip a file at risk of zip slip")
 
-type zipDirConfig struct {
-	walkHandler      func(path string, info os.FileInfo, err error) error
-	pathInZipHandler func(path string) string
+type (
+	zipDirConfig struct {
+		walkFunc             func(path string, info os.FileInfo, err error) error
+		pathInZipHandlerFunc func(path string) string
+	}
+
+	ZipDirOption interface{ apply(*zipDirConfig) }
+
+	zipDirOptionWalkFunc struct {
+		f func(path string, info os.FileInfo, err error) error
+	}
+	zipDirOptionPathInZipHandlerFunc struct {
+		f func(path string) string
+	}
+)
+
+func (f zipDirOptionWalkFunc) apply(cfg *zipDirConfig) { cfg.walkFunc = f.f }
+func WithZipDirOptionWalkFunc(f func(path string, info os.FileInfo, err error) error) ZipDirOption { //nolint:ireturn
+	return zipDirOptionWalkFunc{f}
 }
 
-type ZipDirOption interface{ apply(*zipDirConfig) }
-
-type zipDirOptionFunc func(*zipDirConfig)
-
-func (f zipDirOptionFunc) apply(cfg *zipDirConfig) { f(cfg) }
-
-func ZipDirWithWalkHandler(f func(path string, info os.FileInfo, err error) error) ZipDirOption {
-	return zipDirOptionFunc(func(cfg *zipDirConfig) {
-		cfg.walkHandler = f
-	})
-}
-
-func ZipDirWithPathInZipHandler(f func(path string) string) ZipDirOption {
-	return zipDirOptionFunc(func(cfg *zipDirConfig) {
-		cfg.pathInZipHandler = f
-	})
+func (f zipDirOptionPathInZipHandlerFunc) apply(cfg *zipDirConfig) { cfg.pathInZipHandlerFunc = f.f }
+func WithZipDirOptionPathInZipHandlerFunc(f func(path string) string) ZipDirOption { //nolint:ireturn
+	return zipDirOptionPathInZipHandlerFunc{f}
 }
 
 //nolint:cyclop
@@ -48,8 +51,8 @@ func ZipDir(dst io.Writer, srcDir string, opts ...ZipDirOption) error {
 	defer zipWriter.Close()
 
 	if err := filepath.Walk(srcDir, func(path string, info os.FileInfo, err error) error {
-		if cfg.walkHandler != nil {
-			if err := cfg.walkHandler(path, info, err); err != nil {
+		if cfg.walkFunc != nil {
+			if err := cfg.walkFunc(path, info, err); err != nil {
 				return err
 			}
 		}
@@ -67,8 +70,8 @@ func ZipDir(dst io.Writer, srcDir string, opts ...ZipDirOption) error {
 		defer file.Close()
 
 		pathInZip := cleaned
-		if cfg.pathInZipHandler != nil {
-			pathInZip = cfg.pathInZipHandler(pathInZip)
+		if cfg.pathInZipHandlerFunc != nil {
+			pathInZip = cfg.pathInZipHandlerFunc(pathInZip)
 		}
 		f, err := zipWriter.Create(pathInZip)
 		if err != nil {
@@ -87,20 +90,24 @@ func ZipDir(dst io.Writer, srcDir string, opts ...ZipDirOption) error {
 	return nil
 }
 
-type unzipFileConfig struct {
-	unzipFileFileInZipHandler func(zipfile *zip.File, dstDir string) error
+type (
+	unzipFileConfig struct {
+		unzipFileFileInZipHandler func(zipfile *zip.File, dstDir string) error
+	}
+
+	UnzipFileOption interface{ apply(*unzipFileConfig) }
+
+	unzipFileOptionFileInZipHandler struct {
+		f func(zipfile *zip.File, dstDir string) error
+	}
+)
+
+func (f unzipFileOptionFileInZipHandler) apply(cfg *unzipFileConfig) {
+	cfg.unzipFileFileInZipHandler = f.f
 }
 
-type UnzipFileOption interface{ apply(*unzipFileConfig) }
-
-type unzipFileOptionFunc func(*unzipFileConfig)
-
-func (f unzipFileOptionFunc) apply(cfg *unzipFileConfig) { f(cfg) }
-
-func UnzipFileWithFileInZipHandler(f func(zipfile *zip.File, dstDir string) error) UnzipFileOption {
-	return unzipFileOptionFunc(func(cfg *unzipFileConfig) {
-		cfg.unzipFileFileInZipHandler = f
-	})
+func WithUnzipFileOptionFileInZipHandler(f func(zipfile *zip.File, dstDir string) error) UnzipFileOption { //nolint:ireturn
+	return unzipFileOptionFileInZipHandler{f}
 }
 
 func UnzipFile(srcZipFilePath, dstDir string, opts ...UnzipFileOption) (paths []string, err error) {

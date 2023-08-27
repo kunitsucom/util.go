@@ -20,18 +20,21 @@ type QueryerContext interface {
 	QueryRowContext(ctx context.Context, dst interface{}, query string, args ...interface{}) error
 }
 
-type queryerContext struct {
-	sqlQueryer sqlQueryerContext
-
-	structTag string
-}
-
-type NewDBOption func(qc *queryerContext)
-
-func WithNewDBOptionStructTag(structTag string) NewDBOption {
-	return func(qc *queryerContext) {
-		qc.structTag = structTag
+type (
+	queryerContext struct {
+		sqlQueryer sqlQueryerContext
+		// Options
+		structTag string
 	}
+
+	NewDBOption interface{ apply(*queryerContext) }
+
+	newDBOptionStructTag string
+)
+
+func (f newDBOptionStructTag) apply(qc *queryerContext) { qc.structTag = string(f) }
+func WithNewDBOptionStructTag(structTag string) NewDBOption { //nolint:ireturn
+	return newDBOptionStructTag(structTag)
 }
 
 func NewDB(db sqlQueryerContext, opts ...NewDBOption) QueryerContext { //nolint:ireturn
@@ -47,7 +50,7 @@ func newDB(db sqlQueryerContext, opts ...NewDBOption) *queryerContext {
 	}
 
 	for _, opt := range opts {
-		opt(qc)
+		opt.apply(qc)
 	}
 
 	return qc

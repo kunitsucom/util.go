@@ -1,7 +1,7 @@
-name: golang-test
-#     ~~~~~~~~~~~
-# https://github.com/kunitsucom/util.go/workflows/golang-test/badge.svg
-#                                                 ~~~~~~~~~~~
+name: go-lint
+#     ~~~~~~~
+# https://github.com/kunitsucom/util.go/workflows/go-lint/badge.svg
+#                                                 ~~~~~~~
 
 on:
   push:
@@ -40,7 +40,7 @@ defaults:
     shell: bash
 
 jobs:
-  golang-test: # NOTE: for Branch protection rule `Status checks that are required.`
+  go-lint: # NOTE: for Branch protection rule `Status checks that are required.`
     runs-on: ubuntu-latest # ref. https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
     steps:
       - uses: actions/checkout@v3
@@ -100,13 +100,16 @@ jobs:
             ${{ runner.os }}-go-${{ steps.golang-info.outputs.GOVERSION }}-${{ hashFiles('**/go.sum') }}-
             ${{ runner.os }}-go-${{ steps.golang-info.outputs.GOVERSION }}-
             ${{ runner.os }}-go-
-      - name: Run go test
+      - name: Run go mod tidy
+        if: ${{ steps.setup-go.outputs.cache-hit != 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         working-directory: ${{ env.WORKDIR }}
         run: |
-          direnv exec . make test
-      - uses: codecov/codecov-action@v3 # ref. https://github.com/codecov/codecov-action#example-workflowyml-with-codecov-action
+          direnv exec . go mod tidy
+          git diff --exit-code go.mod go.sum
+      - uses: golangci/golangci-lint-action@v3.7.0 # ref. https://github.com/golangci/golangci-lint-action#how-to-use
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ env.WORKDIR }}/coverage.txt
+          working-directory: ${{ env.WORKDIR }}
+          args: --timeout=600s
+          version: latest # or v${{ env.GOLANGCI_LINT_VERSION }}
