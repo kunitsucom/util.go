@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	httpz "github.com/kunitsucom/util.go/net/http"
-	testz "github.com/kunitsucom/util.go/test"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 func TestRequestBodyBuffer(t *testing.T) {
@@ -34,16 +34,16 @@ func TestRequestBodyBuffer(t *testing.T) {
 		t.Parallel()
 
 		expect := (*bytes.Buffer)(nil)
-		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", &testz.ReadWriter{
+		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", &testingz.ReadWriter{
 			ReadFunc: func(p []byte) (n int, err error) {
-				return 0, testz.ErrTestError
+				return 0, testingz.ErrTestError
 			},
 			WriteFunc: func(p []byte) (n int, err error) {
-				return 0, testz.ErrTestError
+				return 0, testingz.ErrTestError
 			},
 		})
 		actual, err := httpz.RequestBodyBuffer(r)
-		if !errors.Is(err, testz.ErrTestError) {
+		if !errors.Is(err, testingz.ErrTestError) {
 			t.Errorf("❌: err != nil: %v", err)
 		}
 		if !reflect.DeepEqual(expect, actual) {
@@ -135,12 +135,12 @@ func TestNewRequestBodyBufferHandler(t *testing.T) {
 			httpz.WithRequestBodyBufferingSkipLimit(100),
 		).Middleware
 
-		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", &testz.ReadWriter{
+		r := httptest.NewRequest(http.MethodPost, "http://util.go/net/httpz", &testingz.ReadWriter{
 			ReadFunc: func(p []byte) (n int, err error) {
-				return 0, testz.ErrTestError
+				return 0, testingz.ErrTestError
 			},
 			WriteFunc: func(p []byte) (n int, err error) {
-				return 0, testz.ErrTestError
+				return 0, testingz.ErrTestError
 			},
 		})
 		middleware(http.HandlerFunc(

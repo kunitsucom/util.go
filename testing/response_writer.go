@@ -1,4 +1,4 @@
-package testz
+package testingz
 
 import (
 	"net/http"

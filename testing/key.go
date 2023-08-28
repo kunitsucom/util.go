@@ -1,4 +1,4 @@
-package testz
+package testingz
 
 /*
 // secretlint-disable @secretlint/secretlint-rule-privatekey

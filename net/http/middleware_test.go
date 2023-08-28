@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	httpz "github.com/kunitsucom/util.go/net/http"
-	testz "github.com/kunitsucom/util.go/test"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 func testMiddleware(num int) func(http.Handler) http.Handler {
@@ -47,7 +47,7 @@ func TestMiddlewares(t *testing.T) {
 
 		response := bytes.NewBuffer(nil)
 		handler.ServeHTTP(
-			&testz.ResponseWriter{
+			&testingz.ResponseWriter{
 				WriteFunc: func(p []byte) (n int, err error) {
 					return response.Write(p)
 				},

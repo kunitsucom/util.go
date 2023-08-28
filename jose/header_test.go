@@ -18,7 +18,7 @@ import (
 	"github.com/kunitsucom/util.go/jose/jwa"
 	"github.com/kunitsucom/util.go/jose/jwk"
 	"github.com/kunitsucom/util.go/must"
-	testz "github.com/kunitsucom/util.go/test"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 const (
@@ -27,7 +27,7 @@ const (
 )
 
 var (
-	_pub = must.One(x509.ParsePKIXPublicKey(discard.One(pem.Decode([]byte(testz.TestRSAPublicKey2048BitPEM))).Bytes)).(*rsa.PublicKey) //nolint:forcetypeassert
+	_pub = must.One(x509.ParsePKIXPublicKey(discard.One(pem.Decode([]byte(testingz.TestRSAPublicKey2048BitPEM))).Bytes)).(*rsa.PublicKey) //nolint:forcetypeassert
 	_jwk = &jwk.JSONWebKey{
 		KeyType:      "JWT",
 		PublicKeyUse: "sig",
@@ -133,12 +133,12 @@ func TestHeader_marshalJSON(t *testing.T) {
 	t.Run("failure(json_Marshal)", func(t *testing.T) {
 		t.Parallel()
 		_, err := testHeader.marshalJSON(
-			func(v any) ([]byte, error) { return nil, testz.ErrTestError },
+			func(v any) ([]byte, error) { return nil, testingz.ErrTestError },
 			bytes.HasSuffix,
 			bytes.HasPrefix,
 		)
-		if !errors.Is(err, testz.ErrTestError) {
-			t.Fatalf("❌: err != testz.ErrTestError: %v", err)
+		if !errors.Is(err, testingz.ErrTestError) {
+			t.Fatalf("❌: err != testingz.ErrTestError: %v", err)
 		}
 	})
 

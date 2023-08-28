@@ -13,7 +13,7 @@ import (
 	x509z "github.com/kunitsucom/util.go/crypto/x509"
 	"github.com/kunitsucom/util.go/jose/jwa"
 	"github.com/kunitsucom/util.go/must"
-	testz "github.com/kunitsucom/util.go/test"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 var signTestCases = map[string]struct {
@@ -142,7 +142,7 @@ var signTestCases = map[string]struct {
 	//
 	fmt.Sprintf("success(%s)", jwa.RS256): {
 		alg:          jwa.RS256,
-		key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+		key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testingz.TestRSAPrivateKey2048BitPEM))),
 		signingInput: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
 		sigHandler: func(t *testing.T, signatureEncoded string) { //nolint:thelper
 			if actual, expect := signatureEncoded, "NHVaYe26MbtOYhSKkoKYdFVomg4i8ZJd8_-RU8VNbftc4TSMb4bXP3l3YlNWACwyXPGffz5aXHc6lty1Y2t4SWRqGteragsVdZufDn5BlnJl9pdR_kdVFUsra2rWKEofkZeIC4yWytE58sMIihvo9H1ScmmVwBcQP6XETqYd0aSHp1gOa9RdUPDvoXQ5oqygTqVtxaDr6wUFKrKItgBMzWIdNZ6y7O9E0DhEPTbE9rfBo6KTFsHAZnMg4k68CDp2woYIaXbmYTWcvbzIuHO7_37GT79XdIwkm95QJ7hYC9RiwrV7mesbY4PAahERJawntho0my942XheVLmGwLMBkQ"; actual != expect {
@@ -172,7 +172,7 @@ var signTestCases = map[string]struct {
 	},
 	fmt.Sprintf("failure(%s,rsa.SignPKCS1v15)", jwa.RS256): {
 		alg:          jwa.RS256,
-		key:          &rsa.PrivateKey{PublicKey: *must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM))), D: big.NewInt(0), Primes: []*big.Int{big.NewInt(0), big.NewInt(0)}},
+		key:          &rsa.PrivateKey{PublicKey: *must.One(x509z.ParseRSAPublicKeyPEM([]byte(testingz.TestRSAPublicKey2048BitPEM))), D: big.NewInt(0), Primes: []*big.Int{big.NewInt(0), big.NewInt(0)}},
 		signingInput: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
 		sigHandler: func(t *testing.T, signatureEncoded string) { //nolint:thelper
 			if actual, expect := signatureEncoded, ""; actual != expect {
@@ -190,7 +190,7 @@ var signTestCases = map[string]struct {
 	//
 	fmt.Sprintf("success(%s)", jwa.RS384): {
 		alg:          jwa.RS384,
-		key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+		key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testingz.TestRSAPrivateKey2048BitPEM))),
 		signingInput: "eyJhbGciOiJSUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
 		sigHandler: func(t *testing.T, signatureEncoded string) { //nolint:thelper
 			if actual, expect := signatureEncoded, "o1hC1xYbJolSyh0-bOY230w22zEQSk5TiBfc-OCvtpI2JtYlW-23-8B48NpATozzMHn0j3rE0xVUldxShzy0xeJ7vYAccVXu2Gs9rnTVqouc-UZu_wJHkZiKBL67j8_61L6SXswzPAQu4kVDwAefGf5hyYBUM-80vYZwWPEpLI8K4yCBsF6I9N1yQaZAJmkMp_Iw371Menae4Mp4JusvBJS-s6LrmG2QbiZaFaxVJiW8KlUkWyUCns8-qFl5OMeYlgGFsyvvSHvXCzQrsEXqyCdS4tQJd73ayYA4SPtCb9clz76N1zE5WsV4Z0BYrxeb77oA7jJhh994RAPzCG0hmQ"; actual != expect {
@@ -223,7 +223,7 @@ var signTestCases = map[string]struct {
 	//
 	fmt.Sprintf("success(%s)", jwa.RS512): {
 		alg:          jwa.RS512,
-		key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+		key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testingz.TestRSAPrivateKey2048BitPEM))),
 		signingInput: "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
 		sigHandler: func(t *testing.T, signatureEncoded string) { //nolint:thelper
 			if actual, expect := signatureEncoded, "jYW04zLDHfR1v7xdrW3lCGZrMIsVe0vWCfVkN2DRns2c3MN-mcp_-RE6TN9umSBYoNV-mnb31wFf8iun3fB6aDS6m_OXAiURVEKrPFNGlR38JSHUtsFzqTOj-wFrJZN4RwvZnNGSMvK3wzzUriZqmiNLsG8lktlEn6KA4kYVaM61_NpmPHWAjGExWv7cjHYupcjMSmR8uMTwN5UuAwgW6FRstCJEfoxwb0WKiyoaSlDuIiHZJ0cyGhhEmmAPiCwtPAwGeaL1yZMcp0p82cpTQ5Qb-7CtRov3N4DcOHgWYk6LomPR5j5cCkePAz87duqyzSMpCB0mCOuE3CU2VMtGeQ"; actual != expect {
@@ -256,10 +256,10 @@ var signTestCases = map[string]struct {
 	//
 	fmt.Sprintf("success(%s)", jwa.ES256): {
 		alg:          jwa.ES256,
-		key:          must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testz.TestECDSAPrivateKey256BitPEM))),
+		key:          must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testingz.TestECDSAPrivateKey256BitPEM))),
 		signingInput: "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
 		sigHandler: func(t *testing.T, signatureEncoded string) { //nolint:thelper
-			if err := jwa.JWS(jwa.ES256).Verify(must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey256BitPEM))), "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0", signatureEncoded); err != nil {
+			if err := jwa.JWS(jwa.ES256).Verify(must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testingz.TestECDSAPublicKey256BitPEM))), "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0", signatureEncoded); err != nil {
 				t.Errorf("❌: err != nil: %v", err)
 			}
 		},
@@ -304,10 +304,10 @@ var signTestCases = map[string]struct {
 	//
 	fmt.Sprintf("success(%s)", jwa.ES384): {
 		alg:          jwa.ES384,
-		key:          must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testz.TestECDSAPrivateKey256BitPEM))),
+		key:          must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testingz.TestECDSAPrivateKey256BitPEM))),
 		signingInput: "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
 		sigHandler: func(t *testing.T, signatureEncoded string) { //nolint:thelper
-			if err := jwa.JWS(jwa.ES384).Verify(must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey256BitPEM))), "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0", signatureEncoded); err != nil {
+			if err := jwa.JWS(jwa.ES384).Verify(must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testingz.TestECDSAPublicKey256BitPEM))), "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0", signatureEncoded); err != nil {
 				t.Errorf("❌: err != nil: %v", err)
 			}
 		},
@@ -337,10 +337,10 @@ var signTestCases = map[string]struct {
 	//
 	fmt.Sprintf("success(%s)", jwa.ES512): {
 		alg:          jwa.ES512,
-		key:          must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testz.TestECDSAPrivateKey256BitPEM))),
+		key:          must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testingz.TestECDSAPrivateKey256BitPEM))),
 		signingInput: "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
 		sigHandler: func(t *testing.T, signatureEncoded string) { //nolint:thelper
-			if err := jwa.JWS(jwa.ES512).Verify(must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey256BitPEM))), "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0", signatureEncoded); err != nil {
+			if err := jwa.JWS(jwa.ES512).Verify(must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testingz.TestECDSAPublicKey256BitPEM))), "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0", signatureEncoded); err != nil {
 				t.Errorf("❌: err != nil: %v", err)
 			}
 		},
@@ -370,10 +370,10 @@ var signTestCases = map[string]struct {
 	//
 	fmt.Sprintf("success(%s)", jwa.PS256): {
 		alg:          jwa.PS256,
-		key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+		key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testingz.TestRSAPrivateKey2048BitPEM))),
 		signingInput: "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
 		sigHandler: func(t *testing.T, signatureEncoded string) { //nolint:thelper
-			if err := jwa.JWS(jwa.PS256).Verify(must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM))), "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0", signatureEncoded); err != nil {
+			if err := jwa.JWS(jwa.PS256).Verify(must.One(x509z.ParseRSAPublicKeyPEM([]byte(testingz.TestRSAPublicKey2048BitPEM))), "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0", signatureEncoded); err != nil {
 				t.Errorf("❌: err != nil: %v", err)
 			}
 		},
@@ -400,7 +400,7 @@ var signTestCases = map[string]struct {
 	},
 	fmt.Sprintf("failure(%s,rsa.SignPKCS1v15)", jwa.PS256): {
 		alg:          jwa.PS256,
-		key:          &rsa.PrivateKey{PublicKey: *must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM))), D: big.NewInt(0), Primes: []*big.Int{big.NewInt(0), big.NewInt(0)}},
+		key:          &rsa.PrivateKey{PublicKey: *must.One(x509z.ParseRSAPublicKeyPEM([]byte(testingz.TestRSAPublicKey2048BitPEM))), D: big.NewInt(0), Primes: []*big.Int{big.NewInt(0), big.NewInt(0)}},
 		signingInput: "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
 		sigHandler: func(t *testing.T, signatureEncoded string) { //nolint:thelper
 			if actual, expect := signatureEncoded, ""; actual != expect {
@@ -418,10 +418,10 @@ var signTestCases = map[string]struct {
 	//
 	fmt.Sprintf("success(%s)", jwa.PS384): {
 		alg:          jwa.PS384,
-		key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+		key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testingz.TestRSAPrivateKey2048BitPEM))),
 		signingInput: "eyJhbGciOiJQUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
 		sigHandler: func(t *testing.T, signatureEncoded string) { //nolint:thelper
-			if err := jwa.JWS(jwa.PS384).Verify(must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM))), "eyJhbGciOiJQUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0", signatureEncoded); err != nil {
+			if err := jwa.JWS(jwa.PS384).Verify(must.One(x509z.ParseRSAPublicKeyPEM([]byte(testingz.TestRSAPublicKey2048BitPEM))), "eyJhbGciOiJQUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0", signatureEncoded); err != nil {
 				t.Errorf("❌: err != nil: %v", err)
 			}
 		},
@@ -451,10 +451,10 @@ var signTestCases = map[string]struct {
 	//
 	fmt.Sprintf("success(%s)", jwa.PS512): {
 		alg:          jwa.PS512,
-		key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+		key:          must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testingz.TestRSAPrivateKey2048BitPEM))),
 		signingInput: "eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0",
 		sigHandler: func(t *testing.T, signatureEncoded string) { //nolint:thelper
-			if err := jwa.JWS(jwa.PS512).Verify(must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM))), "eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0", signatureEncoded); err != nil {
+			if err := jwa.JWS(jwa.PS512).Verify(must.One(x509z.ParseRSAPublicKeyPEM([]byte(testingz.TestRSAPublicKey2048BitPEM))), "eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0", signatureEncoded); err != nil {
 				t.Errorf("❌: err != nil: %v", err)
 			}
 		},
