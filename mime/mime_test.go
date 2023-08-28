@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/kunitsucom/util.go/mime"
-	testz "github.com/kunitsucom/util.go/test"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 func TestDetectContentType(t *testing.T) {
@@ -24,9 +24,9 @@ func TestDetectContentType(t *testing.T) {
 
 	t.Run("failure", func(t *testing.T) {
 		t.Parallel()
-		r := &testz.Reader{
+		r := &testingz.Reader{
 			ReadFunc: func(p []byte) (n int, err error) {
-				return 0, testz.ErrTestError
+				return 0, testingz.ErrTestError
 			},
 		}
 		if _, err := mime.DetectContentType(r); err == nil {

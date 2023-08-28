@@ -11,7 +11,7 @@ import (
 	"time"
 
 	errorz "github.com/kunitsucom/util.go/errors"
-	testz "github.com/kunitsucom/util.go/test"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 const (
@@ -165,12 +165,12 @@ func TestClaims_marshalJSON(t *testing.T) {
 	t.Run("failure(json_Marshal)", func(t *testing.T) {
 		t.Parallel()
 		_, err := testClaimsSet.marshalJSON(
-			func(v any) ([]byte, error) { return nil, testz.ErrTestError },
+			func(v any) ([]byte, error) { return nil, testingz.ErrTestError },
 			bytes.HasSuffix,
 			bytes.HasPrefix,
 		)
-		if !errors.Is(err, testz.ErrTestError) {
-			t.Fatalf("❌: err != testz.ErrTestError: %v", err)
+		if !errors.Is(err, testingz.ErrTestError) {
+			t.Fatalf("❌: err != testingz.ErrTestError: %v", err)
 		}
 	})
 

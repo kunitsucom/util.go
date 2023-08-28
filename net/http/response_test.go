@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	httpz "github.com/kunitsucom/util.go/net/http"
-	testz "github.com/kunitsucom/util.go/test"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 func TestReadResponseBody(t *testing.T) {
@@ -36,13 +36,13 @@ func TestReadResponseBody(t *testing.T) {
 		t.Parallel()
 
 		_, err := httpz.NewBufferFromResponseBody(&http.Response{
-			Body: io.NopCloser(&testz.ReadWriter{
+			Body: io.NopCloser(&testingz.ReadWriter{
 				ReadFunc: func(p []byte) (n int, err error) {
-					return 0, testz.ErrTestError
+					return 0, testingz.ErrTestError
 				},
 			}),
 		})
-		if !errors.Is(err, testz.ErrTestError) {
+		if !errors.Is(err, testingz.ErrTestError) {
 			t.Errorf("❌: httpz.NewBufferFromResponseBody: err == nil")
 		}
 	})

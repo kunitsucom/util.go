@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	errorz "github.com/kunitsucom/util.go/errors"
-	testz "github.com/kunitsucom/util.go/test"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 func TestContains(t *testing.T) {
@@ -12,16 +12,16 @@ func TestContains(t *testing.T) {
 	t.Run("success(nil)", func(t *testing.T) {
 		t.Parallel()
 		err := (error)(nil)
-		if errorz.Contains(err, "testz: test error") {
-			t.Errorf("❌: err not contain %s: %v", "testz: test error", err)
+		if errorz.Contains(err, "testingz: test error") {
+			t.Errorf("❌: err not contain %s: %v", "testingz: test error", err)
 		}
 	})
 
-	t.Run("success(testz.ErrTestError)", func(t *testing.T) {
+	t.Run("success(testingz.ErrTestError)", func(t *testing.T) {
 		t.Parallel()
-		err := testz.ErrTestError
-		if !errorz.Contains(err, "testz: test error") {
-			t.Errorf("❌: err not contain `%s`: %v", "testz: test error", err)
+		err := testingz.ErrTestError
+		if !errorz.Contains(err, "testingz: test error") {
+			t.Errorf("❌: err not contain `%s`: %v", "testingz: test error", err)
 		}
 	})
 }

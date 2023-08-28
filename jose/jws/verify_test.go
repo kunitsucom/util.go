@@ -17,14 +17,14 @@ import (
 	"github.com/kunitsucom/util.go/jose/jwk"
 	"github.com/kunitsucom/util.go/jose/jws"
 	"github.com/kunitsucom/util.go/must"
-	testz "github.com/kunitsucom/util.go/test"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 func TestVerify(t *testing.T) {
 	t.Parallel()
 
-	publicKey := must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM)))
-	privateKey := must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM)))
+	publicKey := must.One(x509z.ParseRSAPublicKeyPEM([]byte(testingz.TestRSAPublicKey2048BitPEM)))
+	privateKey := must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testingz.TestRSAPrivateKey2048BitPEM)))
 
 	t.Run("success(HS256)", func(t *testing.T) {
 		t.Parallel()
@@ -46,8 +46,8 @@ func TestVerify(t *testing.T) {
 
 	t.Run("success(RS256)", func(t *testing.T) {
 		t.Parallel()
-		publicKey := must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM)))
-		privateKey := must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM)))
+		publicKey := must.One(x509z.ParseRSAPublicKeyPEM([]byte(testingz.TestRSAPublicKey2048BitPEM)))
+		privateKey := must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testingz.TestRSAPrivateKey2048BitPEM)))
 		header := jose.NewHeader(
 			jwa.RS256,
 		)
@@ -70,8 +70,8 @@ func TestVerify(t *testing.T) {
 
 	t.Run("success(ES256)", func(t *testing.T) {
 		t.Parallel()
-		publicKey := must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey256BitPEM)))
-		privateKey := must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testz.TestECDSAPrivateKey256BitPEM)))
+		publicKey := must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testingz.TestECDSAPublicKey256BitPEM)))
+		privateKey := must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testingz.TestECDSAPrivateKey256BitPEM)))
 		header := jose.NewHeader(
 			jwa.ES256,
 		)
@@ -94,8 +94,8 @@ func TestVerify(t *testing.T) {
 
 	t.Run("success(PS256)", func(t *testing.T) {
 		t.Parallel()
-		publicKey := must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM)))
-		privateKey := must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM)))
+		publicKey := must.One(x509z.ParseRSAPublicKeyPEM([]byte(testingz.TestRSAPublicKey2048BitPEM)))
+		privateKey := must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testingz.TestRSAPrivateKey2048BitPEM)))
 		header := jose.NewHeader(
 			jwa.PS256,
 		)
@@ -118,8 +118,8 @@ func TestVerify(t *testing.T) {
 
 	t.Run("success(RS256,JSONWebKey)", func(t *testing.T) {
 		t.Parallel()
-		publicKey := must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM)))
-		privateKey := must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM)))
+		publicKey := must.One(x509z.ParseRSAPublicKeyPEM([]byte(testingz.TestRSAPublicKey2048BitPEM)))
+		privateKey := must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testingz.TestRSAPrivateKey2048BitPEM)))
 		header := jose.NewHeader(
 			jwa.RS256,
 			jose.WithJSONWebKey(new(jwk.JSONWebKey).EncodeRSAPublicKey(publicKey)),

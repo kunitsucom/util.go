@@ -18,7 +18,7 @@ import (
 	"github.com/kunitsucom/util.go/jose/jwk"
 	"github.com/kunitsucom/util.go/must"
 	"github.com/kunitsucom/util.go/openid/discovery"
-	testz "github.com/kunitsucom/util.go/test"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 const (
@@ -52,7 +52,7 @@ func StartOpenIDProvider() (
 	})
 
 	// /certs
-	pub := must.One(x509.ParsePKIXPublicKey(discard.One(pem.Decode([]byte(testz.TestRSAPublicKey2048BitPEM))).Bytes)).(*rsa.PublicKey) //nolint:forcetypeassert
+	pub := must.One(x509.ParsePKIXPublicKey(discard.One(pem.Decode([]byte(testingz.TestRSAPublicKey2048BitPEM))).Bytes)).(*rsa.PublicKey) //nolint:forcetypeassert
 	jwks = &jwk.JWKSet{
 		Keys: []*jwk.JSONWebKey{
 			{

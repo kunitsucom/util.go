@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	httpz "github.com/kunitsucom/util.go/net/http"
-	testz "github.com/kunitsucom/util.go/test"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 func ResponseWriterBufferHandlerTestOption(_ *httpz.ResponseWriterBufferHandler) {
@@ -67,9 +67,9 @@ func TestResponseWriterBufferHandler(t *testing.T) {
 				_, _ = io.Copy(rw, r.Body)
 			},
 		)).ServeHTTP(
-			&testz.ResponseWriter{
+			&testingz.ResponseWriter{
 				WriteFunc: func(p []byte) (n int, err error) {
-					return 0, testz.ErrTestError
+					return 0, testingz.ErrTestError
 				},
 				HeaderFunc: func() http.Header {
 					return header

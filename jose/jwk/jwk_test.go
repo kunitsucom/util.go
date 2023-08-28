@@ -20,7 +20,7 @@ import (
 	errorz "github.com/kunitsucom/util.go/errors"
 	"github.com/kunitsucom/util.go/jose/jwk"
 	"github.com/kunitsucom/util.go/must"
-	testz "github.com/kunitsucom/util.go/test"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 func TestJSONWebKey_DecodeRSAPublicKey(t *testing.T) {
@@ -29,7 +29,7 @@ func TestJSONWebKey_DecodeRSAPublicKey(t *testing.T) {
 		t.Parallel()
 		var k0 *jwk.JSONWebKey
 		k1 := k0.EncodeRSAPublicKey(
-			must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM))),
+			must.One(x509z.ParseRSAPublicKeyPEM([]byte(testingz.TestRSAPublicKey2048BitPEM))),
 			jwk.WithAlgorithm("sig"),
 			jwk.WithKeyID("testKeyID"),
 			jwk.WithKeyType("RSA"),
@@ -48,7 +48,7 @@ func TestJSONWebKey_DecodeRSAPublicKey(t *testing.T) {
 	t.Run("failure()", func(t *testing.T) {
 		t.Parallel()
 		k1 := new(jwk.JSONWebKey).EncodeRSAPublicKey(
-			must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM))),
+			must.One(x509z.ParseRSAPublicKeyPEM([]byte(testingz.TestRSAPublicKey2048BitPEM))),
 		)
 		k1.E = "inv@lid"
 		if _, err := k1.DecodeRSAPublicKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.E=inv@lid: illegal base64 data at input byte 3") {
@@ -70,7 +70,7 @@ func TestJSONWebKey_DecodeRSAPrivateKey(t *testing.T) {
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 		k1 := new(jwk.JSONWebKey).EncodeRSAPrivateKey(
-			must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+			must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testingz.TestRSAPrivateKey2048BitPEM))),
 			jwk.WithKeyID("testKeyID"),
 		)
 		k2, err := k1.DecodeRSAPrivateKey()
@@ -90,7 +90,7 @@ func TestJSONWebKey_DecodeRSAPrivateKey(t *testing.T) {
 	t.Run("failure()", func(t *testing.T) {
 		t.Parallel()
 		k1 := new(jwk.JSONWebKey).EncodeRSAPrivateKey(
-			must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testz.TestRSAPrivateKey2048BitPEM))),
+			must.One(x509z.ParseRSAPrivateKeyPEM([]byte(testingz.TestRSAPrivateKey2048BitPEM))),
 		)
 		k1.Q = "inv@lid"
 		if _, err := k1.DecodeRSAPrivateKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.Q: illegal base64 data at input byte 3") {
@@ -117,7 +117,7 @@ func TestJSONWebKey_DecodeECDSAPublicKey(t *testing.T) {
 		t.Parallel()
 		var k0 *jwk.JSONWebKey
 		k1 := k0.EncodeECDSAPublicKey(
-			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey256BitPEM))),
+			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testingz.TestECDSAPublicKey256BitPEM))),
 			jwk.WithAlgorithm("sig"),
 			jwk.WithKeyID("testKeyID"),
 			jwk.WithKeyType("RSA"),
@@ -137,7 +137,7 @@ func TestJSONWebKey_DecodeECDSAPublicKey(t *testing.T) {
 		t.Parallel()
 		var k0 *jwk.JSONWebKey
 		k1 := k0.EncodeECDSAPublicKey(
-			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey384BitPEM))),
+			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testingz.TestECDSAPublicKey384BitPEM))),
 			jwk.WithAlgorithm("sig"),
 			jwk.WithKeyID("testKeyID"),
 			jwk.WithKeyType("RSA"),
@@ -157,7 +157,7 @@ func TestJSONWebKey_DecodeECDSAPublicKey(t *testing.T) {
 		t.Parallel()
 		var k0 *jwk.JSONWebKey
 		k1 := k0.EncodeECDSAPublicKey(
-			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey521BitPEM))),
+			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testingz.TestECDSAPublicKey521BitPEM))),
 			jwk.WithAlgorithm("sig"),
 			jwk.WithKeyID("testKeyID"),
 			jwk.WithKeyType("RSA"),
@@ -176,7 +176,7 @@ func TestJSONWebKey_DecodeECDSAPublicKey(t *testing.T) {
 	t.Run("failure()", func(t *testing.T) {
 		t.Parallel()
 		k1 := new(jwk.JSONWebKey).EncodeECDSAPublicKey(
-			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey256BitPEM))),
+			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testingz.TestECDSAPublicKey256BitPEM))),
 		)
 		k1.Y = "inv@lid"
 		if _, err := k1.DecodeECDSAPublicKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.Y=inv@lid: illegal base64 data at input byte 3") {
@@ -198,7 +198,7 @@ func TestJSONWebKey_DecodeECDSAPrivateKey(t *testing.T) {
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 		k1 := new(jwk.JSONWebKey).EncodeECDSAPrivateKey(
-			must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testz.TestECDSAPrivateKey256BitPEM))),
+			must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testingz.TestECDSAPrivateKey256BitPEM))),
 			jwk.WithKeyID("testKeyID"),
 		)
 		k2, err := k1.DecodeECDSAPrivateKey()
@@ -212,7 +212,7 @@ func TestJSONWebKey_DecodeECDSAPrivateKey(t *testing.T) {
 	t.Run("failure()", func(t *testing.T) {
 		t.Parallel()
 		k1 := new(jwk.JSONWebKey).EncodeECDSAPrivateKey(
-			must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testz.TestECDSAPrivateKey256BitPEM))),
+			must.One(x509z.ParseECDSAPrivateKeyPEM([]byte(testingz.TestECDSAPrivateKey256BitPEM))),
 		)
 		k1.D = "inv@lid"
 		if _, err := k1.DecodeECDSAPrivateKey(); !errorz.Contains(err, "base64.RawURLEncoding.DecodeString: JSONWebKey.D: illegal base64 data at input byte 3") {
@@ -231,7 +231,7 @@ func TestJSONWebKey_DecodePublicKey(t *testing.T) {
 		t.Parallel()
 		var k0 *jwk.JSONWebKey
 		rsa1 := k0.EncodeRSAPublicKey(
-			must.One(x509z.ParseRSAPublicKeyPEM([]byte(testz.TestRSAPublicKey2048BitPEM))),
+			must.One(x509z.ParseRSAPublicKeyPEM([]byte(testingz.TestRSAPublicKey2048BitPEM))),
 			jwk.WithAlgorithm("sig"),
 			jwk.WithKeyID("testKeyID"),
 			jwk.WithKeyType("RSA"),
@@ -252,7 +252,7 @@ func TestJSONWebKey_DecodePublicKey(t *testing.T) {
 		t.Parallel()
 		var k0 *jwk.JSONWebKey
 		rsa1 := k0.EncodeECDSAPublicKey(
-			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey256BitPEM))),
+			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testingz.TestECDSAPublicKey256BitPEM))),
 			jwk.WithAlgorithm("sig"),
 			jwk.WithKeyID("testKeyID"),
 			jwk.WithKeyType("EC"),
@@ -295,7 +295,7 @@ func TestJSONWebKey_DecodePublicKey(t *testing.T) {
 		t.Parallel()
 		var k0 *jwk.JSONWebKey
 		rsa1 := k0.EncodeECDSAPublicKey(
-			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testz.TestECDSAPublicKey256BitPEM))),
+			must.One(x509z.ParseECDSAPublicKeyPEM([]byte(testingz.TestECDSAPublicKey256BitPEM))),
 			jwk.WithAlgorithm("sig"),
 			jwk.WithKeyID("testKeyID"),
 			jwk.WithKeyType("oct"),
