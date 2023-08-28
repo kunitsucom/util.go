@@ -48,7 +48,7 @@ lint: githooks ## Run secretlint, go mod tidy, golangci-lint
 	git diff --exit-code go.mod go.sum
 	# golangci-lint
 	# ref. https://golangci-lint.run/usage/linters/
-	golangci-lint run --fix --sort-results --verbose --timeout=5m
+	golangci-lint run -c "${REPO_ROOT}/.golangci.yml" --fix --sort-results --verbose --timeout=5m
 	# diff
 	git diff --exit-code
 	# ref. https://github.com/secretlint/secretlint
