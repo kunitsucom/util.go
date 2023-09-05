@@ -23,15 +23,18 @@ func (o callerSkipOption) apply(c *errorfConfig) {
 	c.callerSkip = int(o)
 }
 
+// WithCallerSkip returns an ErrorfOption that sets the number of stack frames to skip.
 func WithCallerSkip(callerSkip int) ErrorfOption {
 	return callerSkipOption(callerSkip)
 }
 
+// NewErrorf returns a function like xerrors.Errorf.
+// It is possible to return a function with different behaviors by passing ErrorfOption as arguments.
 func NewErrorf(opts ...ErrorfOption) func(format string, a ...interface{}) error {
-	c := errorfConfig{}
+	c := &errorfConfig{}
 
 	for _, opt := range opts {
-		opt.apply(&c)
+		opt.apply(c)
 	}
 
 	return newErrorf(c)
@@ -43,7 +46,7 @@ const (
 )
 
 //nolint:cyclop
-func newErrorf(c errorfConfig) func(format string, a ...interface{}) error {
+func newErrorf(c *errorfConfig) func(format string, a ...interface{}) error {
 	return func(format string, a ...interface{}) error {
 		const (
 			suffixS      = ": %s"
@@ -100,6 +103,7 @@ func newErrorf(c errorfConfig) func(format string, a ...interface{}) error {
 //nolint:gochecknoglobals
 var errorf = NewErrorf(WithCallerSkip(1))
 
+// Errorf is a function like xerrors.Errorf.
 func Errorf(format string, a ...interface{}) error {
 	return errorf(format, a...)
 }
