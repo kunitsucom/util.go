@@ -21,11 +21,11 @@ lint:  ## Run secretlint, go mod tidy, golangci-lint
 	# diff
 	git diff --exit-code
 	# ref. https://github.com/secretlint/secretlint
-	docker run -v "`pwd`:`pwd`" -w "`pwd`" --rm secretlint/secretlint secretlint --secretlintignore=.gitignore "**/*"
+	docker run -v "${REPO_ROOT}:${REPO_ROOT}:ro" -w "`pwd`" --rm secretlint/secretlint secretlint --secretlintignore="${REPO_ROOT}/.gitignore" "**/*"
 
 .PHONY: test
 test:  ## Run go test and display coverage
-	@[[ -x "${DOTLOCAL_DIR}/bin/godotnev" ]] || GOBIN="${DOTLOCAL_DIR}/bin" go install github.com/joho/godotenv/cmd/godotenv@latest
+	@[ -x "${DOTLOCAL_DIR}/bin/godotnev" ] || GOBIN="${DOTLOCAL_DIR}/bin" go install github.com/joho/godotenv/cmd/godotenv@latest
 	# test
 	godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./...
 	go tool cover -func=./coverage.txt

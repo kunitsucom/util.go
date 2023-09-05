@@ -1,10 +1,10 @@
 SHELL             := /usr/bin/env bash -Eeu -o pipefail
-GITROOT           := $(shell git rev-parse --show-toplevel)
+REPO_ROOT         := $(shell git rev-parse --show-toplevel)
 MAKEFILE_DIR      := $(shell { cd "$(subst /,,$(dir $(lastword ${MAKEFILE_LIST})))" && pwd; } || pwd)
 DOTLOCAL_DIR      := ${MAKEFILE_DIR}/.local
-PRE_PUSH          := ${GITROOT}/.git/hooks/pre-push
+PRE_PUSH          := ${REPO_ROOT}/.git/hooks/pre-push
 
-export PATH := ${DOTLOCAL_DIR}/bin:${GITROOT}/.bin:${PATH}
+export PATH := ${DOTLOCAL_DIR}/bin:${REPO_ROOT}/.bin:${PATH}
 
 .DEFAULT_GOAL := help
 .PHONY: help
@@ -13,7 +13,7 @@ help: githooks ## Display this help documents
 
 .PHONY: githooks
 githooks:
-	@[[ -f "${PRE_PUSH}" ]] || cp -aiv "${GITROOT}/.githooks/pre-push" "${PRE_PUSH}"
+	@[ -f "${PRE_PUSH}" ] || cp -aiv "${REPO_ROOT}/.githooks/pre-push" "${PRE_PUSH}"
 
 .PHONY: setup
 setup: githooks ## Setup tools for development
@@ -52,11 +52,11 @@ lint: githooks ## Run secretlint, go mod tidy, golangci-lint
 	# diff
 	git diff --exit-code
 	# ref. https://github.com/secretlint/secretlint
-	docker run -v "`pwd`:`pwd`" -w "`pwd`" --rm secretlint/secretlint secretlint "**/*"
+	docker run -v "${REPO_ROOT}:${REPO_ROOT}:ro" -w "`pwd`" --rm secretlint/secretlint secretlint --secretlintignore="${REPO_ROOT}/.gitignore" "**/*"
 
 .PHONY: test
 test: githooks ## Run go test and display coverage
-	@[[ -x "${DOTLOCAL_DIR}/bin/godotnev" ]] || GOBIN="${DOTLOCAL_DIR}/bin" go install github.com/joho/godotenv/cmd/godotenv@latest
+	@[ -x "${DOTLOCAL_DIR}/bin/godotnev" ] || GOBIN="${DOTLOCAL_DIR}/bin" go install github.com/joho/godotenv/cmd/godotenv@latest
 	# test
 	godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./...
 	go tool cover -func=./coverage.txt
