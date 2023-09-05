@@ -2,47 +2,16 @@ SHELL             := /usr/bin/env bash -Eeu -o pipefail
 REPO_ROOT         := $(shell git rev-parse --show-toplevel)
 MAKEFILE_DIR      := $(shell { cd "$(subst /,,$(dir $(lastword ${MAKEFILE_LIST})))" && pwd; } || pwd)
 DOTLOCAL_DIR      := ${MAKEFILE_DIR}/.local
-PRE_PUSH          := ${REPO_ROOT}/.git/hooks/pre-push
 
 export PATH := ${DOTLOCAL_DIR}/bin:${REPO_ROOT}/.bin:${PATH}
 
 .DEFAULT_GOAL := help
 .PHONY: help
-help: githooks ## Display this help documents
+help:  ## Display this help documents
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' ${MAKEFILE_LIST} | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-40s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: githooks
-githooks:
-	@[ -f "${PRE_PUSH}" ] || cp -aiv "${REPO_ROOT}/.githooks/pre-push" "${PRE_PUSH}"
-
-.PHONY: setup
-setup: githooks ## Setup tools for development
-	# == SETUP =====================================================
-	# versenv
-	make versenv
-	# --------------------------------------------------------------
-
-.PHONY: versenv
-versenv:
-	# direnv
-	direnv allow .
-	# golangci-lint
-	golangci-lint --version
-
-.PHONY: clean
-clean:  ## Clean up cache, etc
-	# reset tmp
-	rm -rf ${MAKEFILE_DIR}/.tmp
-	mkdir -p ${MAKEFILE_DIR}/.tmp
-	# go build cache
-	go env GOCACHE
-	go clean -x -cache -testcache -modcache -fuzzcache
-	# golangci-lint cache
-	golangci-lint cache status
-	golangci-lint cache clean
-
 .PHONY: lint
-lint: githooks ## Run secretlint, go mod tidy, golangci-lint
+lint:  ## Run secretlint, go mod tidy, golangci-lint
 	# tidy
 	go mod tidy
 	git diff --exit-code go.mod go.sum
@@ -55,7 +24,7 @@ lint: githooks ## Run secretlint, go mod tidy, golangci-lint
 	docker run -v "${REPO_ROOT}:${REPO_ROOT}:ro" -w "`pwd`" --rm secretlint/secretlint secretlint --secretlintignore="${REPO_ROOT}/.gitignore" "**/*"
 
 .PHONY: test
-test: githooks ## Run go test and display coverage
+test:  ## Run go test and display coverage
 	@[ -x "${DOTLOCAL_DIR}/bin/godotnev" ] || GOBIN="${DOTLOCAL_DIR}/bin" go install github.com/joho/godotenv/cmd/godotenv@latest
 	# test
 	godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./...
