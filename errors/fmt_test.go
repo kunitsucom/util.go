@@ -20,8 +20,7 @@ import (
 )
 
 const (
-	_indent        = "    "
-	_stackTail     = `:\n` + _indent + `[^ ]*github.com/kunitsucom/util.go/errors.case[0-9]+[^ ]*\n` + _indent + _indent + `[^ ]*github.com/kunitsucom/util.go/errors/fmt_test.go:[0-9]+`
+	_stackTail     = `:` + ln + indent4 + `[^ ]*/util.go/errors.case[0-9]+[^ ]*` + ln + indent4 + indent4 + `[^ ]*/util.go/errors/fmt_test.go:[0-9]+`
 	_stack         = _stackTail + `\n  - `
 	_nilErrW       = "%!w(<nil>)"
 	_nilErrWEscape = `%!w\(<nil>\)`
