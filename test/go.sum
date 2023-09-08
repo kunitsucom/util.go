@@ -23,6 +23,8 @@ github.com/gotestyourself/gotestyourself v2.2.0+incompatible h1:AQwinXlbQR2HvPjQ
 github.com/gotestyourself/gotestyourself v2.2.0+incompatible/go.mod h1:zZKM6oeNM8k+FRljX1mnzVYeS8wiGgQyvST1/GafPbY=
 github.com/kunitsucom/ilog.go v0.0.1-rc.10 h1:Gvc/QwGCYFRKMg/DpFCWc3AwWcLf+nH2O/pYbncRI0o=
 github.com/kunitsucom/ilog.go v0.0.1-rc.10/go.mod h1:cfHfWp6rfZ1Yz2Ze3f21zIkYmbfA2dRlHYnrPr/PfI8=
+github.com/kunitsucom/util.go v0.0.57-rc.3 h1:pXKIPgDsa9ScjmJVitOiKxKcqJs9mTPdo+6YAjv60Sk=
+github.com/kunitsucom/util.go v0.0.57-rc.3/go.mod h1:OpEix1Np9nBpyWkpiQ1tOkMs4AUvJQjGKZMPem7a8ow=
 github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
 github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 github.com/opencontainers/go-digest v1.0.0 h1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8Oi/yOhh5U=

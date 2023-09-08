@@ -5,6 +5,7 @@ go 1.21.0
 require (
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/kunitsucom/ilog.go v0.0.1-rc.10
+	github.com/kunitsucom/util.go v0.0.57-rc.3
 	github.com/ory/dockertest v3.3.5+incompatible
 )
 

@@ -1,116 +1,99 @@
 package sql_test
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
-	"log"
-	"os"
+	"reflect"
+	"strings"
 	"testing"
-	"time"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/kunitsucom/ilog.go"
-	"github.com/ory/dockertest"
-	"github.com/ory/dockertest/docker"
+
+	sqlz "github.com/kunitsucom/util.go/database/sql"
+	errorz "github.com/kunitsucom/util.go/errors"
+	"github.com/kunitsucom/util.go/test/database/sql/mysql"
 )
 
-func mysqlDSN(databaseUser, databasePassword, hostAndPort, databaseName string) string {
-	return fmt.Sprintf("%s:%s@tcp(%s)/%s", databaseUser, databasePassword, hostAndPort, databaseName)
+type TestUser struct {
+	ID   int    `db:"id"`
+	Name string `db:"name"`
 }
 
-func TestMain(m *testing.M) {
-	var code int = -1
-	defer func() { os.Exit(code) }()
-
-	ilog.L().Debugf("start")
-	ilog.SetStdLogger(ilog.L().AddCallerSkip(1))
-	if err := mysql.SetLogger(log.New(ilog.L().Copy().AddCallerSkip(2), "", 0)); err != nil {
-		ilog.L().Errorf("mysql.SetLogger: %v", err)
-		return
+func (u *TestUser) GoString() string {
+	typ := reflect.TypeOf(*u)
+	val := reflect.ValueOf(*u)
+	elems := make([]string, typ.NumField())
+	for i := 0; typ.NumField() > i; i++ {
+		elems[i] = fmt.Sprintf("%s:%#v", typ.Field(i).Name, val.Field(i))
 	}
+	return fmt.Sprintf("&%s{%s}", typ, strings.Join(elems, ", "))
+}
 
-	const (
-		databaseDriver   = "mysql"
-		dockerRepository = "mysql"
-		dockerTag        = "8.1"
-		databaseUser     = "testuser"
-		databasePassword = "testpassword"
-		databaseName     = "testdb"
-		portID           = "3306/tcp"
-	)
+const (
+	CreateTableTestUser = `
+CREATE TABLE IF NOT EXISTS test_user (
+    id INT,
+    name VARCHAR(255)
+)
+`
+	InsertTestUser = `
+INSERT INTO test_user (id, name) VALUES (1, 'test_user_001'), (2, 'test_user_002');
+`
+	SelectTestUser = `
+SELECT * FROM test_user
+`
+	SelectTestUserWhereIDEq1 = `
+SELECT * FROM test_user WHERE id = 1
+`
+)
 
-	Envs := []string{
-		fmt.Sprintf("MYSQL_ROOT_PASSWORD=%s", "password"),
-		fmt.Sprintf("MYSQL_USER=%s", databaseUser),
-		fmt.Sprintf("MYSQL_PASSWORD=%s", databasePassword),
-		fmt.Sprintf("MYSQL_DATABASE=%s", databaseName),
-	}
+func TestQuery(t *testing.T) {
+	t.Parallel()
 
-	ilog.L().Debugf("dockertest.NewPool")
-	pool, err := dockertest.NewPool("")
+	ctx := context.Background()
+	l := ilog.L().Copy()
+	ctx = ilog.WithContext(ctx, l)
+
+	dsn, shutdown, err := mysql.NewTestDB(ctx)
 	if err != nil {
-		ilog.L().Errorf("Could not connect to docker: %v", err)
-		return
+		t.Fatalf("❌: mysql.NewTestDB: %v", err)
 	}
-	pool.MaxWait = 30 * time.Second
-
-	// pwd, _ := os.Getwd()
-
-	runOptions := &dockertest.RunOptions{
-		Repository: dockerRepository,
-		// latest だと本番とマッチしなくなる場合があるのでバージョン指定
-		Tag: dockerTag,
-		// ポート番号は固定せずに 0 で listen する
-		Env: Envs,
-		// ここでデータベースの初期化ファイルを渡す
-		// 	Mounts: []string{
-		// 		pwd + "/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql",
-		// 	},
-	}
-
-	ilog.L().Debugf("pool.RunWithOptions")
-	resource, err := pool.RunWithOptions(runOptions,
-		func(config *docker.HostConfig) {
-			config.AutoRemove = true
-			config.RestartPolicy = docker.RestartPolicy{
-				Name: "no",
-			}
-		},
-	)
 	defer func() {
-		if err := pool.Purge(resource); err != nil {
-			ilog.L().Errorf("Could not purge resource: %v", err)
-			return
+		if err := shutdown(ctx); err != nil {
+			err = errorz.Errorf("shutdown: %w", err)
+			l.Err(err).Errorf(err.Error())
 		}
 	}()
+	db, err := sqlz.OpenContext(ctx, "mysql", dsn)
 	if err != nil {
-		ilog.L().Errorf("Could not start resource: %v", err)
-		return
+		t.Fatalf("❌: sqlz.OpenContext: %v", err)
 	}
 
-	hostAndPort := resource.GetHostPort(portID)
-	databaseDSN := mysqlDSN(databaseUser, databasePassword, hostAndPort, databaseName)
-
-	// docker が起動するまで少し時間がかかるのでリトライする
-	ilog.L().Debugf("pool.Retry: %s", databaseDSN)
-	if err := pool.Retry(func() error {
-		db, err := sql.Open(databaseDriver, databaseDSN)
-		if err != nil {
-			ilog.L().Infof("sql.Open: %v", err)
-			return err
-		}
-		defer db.Close()
-
-		if err := db.Ping(); err != nil {
-			ilog.L().Infof("db.Ping: %v", err)
-			return err
-		}
-
-		return nil
-	}); err != nil {
-		ilog.L().Errorf("Could not connect to database: %s", err)
-		return
+	if _, err := db.Exec(CreateTableTestUser); err != nil {
+		t.Fatalf("❌: db.Exec: q=%q: %v", CreateTableTestUser, err)
+	}
+	if _, err := db.Exec(InsertTestUser); err != nil {
+		t.Fatalf("❌: db.Exec: q=%q: %v", InsertTestUser, err)
 	}
 
-	code = m.Run()
+	var testUsers []TestUser
+	if err := sqlz.NewDB(db).QueryContext(ctx, &testUsers, SelectTestUser); err != nil {
+		t.Fatalf("❌: sqlz.NewDB(db).QueryContext: %v", err)
+	}
+	t.Logf("✅: testUsers: %#v", testUsers)
+
+	var testPointerUsers []*TestUser
+	if err := sqlz.NewDB(db).QueryContext(ctx, &testPointerUsers, SelectTestUser); err != nil {
+		t.Fatalf("❌: sqlz.NewDB(db).QueryContext: %v", err)
+	}
+	t.Logf("✅: testPointerUsers: %#v", testPointerUsers)
+
+	var testUser TestUser
+	if err := sqlz.NewDB(db).QueryRowContext(ctx, &testUser, SelectTestUserWhereIDEq1); err != nil {
+		t.Fatalf("❌: sqlz.NewDB(db).QueryContext: %v", err)
+	}
+	t.Logf("✅: testUser: %#v", testUser)
+	if expect, actual := 1, testUser.ID; expect != actual {
+		t.Fatalf("❌: testUser.ID: expect(%v) != actual(%v)", expect, actual)
+	}
 }

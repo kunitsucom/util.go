@@ -36,7 +36,7 @@ func TestMustOpen(t *testing.T) {
 		})
 
 		ctx := context.Background()
-		db := MustOpen(ctx, t.Name(), ":memory:")
+		db := MustOpenContext(ctx, t.Name(), ":memory:")
 		if db == nil {
 			t.Fatalf("❌: MustOpen: db == nil")
 		}
@@ -52,7 +52,7 @@ func TestMustOpen(t *testing.T) {
 			}
 		}()
 
-		MustOpen(context.Background(), t.Name(), "")
+		MustOpenContext(context.Background(), t.Name(), "")
 	})
 
 	t.Run("failure,sqlDriverOpenError", func(t *testing.T) {
@@ -69,6 +69,6 @@ func TestMustOpen(t *testing.T) {
 
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
-		MustOpen(ctx, t.Name(), "")
+		MustOpenContext(ctx, t.Name(), "")
 	})
 }
