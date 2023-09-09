@@ -59,8 +59,7 @@ func TestMustOpen(t *testing.T) {
 		t.Parallel()
 
 		defer func() {
-			expect := context.Canceled
-			if actual := fmt.Sprintf("%v", recover()); fmt.Sprint(expect) != fmt.Sprint(actual) {
+			if expect, actual := context.Canceled, fmt.Sprintf("%v", recover()); strings.Contains(fmt.Sprint(actual), fmt.Sprint(expect)) {
 				t.Errorf("❌: recover: expect(%v) != actual(%s)", expect, actual)
 			}
 		}()
