@@ -62,5 +62,9 @@ test: githooks ## Run go test and display coverage
 	# Integration testing
 	cd tests && godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./... && go tool cover -func=./coverage.txt
 
+.PHONY: bench
+bench: ## Run benchmarks
+	cd tests && go test -run "^NoSuchTestForBenchmark" -benchmem -bench . github.com/kunitsucom/util.go/tests/database/sql -v -trimpath -race -p=4 -parallel=8 -timeout=30s
+
 .PHONY: ci
 ci: lint test ## CI command set
