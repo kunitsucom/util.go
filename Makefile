@@ -57,9 +57,14 @@ lint: githooks ## Run secretlint, go mod tidy, golangci-lint
 .PHONY: test
 test: githooks ## Run go test and display coverage
 	@[ -x "${DOTLOCAL_DIR}/bin/godotnev" ] || GOBIN="${DOTLOCAL_DIR}/bin" go install github.com/joho/godotenv/cmd/godotenv@latest
-	# test
-	godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./...
-	go tool cover -func=./coverage.txt
+	# Unit testing
+	godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./... && go tool cover -func=./coverage.txt
+	# Integration testing
+	cd tests && godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./... && go tool cover -func=./coverage.txt
+
+.PHONY: bench
+bench: ## Run benchmarks
+	cd tests && go test -run "^NoSuchTestForBenchmark" -benchmem -bench . github.com/kunitsucom/util.go/tests/database/sql -v -trimpath -race -p=4 -parallel=8 -timeout=30s
 
 .PHONY: ci
 ci: lint test ## CI command set
