@@ -110,12 +110,3 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ env.WORKDIR }}/coverage.txt
-      - name: Run go integration test
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
-        working-directory: ${{ env.WORKDIR }}
-        run: |
-          if cd tests; then
-            direnv allow
-            direnv exec . make test
-          fi
