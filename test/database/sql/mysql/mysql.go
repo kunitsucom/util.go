@@ -3,16 +3,13 @@ package mysql
 import (
 	"context"
 	"database/sql"
-	"database/sql/driver"
-	"errors"
 	"fmt"
+	"log"
 	"time"
 
-	"github.com/kunitsucom/ilog.go"
+	"github.com/go-sql-driver/mysql"
 	"github.com/ory/dockertest"
 	"github.com/ory/dockertest/docker"
-
-	"github.com/go-sql-driver/mysql"
 
 	"github.com/kunitsucom/util.go/env"
 	errorz "github.com/kunitsucom/util.go/errors"
@@ -21,6 +18,7 @@ import (
 
 //nolint:gosec,revive,stylecheck
 const (
+	MYSQL_DSN           = "MYSQL_DSN"
 	MYSQL_ROOT_PASSWORD = "MYSQL_ROOT_PASSWORD"
 	MYSQL_USER          = "MYSQL_USER"
 	MYSQL_PASSWORD      = "MYSQL_PASSWORD"
@@ -29,36 +27,35 @@ const (
 
 type mysqlLogger struct {
 	enable bool
-	l      ilog.Logger
 }
 
 func (m *mysqlLogger) Print(v ...interface{}) {
 	if !m.enable {
 		return
 	}
-	m.l.Errorf(fmt.Sprint(v...))
+	log.Print("[mysql] ", fmt.Sprint(v...))
 }
 
 //nolint:gochecknoglobals
 var (
-	_DSN       string
-	_Shutdown  func(ctx context.Context) error
-	_MysqlOnce syncz.Once
+	_DSN      string
+	_Shutdown func(ctx context.Context) error
+	once      syncz.Once
 )
 
 //nolint:funlen
 func NewTestDB(ctx context.Context) (dsn string, cleanup func(ctx context.Context) error, err error) {
-	if err := _MysqlOnce.Do(func() error {
-		l := ilog.FromContext(ctx)
+	dsn, err = env.String(MYSQL_DSN)
+	if err == nil {
+		return dsn, func(_ context.Context) error { return nil /* noop */ }, nil
+	}
 
-		m := &mysqlLogger{
-			l:      l,
-			enable: false,
-		}
+	if err := once.Do(func() error {
+		m := &mysqlLogger{}
 		if err := mysql.SetLogger(m); err != nil {
 			return errorz.Errorf("mysql.SetLogger: %w", err)
 		}
-		defer func() { m.enable = false }()
+		defer func() { m.enable = true }()
 
 		dockertestPool, err := dockertest.NewPool("")
 		if err != nil {
@@ -98,21 +95,20 @@ func NewTestDB(ctx context.Context) (dsn string, cleanup func(ctx context.Contex
 		}
 
 		databaseDSN := fmt.Sprintf("%s:%s@tcp(%s)/%s", databaseUser, databasePassword, dockertestResource.GetHostPort("3306/tcp"), databaseName)
-		l.Debugf("databaseDSN: %s", databaseDSN)
+		log.Printf("✅: MYSQL_DSN: %s", databaseDSN)
 
 		if err := dockertestPool.Retry(func() error {
 			db, err := sql.Open(databaseDriver, databaseDSN)
 			if err != nil {
-				l.Warnf("sql.Open: %v", err)
-				return errorz.Errorf("sql.Open: %w", err)
+				err = errorz.Errorf("dockertestPool.Retry: sql.Open: %w", err)
+				log.Print(err)
+				return err
 			}
 
 			if err := db.PingContext(ctx); err != nil {
-				if errors.Is(err, driver.ErrBadConn) {
-					return errorz.Errorf("db.Ping: %w", err)
-				}
-				l.Warnf("db.Ping: %v", err)
-				return errorz.Errorf("db.Ping: %w", err)
+				err = errorz.Errorf("dockertestPool.Retry: db.Ping: %w", err)
+				log.Print(err)
+				return err
 			}
 
 			return nil
