@@ -1,4 +1,4 @@
-module github.com/kunitsucom/util.go/test
+module github.com/kunitsucom/util.go/tests
 
 go 1.21.0
 

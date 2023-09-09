@@ -9,7 +9,7 @@ import (
 
 	sqlz "github.com/kunitsucom/util.go/database/sql"
 	errorz "github.com/kunitsucom/util.go/errors"
-	"github.com/kunitsucom/util.go/test/database/sql/mysql"
+	"github.com/kunitsucom/util.go/tests/database/sql/mysql"
 )
 
 func BenchmarkQueryerContext_QueryContext(b *testing.B) {
