@@ -31,7 +31,7 @@ func ScanRows(rows sqlRows, structTag string, dst interface{}) error {
 		}
 		dests := make([]interface{}, len(columns))
 		tags := getStructTags(deref.Type(), structTag)
-		if err := scanRowsToStruct(rows, columns, dests, structTag, tags, deref); err != nil { // expect Type (or *Type)
+		if err := scanRowsToStruct(rows, columns, dests, tags, deref); err != nil { // expect Type (or *Type)
 			return fmt.Errorf("scanRowsToStruct: type=%T: %w", dst, err)
 		}
 	default:
@@ -63,7 +63,7 @@ func scanRowsToSlice(rows sqlRows, structTag string, destStructSlice reflect.Val
 	defer put()
 	for rows.Next() {
 		v := reflect.Indirect(reflect.New(structType))
-		if err := scanRowsToStruct(rows, columns, dests, structTag, tags, v); err != nil {
+		if err := scanRowsToStruct(rows, columns, dests, tags, v); err != nil {
 			return fmt.Errorf("scanRowsToStruct: %w", err)
 		}
 		if sliceContentIsPointer {
@@ -77,7 +77,7 @@ func scanRowsToSlice(rows sqlRows, structTag string, destStructSlice reflect.Val
 	return nil
 }
 
-func scanRowsToStruct(rows sqlRows, columns []string, dests []interface{}, structTag string, tags []string, destStruct reflect.Value) error {
+func scanRowsToStruct(rows sqlRows, columns []string, dests []interface{}, tags []string, destStruct reflect.Value) error {
 	for clmIdx := range columns {
 		for tagIdx := range tags {
 			if columns[clmIdx] == tags[tagIdx] {
@@ -98,7 +98,7 @@ var tagsMap sync.Map
 
 func getStructTags(t reflect.Type, structTag string) []string {
 	if tags, ok := tagsMap.Load(t); ok {
-		return tags.([]string)
+		return tags.([]string) //nolint:forcetypeassert
 	}
 
 	tags := make([]string, t.NumField())
