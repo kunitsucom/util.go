@@ -14,9 +14,9 @@ import (
 
 func BenchmarkQueryerContext_QueryContext(b *testing.B) {
 	ctx := context.Background()
-	dsn, cleanup, err := mysql.NewTestDB(ctx)
+	dsn, cleanup, err := mysql.NewTestDBv8_1(ctx)
 	if err != nil {
-		b.Fatalf("❌: mysql.NewTestDB: %v", err)
+		b.Fatalf("❌: mysql.NewTestDBv8_1: %v", err)
 	}
 	b.Cleanup(func() {
 		if err := cleanup(ctx); err != nil {

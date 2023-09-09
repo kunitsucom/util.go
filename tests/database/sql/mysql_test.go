@@ -153,9 +153,9 @@ func TestQuery(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	dsn, cleanup, err := mysql.NewTestDB(ctx)
+	dsn, cleanup, err := mysql.NewTestDBv8_1(ctx)
 	if err != nil {
-		t.Fatalf("❌: mysql.NewTestDB: %v", err)
+		t.Fatalf("❌: mysql.NewTestDBv8_1: %v", err)
 	}
 	t.Cleanup(func() {
 		if err := cleanup(ctx); err != nil {

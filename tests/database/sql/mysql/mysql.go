@@ -43,8 +43,12 @@ var (
 	once      syncz.Once
 )
 
+func NewTestDBv8_1(ctx context.Context) (dsn string, cleanup func(ctx context.Context) error, err error) {
+	return newTestDB(ctx, "8.1")
+}
+
 //nolint:funlen
-func NewTestDB(ctx context.Context) (dsn string, cleanup func(ctx context.Context) error, err error) {
+func newTestDB(ctx context.Context, imageTag string) (dsn string, cleanup func(ctx context.Context) error, err error) {
 	dsn, err = env.String(MYSQL_DSN)
 	if err == nil {
 		return dsn, func(_ context.Context) error { return nil /* noop */ }, nil
@@ -73,7 +77,7 @@ func NewTestDB(ctx context.Context) (dsn string, cleanup func(ctx context.Contex
 
 		dockertestRunOptions := &dockertest.RunOptions{
 			Repository: "mysql",
-			Tag:        "8.1",
+			Tag:        imageTag,
 			Env: []string{
 				fmt.Sprintf("%s=%s", MYSQL_ROOT_PASSWORD, databaseRootPassword),
 				fmt.Sprintf("%s=%s", MYSQL_USER, databaseUser),
