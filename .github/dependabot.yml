@@ -19,3 +19,10 @@ updates:
       interval: "daily"
       time: "09:00"
       timezone: "Asia/Tokyo"
+
+  - package-ecosystem: "gomod"
+    directory: "/tests"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
