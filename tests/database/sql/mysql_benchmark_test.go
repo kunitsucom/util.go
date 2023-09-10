@@ -35,11 +35,11 @@ func BenchmarkQueryerContext_QueryContext(b *testing.B) {
 	dbx := sqlx.NewDb(db, "mysql")
 	_ = dbx
 	b.Run("sqlx", func(b *testing.B) {
-		b.Logf("🚀: %s: %q", b.Name(), MySQLSelectTestUser)
+		b.Logf("🚀: %s: %q", b.Name(), MySQLSelectAllFromTestUser)
 		b.ResetTimer()
 		var u []*TestUser
 		for i := 0; b.N > i; i++ {
-			if err := dbx.SelectContext(ctx, &u, MySQLSelectTestUser); err != nil {
+			if err := dbx.SelectContext(ctx, &u, MySQLSelectAllFromTestUser); err != nil {
 				b.Fatalf("❌: %s: dbx.SelectContext: %v", b.Name(), err)
 			}
 		}
@@ -48,11 +48,11 @@ func BenchmarkQueryerContext_QueryContext(b *testing.B) {
 	dbz := sqlz.NewDB(db)
 	_ = dbz
 	b.Run("sqlz", func(b *testing.B) {
-		b.Logf("🚀: %s: %q", b.Name(), MySQLSelectTestUser)
+		b.Logf("🚀: %s: %q", b.Name(), MySQLSelectAllFromTestUser)
 		b.ResetTimer()
 		var u []*TestUser
 		for i := 0; b.N > i; i++ {
-			if err := dbz.QueryContext(ctx, &u, MySQLSelectTestUser); err != nil {
+			if err := dbz.QueryContext(ctx, &u, MySQLSelectAllFromTestUser); err != nil {
 				b.Fatalf("❌: %s: dbz.QueryContext: %v", b.Name(), err)
 			}
 		}

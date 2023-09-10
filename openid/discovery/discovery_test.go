@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kunitsucom/util.go/cache"
 	"github.com/kunitsucom/util.go/openid/discovery"
+	syncz "github.com/kunitsucom/util.go/sync"
 )
 
 func TestDocumentURL(t *testing.T) {
@@ -143,7 +143,7 @@ const testMetadata = `{
 func TestDiscovery_GetDocument(t *testing.T) {
 	t.Parallel()
 
-	testDiscovery := discovery.New(context.Background(), discovery.WithCacheStore(cache.NewStore[*discovery.ProviderMetadata](context.Background())), discovery.WithHTTPClient(http.DefaultClient))
+	testDiscovery := discovery.New(context.Background(), discovery.WithCacheMap(syncz.NewMap[*discovery.ProviderMetadata](context.Background())), discovery.WithHTTPClient(http.DefaultClient))
 
 	// prepare
 	mux := http.NewServeMux()

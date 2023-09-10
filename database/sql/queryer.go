@@ -2,7 +2,6 @@ package sqlz
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 )
 
@@ -80,14 +79,6 @@ func (qc *queryerContext) queryRowContext(rows sqlRows, queryContextErr error, d
 		return fmt.Errorf("QueryContext: %w", queryContextErr)
 	}
 	defer rows.Close()
-
-	// behaver like *sql.Row
-	if !rows.Next() {
-		if err := rows.Err(); err != nil {
-			return err //nolint:wrapcheck
-		}
-		return sql.ErrNoRows
-	}
 
 	return ScanRows(rows, qc.structTag, dst)
 }
