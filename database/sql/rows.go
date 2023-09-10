@@ -3,6 +3,7 @@ package sqlz
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 )
 
@@ -94,18 +95,21 @@ func scanRowsToStruct(rows sqlRows, columns []string, dests []interface{}, tags 
 }
 
 //nolint:gochecknoglobals
-var tagsMap sync.Map
+var (
+	tagsCache sync.Map
+)
 
-func getStructTags(t reflect.Type, structTag string) []string {
-	if tags, ok := tagsMap.Load(t); ok {
+func getStructTags(structType reflect.Type, structTag string) []string {
+	if tags, ok := tagsCache.Load(structType); ok {
 		return tags.([]string) //nolint:forcetypeassert
 	}
 
-	tags := make([]string, t.NumField())
-	for i := 0; t.NumField() > i; i++ {
-		tags[i] = t.Field(i).Tag.Get(structTag)
+	tags := make([]string, structType.NumField())
+	for i := 0; structType.NumField() > i; i++ {
+		rawTag := structType.Field(i).Tag.Get(structTag)
+		tags[i] = strings.Split(rawTag, ",")[0]
 	}
-	tagsMap.Store(t, tags)
+	tagsCache.Store(structType, tags)
 	return tags
 }
 

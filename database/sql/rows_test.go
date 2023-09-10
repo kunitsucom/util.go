@@ -15,12 +15,7 @@ func Test_ScanRows(t *testing.T) {
 	t.Parallel()
 	t.Run("success,reflect.Slice", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u []user
+		var u []testUser
 		i := 0
 		columns := []string{"user_id", "username", "null_string"}
 		rows := &sqlRowsMock{
@@ -65,12 +60,7 @@ func Test_ScanRows(t *testing.T) {
 	})
 	t.Run("success,reflect.Slice_pointer_slice", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u []*user
+		var u []*testUser
 		i := 0
 		columns := []string{"user_id", "username", "null_string"}
 		rows := &sqlRowsMock{
@@ -101,12 +91,7 @@ func Test_ScanRows(t *testing.T) {
 	})
 	t.Run("success,reflect.Struct", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u user
+		var u testUser
 		i := 0
 		columns := []string{"user_id", "username", "null_string"}
 		rows := &sqlRowsMock{
@@ -137,12 +122,7 @@ func Test_ScanRows(t *testing.T) {
 	})
 	t.Run("failure,ErrMustBePointer", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var notPointer user
+		var notPointer testUser
 		i := 0
 		rows := &sqlRowsMock{
 			NextFunc: func() bool { i++; return i < 2 },
@@ -153,12 +133,7 @@ func Test_ScanRows(t *testing.T) {
 	})
 	t.Run("failure,ErrMustNotNil", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var nilPointer *user
+		var nilPointer *testUser
 		i := 0
 		rows := &sqlRowsMock{
 			NextFunc: func() bool { i++; return i < 2 },
@@ -169,12 +144,7 @@ func Test_ScanRows(t *testing.T) {
 	})
 	t.Run("failure,reflect.Slice,Scan", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u []*user
+		var u []*testUser
 		i := 0
 		columns := []string{"user_id", "username", "null_string"}
 		rows := &sqlRowsMock{
@@ -194,12 +164,7 @@ func Test_ScanRows(t *testing.T) {
 	})
 	t.Run("failure,reflect.Slice,Columns", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u []*user
+		var u []*testUser
 		i := 0
 		rows := &sqlRowsMock{
 			NextFunc:    func() bool { i++; return i < 2 },
@@ -220,12 +185,7 @@ func Test_ScanRows(t *testing.T) {
 	})
 	t.Run("failure,reflect.Struct_Scan", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u user
+		var u testUser
 		i := 0
 		columns := []string{"user_id", "username", "null_string"}
 		rows := &sqlRowsMock{
@@ -241,12 +201,7 @@ func Test_ScanRows(t *testing.T) {
 	})
 	t.Run("failure,reflect.Struct_Scan", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u user
+		var u testUser
 		i := 0
 		rows := &sqlRowsMock{
 			NextFunc:    func() bool { i++; return i < 2 },
