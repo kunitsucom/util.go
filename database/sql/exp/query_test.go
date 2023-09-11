@@ -1,6 +1,11 @@
 package sqlz
 
-import "testing"
+import (
+	"errors"
+	"testing"
+
+	sqlz "github.com/kunitsucom/util.go/database/sql"
+)
 
 const defaultTestStructTag = "testdb"
 
@@ -77,5 +82,29 @@ func TestTableName(t *testing.T) {
 			t.Errorf("❌: tableName: expect(%v) != actual(%v)", expect, actual)
 		}
 		t.Logf("✅: cachedTableName: %#v", cachedTableName)
+	})
+
+	t.Run("failure,panic,notStruct", func(t *testing.T) {
+		t.Parallel()
+
+		defer func() {
+			r := recover()
+			if r == nil {
+				t.Errorf("❌: TableName: expect panic, but not")
+				return
+			}
+			err, ok := r.(error)
+			if !ok {
+				t.Errorf("❌: TableName: expect error, but not")
+				return
+			}
+			if expect, actual := sqlz.ErrDataTypeNotSupported, err; !errors.Is(actual, expect) {
+				t.Errorf("❌: TableName: expect(%v) != actual(%v)", expect, actual)
+				return
+			}
+		}()
+
+		willBePanic := 1
+		TableName(&willBePanic)
 	})
 }
