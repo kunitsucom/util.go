@@ -16,12 +16,7 @@ func Test_DB_QueryContext(t *testing.T) {
 	t.Parallel()
 	t.Run("failure,sql.ErrNoRows", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u []*user
+		var u []*testUser
 		if err := NewDB(&sqlDBMock{Rows: nil, Error: sql.ErrNoRows}).QueryContext(context.Background(), &u, "SELECT * FROM users"); !errors.Is(err, sql.ErrNoRows) {
 			t.Fatalf("❌: QueryContext: %v", err)
 		}
@@ -32,12 +27,7 @@ func Test_DB_queryContext(t *testing.T) {
 	t.Parallel()
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u []user
+		var u []testUser
 		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag("testdb"))
 		i := 0
 		columns := []string{"user_id", "username", "null_string"}
@@ -87,12 +77,7 @@ func Test_DB_QueryRowContext(t *testing.T) {
 	t.Parallel()
 	t.Run("failure,sql.ErrNoRows", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u user
+		var u testUser
 		if err := NewDB(&sqlDBMock{Rows: nil, Error: sql.ErrNoRows}).QueryRowContext(context.Background(), &u, "SELECT * FROM users"); !errors.Is(err, sql.ErrNoRows) {
 			t.Fatalf("❌: QueryRowContext: %v", err)
 		}
@@ -103,12 +88,7 @@ func Test_DB_queryRowContext(t *testing.T) {
 	t.Parallel()
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u user
+		var u testUser
 		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag("testdb"))
 		i := 0
 		columns := []string{"user_id", "username", "null_string"}
@@ -140,12 +120,7 @@ func Test_DB_queryRowContext(t *testing.T) {
 	})
 	t.Run("failure,sql.ErrNoRows", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u user
+		var u testUser
 		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag("testdb"))
 		rows := &sqlRowsMock{
 			NextFunc: func() bool { return false },
@@ -157,12 +132,7 @@ func Test_DB_queryRowContext(t *testing.T) {
 	})
 	t.Run("failure,context.Canceled", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u user
+		var u testUser
 		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag("testdb"))
 		rows := &sqlRowsMock{
 			NextFunc: func() bool { return false },

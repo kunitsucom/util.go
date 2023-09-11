@@ -2,6 +2,7 @@ package sqlz //nolint:testpackage
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"reflect"
@@ -13,14 +14,69 @@ import (
 
 func Test_ScanRows(t *testing.T) {
 	t.Parallel()
-	t.Run("success,reflect.Slice", func(t *testing.T) {
+	t.Run("success,intSlice", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
+		var userIDs []int
+		i := 0
+		rows := &sqlRowsMock{
+			NextFunc: func() bool { i++; return i < 101 },
+			ScanFunc: func(dest ...interface{}) error {
+				reflect.ValueOf(dest[0]).Elem().SetInt(int64(i))
+				return nil
+			},
 		}
-		var u []user
+		if err := ScanRows(rows, "testdb", &userIDs); err != nil {
+			t.Fatalf("❌: ScanRows: err != nil: %v", err)
+		}
+		if expect, actual := 100, len(userIDs); expect != actual {
+			t.Errorf("❌: len(userIDs): expect(%v) != actual(%v)", expect, actual)
+		}
+		if expect, actual := 1, userIDs[0]; expect != actual {
+			t.Errorf("❌: userIDs[0]: expect(%v) != actual(%v)", expect, actual)
+		}
+		if expect, actual := 100, userIDs[len(userIDs)-1]; expect != actual {
+			t.Errorf("❌: userIDs[0]: expect(%v) != actual(%v)", expect, actual)
+		}
+		if len(userIDs) > 0 {
+			t.Logf("✅: ScanRows: userIDs[0]: %v", userIDs[0])
+			t.Logf("✅: ScanRows: userIDs[len(userIDs)-1]: %v", userIDs[len(userIDs)-1])
+		} else {
+			t.Logf("✅: ScanRows: userIDs: %v", userIDs)
+		}
+	})
+	t.Run("success,intSlice", func(t *testing.T) {
+		t.Parallel()
+		var userIDs []*int
+		i := 0
+		rows := &sqlRowsMock{
+			NextFunc: func() bool { i++; return i < 101 },
+			ScanFunc: func(dest ...interface{}) error {
+				reflect.ValueOf(dest[0]).Elem().SetInt(int64(i))
+				return nil
+			},
+		}
+		if err := ScanRows(rows, "testdb", &userIDs); err != nil {
+			t.Fatalf("❌: ScanRows: err != nil: %v", err)
+		}
+		if expect, actual := 100, len(userIDs); expect != actual {
+			t.Errorf("❌: len(userIDs): expect(%v) != actual(%v)", expect, actual)
+		}
+		if expect, actual := 1, userIDs[0]; expect != *actual {
+			t.Errorf("❌: userIDs[0]: expect(%v) != actual(%v)", expect, actual)
+		}
+		if expect, actual := 100, userIDs[len(userIDs)-1]; expect != *actual {
+			t.Errorf("❌: userIDs[0]: expect(%v) != actual(%v)", expect, actual)
+		}
+		if len(userIDs) > 0 {
+			t.Logf("✅: ScanRows: userIDs[0]: %v", userIDs[0])
+			t.Logf("✅: ScanRows: userIDs[len(userIDs)-1]: %v", userIDs[len(userIDs)-1])
+		} else {
+			t.Logf("✅: ScanRows: userIDs: %v", userIDs)
+		}
+	})
+	t.Run("success,structSlice", func(t *testing.T) {
+		t.Parallel()
+		var u []testUser
 		i := 0
 		columns := []string{"user_id", "username", "null_string"}
 		rows := &sqlRowsMock{
@@ -63,14 +119,9 @@ func Test_ScanRows(t *testing.T) {
 			t.Logf("✅: ScanRows: u: %#v", u)
 		}
 	})
-	t.Run("success,reflect.Slice_pointer_slice", func(t *testing.T) {
+	t.Run("success,pointerSlice", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u []*user
+		var u []*testUser
 		i := 0
 		columns := []string{"user_id", "username", "null_string"}
 		rows := &sqlRowsMock{
@@ -99,14 +150,27 @@ func Test_ScanRows(t *testing.T) {
 		}
 		t.Logf("✅: ScanRows: %+v", u)
 	})
-	t.Run("success,reflect.Struct", func(t *testing.T) {
+	t.Run("success,int", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
+		var userID int
+		i := 0
+		rows := &sqlRowsMock{
+			NextFunc: func() bool { i++; return i < 2 },
+			ScanFunc: func(dest ...interface{}) error {
+				reflect.ValueOf(dest[0]).Elem().SetInt(int64(i))
+				return nil
+			},
 		}
-		var u user
+		if err := ScanRows(rows, "testdb", &userID); err != nil {
+			t.Fatalf("❌: ScanRows: err != nil: %v", err)
+		}
+		if expect, actual := 1, userID; expect != actual {
+			t.Errorf("❌: userID: expect(%v) != actual(%v)", expect, actual)
+		}
+	})
+	t.Run("success,struct", func(t *testing.T) {
+		t.Parallel()
+		var u testUser
 		i := 0
 		columns := []string{"user_id", "username", "null_string"}
 		rows := &sqlRowsMock{
@@ -133,16 +197,14 @@ func Test_ScanRows(t *testing.T) {
 		if err := ScanRows(rows, "testdb", &u); err != nil {
 			t.Fatalf("❌: ScanRows: err != nil: %v", err)
 		}
+		if expect, actual := 1, u.UserID; expect != actual {
+			t.Errorf("❌: u.UserID: expect(%v) != actual(%v)", expect, actual)
+		}
 		t.Logf("✅: ScanRows: %+v", u)
 	})
 	t.Run("failure,ErrMustBePointer", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var notPointer user
+		var notPointer testUser
 		i := 0
 		rows := &sqlRowsMock{
 			NextFunc: func() bool { i++; return i < 2 },
@@ -153,12 +215,7 @@ func Test_ScanRows(t *testing.T) {
 	})
 	t.Run("failure,ErrMustNotNil", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var nilPointer *user
+		var nilPointer *testUser
 		i := 0
 		rows := &sqlRowsMock{
 			NextFunc: func() bool { i++; return i < 2 },
@@ -167,14 +224,9 @@ func Test_ScanRows(t *testing.T) {
 			t.Fatalf("❌: ScanRows: expect(%v) != actual(%v)", ErrMustNotNil, err)
 		}
 	})
-	t.Run("failure,reflect.Slice,Scan", func(t *testing.T) {
+	t.Run("failure,pointerStructSlice,Scan", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u []*user
+		var u []*testUser
 		i := 0
 		columns := []string{"user_id", "username", "null_string"}
 		rows := &sqlRowsMock{
@@ -192,14 +244,9 @@ func Test_ScanRows(t *testing.T) {
 			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", sql.ErrConnDone, err)
 		}
 	})
-	t.Run("failure,reflect.Slice,Columns", func(t *testing.T) {
+	t.Run("failure,pointerStructSlice,Columns", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u []*user
+		var u []*testUser
 		i := 0
 		rows := &sqlRowsMock{
 			NextFunc:    func() bool { i++; return i < 2 },
@@ -209,23 +256,23 @@ func Test_ScanRows(t *testing.T) {
 			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", sql.ErrNoRows, err)
 		}
 	})
-	t.Run("failure,reflect.Slice_ErrDataTypeNotSupported", func(t *testing.T) {
+	t.Run("failure,intSlice", func(t *testing.T) {
 		t.Parallel()
-		var u []string
-		if err := ScanRows(&sqlRowsMock{
-			NextFunc: func() bool { return true },
-		}, "testdb", &u); !errors.Is(err, ErrDataTypeNotSupported) {
-			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", ErrDataTypeNotSupported, err)
+		var userIDs []int
+		i := 0
+		rows := &sqlRowsMock{
+			NextFunc: func() bool { i++; return i < 101 },
+			ScanFunc: func(dest ...interface{}) error {
+				return driver.ErrBadConn
+			},
+		}
+		if err := ScanRows(rows, "testdb", &userIDs); !errors.Is(err, driver.ErrBadConn) {
+			t.Fatalf("❌: ScanRows: expect(%v) != actual(%v)", driver.ErrBadConn, err)
 		}
 	})
-	t.Run("failure,reflect.Struct_Scan", func(t *testing.T) {
+	t.Run("failure,struct,Scan", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u user
+		var u testUser
 		i := 0
 		columns := []string{"user_id", "username", "null_string"}
 		rows := &sqlRowsMock{
@@ -239,14 +286,9 @@ func Test_ScanRows(t *testing.T) {
 			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", sql.ErrConnDone, err)
 		}
 	})
-	t.Run("failure,reflect.Struct_Scan", func(t *testing.T) {
+	t.Run("failure,struct,Columns", func(t *testing.T) {
 		t.Parallel()
-		type user struct {
-			UserID     int     `testdb:"user_id"`
-			Username   string  `testdb:"username"`
-			NullString *string `testdb:"null_string"`
-		}
-		var u user
+		var u testUser
 		i := 0
 		rows := &sqlRowsMock{
 			NextFunc:    func() bool { i++; return i < 2 },
@@ -256,9 +298,60 @@ func Test_ScanRows(t *testing.T) {
 			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", sql.ErrNoRows, err)
 		}
 	})
-	t.Run("failure,ErrDataTypeNotSupported", func(t *testing.T) {
+	t.Run("failure,int,rows.Err", func(t *testing.T) {
 		t.Parallel()
-		var user string
+		var userID int
+		if err := ScanRows(&sqlRowsMock{
+			NextFunc: func() bool { return false },
+			ErrFunc:  func() error { return driver.ErrBadConn },
+		}, "testdb", &userID); !errors.Is(err, driver.ErrBadConn) {
+			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", driver.ErrBadConn, err)
+		}
+	})
+	t.Run("failure,int,rows.Err", func(t *testing.T) {
+		t.Parallel()
+		var userID int
+		if err := ScanRows(&sqlRowsMock{
+			NextFunc: func() bool { return false },
+			ErrFunc:  func() error { return driver.ErrBadConn },
+		}, "testdb", &userID); !errors.Is(err, driver.ErrBadConn) {
+			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", driver.ErrBadConn, err)
+		}
+	})
+	t.Run("failure,int,sql.ErrNoRows", func(t *testing.T) {
+		t.Parallel()
+		var userID int
+		if err := ScanRows(&sqlRowsMock{
+			NextFunc: func() bool { return false },
+			ErrFunc:  func() error { return nil },
+		}, "testdb", &userID); !errors.Is(err, sql.ErrNoRows) {
+			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", sql.ErrNoRows, err)
+		}
+	})
+	t.Run("failure,int,Scan", func(t *testing.T) {
+		t.Parallel()
+		var userID int
+		if err := ScanRows(&sqlRowsMock{
+			NextFunc: func() bool { return true },
+			ScanFunc: func(dest ...interface{}) error {
+				return sql.ErrNoRows
+			},
+		}, "testdb", &userID); !errors.Is(err, sql.ErrNoRows) {
+			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", sql.ErrNoRows, err)
+		}
+	})
+	t.Run("failure,array,ErrDataTypeNotSupported", func(t *testing.T) {
+		t.Parallel()
+		var u [16]string
+		if err := ScanRows(&sqlRowsMock{
+			NextFunc: func() bool { return true },
+		}, "testdb", &u); !errors.Is(err, ErrDataTypeNotSupported) {
+			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", ErrDataTypeNotSupported, err)
+		}
+	})
+	t.Run("failure,slice,ErrDataTypeNotSupported", func(t *testing.T) {
+		t.Parallel()
+		var user [][]string
 		i := 0
 		rows := &sqlRowsMock{
 			NextFunc: func() bool { i++; return i < 2 },

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kunitsucom/util.go/cache"
+	"github.com/kunitsucom/util.go/exp/cache"
 )
 
 func TestStore_GetOrSet(t *testing.T) {

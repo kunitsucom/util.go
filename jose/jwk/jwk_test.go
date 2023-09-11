@@ -15,11 +15,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kunitsucom/util.go/cache"
 	x509z "github.com/kunitsucom/util.go/crypto/x509"
 	errorz "github.com/kunitsucom/util.go/errors"
 	"github.com/kunitsucom/util.go/jose/jwk"
 	"github.com/kunitsucom/util.go/must"
+	syncz "github.com/kunitsucom/util.go/sync"
 	testingz "github.com/kunitsucom/util.go/testing"
 )
 
@@ -360,7 +360,7 @@ func TestClient_GetJSONWebKey(t *testing.T) {
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 
-		c := jwk.NewClient(context.Background(), jwk.WithCacheStore(cache.NewStore[*jwk.JWKSet](context.Background())), jwk.WithHTTPClient(http.DefaultClient))
+		c := jwk.NewClient(context.Background(), jwk.WithCacheMap(syncz.NewMap[*jwk.JWKSet](context.Background())), jwk.WithHTTPClient(http.DefaultClient))
 		jwks1, err := c.GetJWKSet(context.Background(), jwksURI)
 		if err != nil {
 			t.Errorf("❌: err != nil: %v", err)

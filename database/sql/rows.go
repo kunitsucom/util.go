@@ -1,14 +1,22 @@
 package sqlz
 
 import (
+	"database/sql"
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 )
 
 // ScanRows scans rows to dst.
 //
+// structTag is used to get column names from struct tags.
+//
 // dst must be a pointer.
+// If dst is a pointer to a struct or a slice of struct, column names are got from structTag.
+// If dst is a pointer to a slice of primitive, ignore structTag.
+//
+//nolint:cyclop
 func ScanRows(rows sqlRows, structTag string, dst interface{}) error {
 	pointer := reflect.ValueOf(dst) // expect *Type or *[]Type or *[]*Type
 	if pointer.Kind() != reflect.Pointer {
@@ -25,6 +33,13 @@ func ScanRows(rows sqlRows, structTag string, dst interface{}) error {
 			return fmt.Errorf("scanRowsToSlice: type=%T: %w", dst, err)
 		}
 	case reflect.Struct:
+		// behaver like *sql.Row
+		if !rows.Next() {
+			if err := rows.Err(); err != nil {
+				return err //nolint:wrapcheck
+			}
+			return sql.ErrNoRows
+		}
 		columns, err := rows.Columns()
 		if err != nil {
 			return fmt.Errorf("rows.Columns: %w", err)
@@ -34,6 +49,22 @@ func ScanRows(rows sqlRows, structTag string, dst interface{}) error {
 		if err := scanRowsToStruct(rows, columns, dests, tags, deref); err != nil { // expect Type (or *Type)
 			return fmt.Errorf("scanRowsToStruct: type=%T: %w", dst, err)
 		}
+	case reflect.Bool,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
+		reflect.Float32, reflect.Float64,
+		reflect.String: // primitives
+		// behaver like *sql.Row
+		if !rows.Next() {
+			if err := rows.Err(); err != nil {
+				return err //nolint:wrapcheck
+			}
+			return sql.ErrNoRows
+		}
+		if err := rows.Scan(dst); err != nil {
+			return fmt.Errorf("rows.Scan: %w", err)
+		}
+		return nil
 	default:
 		return fmt.Errorf("type=%T: %w", dst, ErrDataTypeNotSupported)
 	}
@@ -41,32 +72,60 @@ func ScanRows(rows sqlRows, structTag string, dst interface{}) error {
 }
 
 func scanRowsToSlice(rows sqlRows, structTag string, destStructSlice reflect.Value) error { // destStructSlice: []Type (or []*Type)
-	structType := destStructSlice.Type().Elem() // Type (or *Type) <- []Type (or []*Type)
-	var sliceContentIsPointer bool
-	if structType.Kind() == reflect.Pointer {
-		sliceContentIsPointer = true
-		structType = structType.Elem() // Type <- *Type
+	elementType := destStructSlice.Type().Elem() // Type (or *Type) <- []Type (or []*Type)
+	var elementIsPointer bool
+	if elementType.Kind() == reflect.Pointer {
+		elementIsPointer = true
+		elementType = elementType.Elem() // Type <- *Type
 	}
 
-	if structType.Kind() != reflect.Struct {
+	switch elementType.Kind() { //nolint:exhaustive
+	case reflect.Struct:
+		if err := scanRowsToStructSlice(rows, structTag, elementType, elementIsPointer, destStructSlice); err != nil { // expect []Type (or []*Type)
+			return fmt.Errorf("scanRowsToStructSlice: %w", err)
+		}
+	case reflect.Bool,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
+		reflect.Float32, reflect.Float64,
+		reflect.String: // primitives
+		slice, put := getReflectValueSlice()
+		defer put()
+		for rows.Next() {
+			v := reflect.Indirect(reflect.New(elementType))
+			if err := rows.Scan(v.Addr().Interface()); err != nil {
+				return fmt.Errorf("rows.Scan: %w", err)
+			}
+			if elementIsPointer {
+				slice.Slice = append(slice.Slice, v.Addr())
+			} else {
+				slice.Slice = append(slice.Slice, v)
+			}
+		}
+		destStructSlice.Set(reflect.Append(destStructSlice, slice.Slice...))
+		return nil
+	default:
 		// TODO: support other types
-		return fmt.Errorf("elem=%s, expected=%s: %w", structType.Kind(), reflect.Struct, ErrDataTypeNotSupported)
+		return fmt.Errorf("elem=%s, expected=%s: %w", elementType.Kind(), reflect.Struct, ErrDataTypeNotSupported)
 	}
+	return nil
+}
 
+func scanRowsToStructSlice(rows sqlRows, structTag string, elementType reflect.Type, elementIsPointer bool, destStructSlice reflect.Value) error { // destStructSlice: []Type (or []*Type)
 	columns, err := rows.Columns()
 	if err != nil {
 		return fmt.Errorf("rows.Columns: %w", err)
 	}
 	dests := make([]interface{}, len(columns))
-	tags := getStructTags(structType, structTag)
+	tags := getStructTags(elementType, structTag)
 	slice, put := getReflectValueSlice()
 	defer put()
 	for rows.Next() {
-		v := reflect.Indirect(reflect.New(structType))
+		v := reflect.Indirect(reflect.New(elementType))
 		if err := scanRowsToStruct(rows, columns, dests, tags, v); err != nil {
 			return fmt.Errorf("scanRowsToStruct: %w", err)
 		}
-		if sliceContentIsPointer {
+		if elementIsPointer {
 			slice.Slice = append(slice.Slice, v.Addr())
 		} else {
 			slice.Slice = append(slice.Slice, v)
@@ -94,18 +153,21 @@ func scanRowsToStruct(rows sqlRows, columns []string, dests []interface{}, tags 
 }
 
 //nolint:gochecknoglobals
-var tagsMap sync.Map
+var (
+	tagsCache sync.Map
+)
 
-func getStructTags(t reflect.Type, structTag string) []string {
-	if tags, ok := tagsMap.Load(t); ok {
+func getStructTags(structType reflect.Type, structTag string) []string {
+	if tags, ok := tagsCache.Load(structType); ok {
 		return tags.([]string) //nolint:forcetypeassert
 	}
 
-	tags := make([]string, t.NumField())
-	for i := 0; t.NumField() > i; i++ {
-		tags[i] = t.Field(i).Tag.Get(structTag)
+	tags := make([]string, structType.NumField())
+	for i := 0; structType.NumField() > i; i++ {
+		rawTag := structType.Field(i).Tag.Get(structTag)
+		tags[i] = strings.Split(rawTag, ",")[0]
 	}
-	tagsMap.Store(t, tags)
+	tagsCache.Store(structType, tags)
 	return tags
 }
 

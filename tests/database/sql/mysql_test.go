@@ -127,13 +127,19 @@ VALUES
 	(100, 'test_user_100', 'hello', NULL)
 	;
 `
-	MySQLSelectTestUser = `
+	MySQLSelectAllFromTestUser = `
 SELECT * FROM test_user
 `
-	MySQLSelectTestUserWhereIDEq1 = `
+	MySQLSelectAllFromTestUserWhereIDEq1 = `
 SELECT * FROM test_user WHERE id = 1
 `
-	MySQLSelectTestUserWhereIDEq999999 = `
+	MySQLSelectIDFromTestUser = `
+SELECT id FROM test_user
+`
+	MySQLSelectIDFromTestUserWhereIDEq1 = `
+SELECT id FROM test_user WHERE id = 1
+`
+	MySQLSelectAllFromTestUserWhereIDEq999999 = `
 SELECT * FROM test_user WHERE id = 999999
 `
 )
@@ -176,7 +182,7 @@ func TestQuery(t *testing.T) {
 	t.Run("success,QueryContext,slice", func(t *testing.T) {
 		t.Parallel()
 		var testUsers []TestUser
-		if err := dbz.QueryContext(ctx, &testUsers, MySQLSelectTestUser); err != nil {
+		if err := dbz.QueryContext(ctx, &testUsers, MySQLSelectAllFromTestUser); err != nil {
 			t.Fatalf("❌: dbz.QueryContext: %v", err)
 		}
 		if expect, actual := 1, testUsers[0].ID; expect != actual {
@@ -185,15 +191,15 @@ func TestQuery(t *testing.T) {
 		if expect, actual := 2, testUsers[1].ID; expect != actual {
 			t.Errorf("❌: testUsers[1].ID: expect(%v) != actual(%v)", expect, actual)
 		}
-		t.Logf("✅: testUsers[0]: %#v", testUsers[0])
-		t.Logf("✅: testUsers[1]: %#v", testUsers[1])
-		t.Logf("✅: testUsers[len(testUsers)-1]: %#v", testUsers[len(testUsers)-1])
+		t.Logf("\n✅: %s: testUsers[0]: %#v", t.Name(), testUsers[0])
+		t.Logf("\n✅: %s: testUsers[1]: %#v", t.Name(), testUsers[1])
+		t.Logf("\n✅: %s: testUsers[len(testUsers)-1]: %#v", t.Name(), testUsers[len(testUsers)-1])
 	})
 
 	t.Run("success,QueryContext,pointerSlice", func(t *testing.T) {
 		t.Parallel()
 		var testPointerUsers []*TestUser
-		if err := dbz.QueryContext(ctx, &testPointerUsers, MySQLSelectTestUser); err != nil {
+		if err := dbz.QueryContext(ctx, &testPointerUsers, MySQLSelectAllFromTestUser); err != nil {
 			t.Fatalf("❌: dbz.QueryContext: %v", err)
 		}
 		if expect, actual := 1, testPointerUsers[0].ID; expect != actual {
@@ -202,16 +208,56 @@ func TestQuery(t *testing.T) {
 		if expect, actual := 2, testPointerUsers[1].ID; expect != actual {
 			t.Errorf("❌: testPointerUsers[1].ID: expect(%v) != actual(%v)", expect, actual)
 		}
-		t.Logf("✅: testPointerUsers[0]: %#v", testPointerUsers[0])
-		t.Logf("✅: testPointerUsers[1]: %#v", testPointerUsers[1])
-		t.Logf("✅: testPointerUsers[len(testPointerUsers)-1]: %#v", testPointerUsers[len(testPointerUsers)-1])
+		t.Logf("\n✅: %s: testPointerUsers[0]: %#v", t.Name(), testPointerUsers[0])
+		t.Logf("\n✅: %s: testPointerUsers[1]: %#v", t.Name(), testPointerUsers[1])
+		t.Logf("\n✅: %s: testPointerUsers[len(testPointerUsers)-1]: %#v", t.Name(), testPointerUsers[len(testPointerUsers)-1])
+	})
+
+	t.Run("success,QueryContext,intSlice", func(t *testing.T) {
+		t.Parallel()
+		var testUserIDs []int
+		if err := dbz.QueryContext(ctx, &testUserIDs, MySQLSelectIDFromTestUser); err != nil {
+			t.Fatalf("❌: dbz.QueryContext: %v", err)
+		}
+		if expect, actual := 1, testUserIDs[0]; expect != actual {
+			t.Errorf("❌: testUserIDs[0]: expect(%v) != actual(%v)", expect, actual)
+		}
+		if expect, actual := 2, testUserIDs[1]; expect != actual {
+			t.Errorf("❌: testUserIDs[1]: expect(%v) != actual(%v)", expect, actual)
+		}
+		if expect, actual := 100, testUserIDs[len(testUserIDs)-1]; expect != actual {
+			t.Errorf("❌: testUserIDs[1]: expect(%v) != actual(%v)", expect, actual)
+		}
+		t.Logf("\n✅: %s: testUserIDs[0]: %#v", t.Name(), testUserIDs[0])
+		t.Logf("\n✅: %s: testUserIDs[1]: %#v", t.Name(), testUserIDs[1])
+		t.Logf("\n✅: %s: testUserIDs[len(testUserIDs)-1]: %#v", t.Name(), testUserIDs[len(testUserIDs)-1])
+	})
+
+	t.Run("success,QueryContext,intPointerSlice", func(t *testing.T) {
+		t.Parallel()
+		var testUserIDs []*int
+		if err := dbz.QueryContext(ctx, &testUserIDs, MySQLSelectIDFromTestUser); err != nil {
+			t.Fatalf("❌: dbz.QueryContext: %v", err)
+		}
+		if expect, actual := 1, testUserIDs[0]; expect != *actual {
+			t.Errorf("❌: testUserIDs[0]: expect(%v) != actual(%v)", expect, *actual)
+		}
+		if expect, actual := 2, testUserIDs[1]; expect != *actual {
+			t.Errorf("❌: testUserIDs[1]: expect(%v) != actual(%v)", expect, *actual)
+		}
+		if expect, actual := 100, testUserIDs[len(testUserIDs)-1]; expect != *actual {
+			t.Errorf("❌: testUserIDs[1]: expect(%v) != actual(%v)", expect, *actual)
+		}
+		t.Logf("\n✅: %s: testUserIDs[0]: %#v", t.Name(), *testUserIDs[0])
+		t.Logf("\n✅: %s: testUserIDs[1]: %#v", t.Name(), *testUserIDs[1])
+		t.Logf("\n✅: %s: testUserIDs[len(testUserIDs)-1]: %#v", t.Name(), *testUserIDs[len(testUserIDs)-1])
 	})
 
 	t.Run("failure,QueryContext", func(t *testing.T) {
 		t.Parallel()
 
 		var testUsers []TestUser
-		if err := dbz.QueryContext(ctx, &testUsers, MySQLSelectTestUserWhereIDEq999999); err != nil {
+		if err := dbz.QueryContext(ctx, &testUsers, MySQLSelectAllFromTestUserWhereIDEq999999); err != nil {
 			t.Fatalf("❌: dbz.QueryContext: %v", err)
 		}
 		if expect, actual := 0, len(testUsers); expect != actual {
@@ -219,7 +265,7 @@ func TestQuery(t *testing.T) {
 		}
 
 		var testPointerUsers []*TestUser
-		if err := dbz.QueryContext(ctx, &testPointerUsers, MySQLSelectTestUserWhereIDEq999999); err != nil {
+		if err := dbz.QueryContext(ctx, &testPointerUsers, MySQLSelectAllFromTestUserWhereIDEq999999); err != nil {
 			t.Fatalf("❌: dbz.QueryContext: %v", err)
 		}
 		if expect, actual := 0, len(testPointerUsers); expect != actual {
@@ -227,31 +273,43 @@ func TestQuery(t *testing.T) {
 		}
 	})
 
-	t.Run("success,QueryRowContext", func(t *testing.T) {
+	t.Run("success,QueryRowContext,reflect.Struct", func(t *testing.T) {
 		t.Parallel()
 		var testUser TestUser
-		if err := dbz.QueryRowContext(ctx, &testUser, MySQLSelectTestUserWhereIDEq1); err != nil {
+		if err := dbz.QueryRowContext(ctx, &testUser, MySQLSelectAllFromTestUserWhereIDEq1); err != nil {
 			t.Fatalf("❌: dbz.QueryContext: %v", err)
 		}
 		if expect, actual := 1, testUser.ID; expect != actual {
 			t.Errorf("❌: testUser.ID: expect(%v) != actual(%v)", expect, actual)
 		}
-		t.Logf("✅: testUser: %#v", testUser)
+		t.Logf("\n✅: %s: testUser: %#v", t.Name(), testUser)
 	})
 
-	t.Run("failure,QueryContext", func(t *testing.T) {
+	t.Run("success,QueryRowContext,reflect.Int", func(t *testing.T) {
+		t.Parallel()
+		var testUserID int
+		if err := dbz.QueryRowContext(ctx, &testUserID, MySQLSelectIDFromTestUserWhereIDEq1); err != nil {
+			t.Fatalf("❌: dbz.QueryContext: %v", err)
+		}
+		if expect, actual := 1, testUserID; expect != actual {
+			t.Errorf("❌: testUser.ID: expect(%v) != actual(%v)", expect, actual)
+		}
+		t.Logf("\n✅: %s: testUser: %#v", t.Name(), testUserID)
+	})
+
+	t.Run("failure,QueryRowContext", func(t *testing.T) {
 		t.Parallel()
 		var overflowTestUser TestUser
-		if err := dbz.QueryRowContext(ctx, &overflowTestUser, MySQLSelectTestUser); err != nil {
-			t.Fatalf("❌: dbz.QueryContext: %v", err)
+		if err := dbz.QueryRowContext(ctx, &overflowTestUser, MySQLSelectAllFromTestUser); err != nil {
+			t.Fatalf("❌: dbz.QueryRowContext: %v", err)
 		}
 		if expect, actual := 1, overflowTestUser.ID; expect != actual {
 			t.Errorf("❌: overflowTestUser.ID: expect(%v) != actual(%v)", expect, actual)
 		}
 
 		var notFoundTestUser TestUser
-		if expect, actual := sql.ErrNoRows, dbz.QueryRowContext(ctx, &notFoundTestUser, MySQLSelectTestUserWhereIDEq999999); !errors.Is(actual, expect) {
-			t.Errorf("❌: dbz.QueryContext: expect(%v) != actual(%v)", expect, actual)
+		if expect, actual := sql.ErrNoRows, dbz.QueryRowContext(ctx, &notFoundTestUser, MySQLSelectAllFromTestUserWhereIDEq999999); !errors.Is(actual, expect) {
+			t.Errorf("❌: dbz.QueryRowContext: expect(%v) != actual(%v)", expect, actual)
 		}
 	})
 }

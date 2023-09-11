@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/kunitsucom/util.go/cache"
 	slicez "github.com/kunitsucom/util.go/slices"
+	syncz "github.com/kunitsucom/util.go/sync"
 )
 
 const (
@@ -72,14 +72,14 @@ type (
 )
 
 type Client struct {
-	client     *http.Client
-	cacheStore *cache.Store[*ProviderMetadata]
+	client   *http.Client
+	cacheMap syncz.Map[*ProviderMetadata]
 }
 
 func New(ctx context.Context, opts ...ClientOption) *Client {
 	c := &Client{
-		client:     http.DefaultClient,
-		cacheStore: cache.NewStore(ctx, cache.WithDefaultTTL[*ProviderMetadata](10*time.Minute)),
+		client:   http.DefaultClient,
+		cacheMap: syncz.NewMap[*ProviderMetadata](ctx, syncz.WithNewMapOptionUseGoroutineCleaner(10*time.Minute)),
 	}
 
 	for _, opt := range opts {
@@ -97,40 +97,43 @@ func WithHTTPClient(client *http.Client) ClientOption {
 	}
 }
 
-func WithCacheStore(store *cache.Store[*ProviderMetadata]) ClientOption {
+func WithCacheMap(cacheMap syncz.Map[*ProviderMetadata]) ClientOption {
 	return func(d *Client) {
-		d.cacheStore = store
+		d.cacheMap = cacheMap
 	}
 }
 
 var ErrResponseIsNotCacheable = errors.New("discovery: response is not cacheable")
 
 func (d *Client) GetProviderMetadata(ctx context.Context, providerMetadataURL ProviderMetadataURL) (*ProviderMetadata, error) {
-	return d.cacheStore.GetOrSet(providerMetadataURL, func() (*ProviderMetadata, error) { //nolint:wrapcheck
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, providerMetadataURL, nil)
-		if err != nil {
-			return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
-		}
+	if cached, ok := d.cacheMap.Load(providerMetadataURL); ok {
+		return cached, nil
+	}
 
-		resp, err := d.client.Do(req)
-		if err != nil {
-			return nil, fmt.Errorf("(*http.Client).Do: %w", err)
-		}
-		defer resp.Body.Close()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, providerMetadataURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
+	}
 
-		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
-			body, _ := io.ReadAll(resp.Body)
-			bodyCutOff := slicez.CutOff(body, 100)
-			return nil, fmt.Errorf("code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
-		}
+	resp, err := d.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("(*http.Client).Do: %w", err)
+	}
+	defer resp.Body.Close()
 
-		r := new(ProviderMetadata)
-		if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
-			return nil, fmt.Errorf("(*json.Decoder).Decode(*discovery.JWKSet): %w", err)
-		}
+	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
+		body, _ := io.ReadAll(resp.Body)
+		bodyCutOff := slicez.CutOff(body, 100)
+		return nil, fmt.Errorf("code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
+	}
 
-		return r, nil
-	})
+	r := new(ProviderMetadata)
+	if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
+		return nil, fmt.Errorf("(*json.Decoder).Decode(*discovery.JWKSet): %w", err)
+	}
+
+	d.cacheMap.Store(providerMetadataURL, r)
+	return r, nil
 }
 
 //nolint:gochecknoglobals
