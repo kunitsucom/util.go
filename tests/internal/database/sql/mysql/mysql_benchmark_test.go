@@ -1,4 +1,4 @@
-package sql_test
+package mysql_test
 
 import (
 	"context"
@@ -9,12 +9,13 @@ import (
 
 	sqlz "github.com/kunitsucom/util.go/database/sql"
 	errorz "github.com/kunitsucom/util.go/errors"
-	"github.com/kunitsucom/util.go/tests/database/sql/mysql"
+	sqltest "github.com/kunitsucom/util.go/tests/internal/database/sql"
+	"github.com/kunitsucom/util.go/tests/internal/database/sql/mysql"
 )
 
 func BenchmarkQueryerContext_QueryContext(b *testing.B) {
 	ctx := context.Background()
-	dsn, cleanup, err := mysql.NewTestDBv8_1(ctx)
+	dsn, cleanup, err := mysql.NewTestDB(ctx)
 	if err != nil {
 		b.Fatalf("❌: mysql.NewTestDBv8_1: %v", err)
 	}
@@ -28,7 +29,7 @@ func BenchmarkQueryerContext_QueryContext(b *testing.B) {
 	if err != nil {
 		b.Fatalf("❌: sqlz.OpenContext: %v", err)
 	}
-	if err := InitTestDB(ctx, db); err != nil {
+	if err := InitTestDBMySQL(ctx, db); err != nil {
 		b.Fatalf("❌: InitTestDB: %v", err)
 	}
 
@@ -37,7 +38,7 @@ func BenchmarkQueryerContext_QueryContext(b *testing.B) {
 	b.Run("sqlx", func(b *testing.B) {
 		b.Logf("🚀: %s: %q", b.Name(), MySQLSelectAllFromTestUser)
 		b.ResetTimer()
-		var u []*TestUser
+		var u []*sqltest.TestUser
 		for i := 0; b.N > i; i++ {
 			if err := dbx.SelectContext(ctx, &u, MySQLSelectAllFromTestUser); err != nil {
 				b.Fatalf("❌: %s: dbx.SelectContext: %v", b.Name(), err)
@@ -50,7 +51,7 @@ func BenchmarkQueryerContext_QueryContext(b *testing.B) {
 	b.Run("sqlz", func(b *testing.B) {
 		b.Logf("🚀: %s: %q", b.Name(), MySQLSelectAllFromTestUser)
 		b.ResetTimer()
-		var u []*TestUser
+		var u []*sqltest.TestUser
 		for i := 0; b.N > i; i++ {
 			if err := dbz.QueryContext(ctx, &u, MySQLSelectAllFromTestUser); err != nil {
 				b.Fatalf("❌: %s: dbz.QueryContext: %v", b.Name(), err)

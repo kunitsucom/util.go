@@ -43,7 +43,7 @@ var (
 	once      syncz.Once
 )
 
-func NewTestDBv8_1(ctx context.Context) (dsn string, cleanup func(ctx context.Context) error, err error) {
+func NewTestDB(ctx context.Context) (dsn string, cleanup func(ctx context.Context) error, err error) {
 	return newTestDB(ctx, "8.1")
 }
 
@@ -108,6 +108,7 @@ func newTestDB(ctx context.Context, imageTag string) (dsn string, cleanup func(c
 				log.Print(err)
 				return err
 			}
+			defer db.Close()
 
 			if err := db.PingContext(ctx); err != nil {
 				err = errorz.Errorf("dockertestPool.Retry: db.Ping: %w", err)

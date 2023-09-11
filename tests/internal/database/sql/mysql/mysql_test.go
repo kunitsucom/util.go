@@ -1,4 +1,4 @@
-package sql_test
+package mysql_test
 
 import (
 	"context"
@@ -9,7 +9,8 @@ import (
 
 	sqlz "github.com/kunitsucom/util.go/database/sql"
 	errorz "github.com/kunitsucom/util.go/errors"
-	"github.com/kunitsucom/util.go/tests/database/sql/mysql"
+	sqltest "github.com/kunitsucom/util.go/tests/internal/database/sql"
+	"github.com/kunitsucom/util.go/tests/internal/database/sql/mysql"
 )
 
 const (
@@ -128,13 +129,13 @@ VALUES
 	;
 `
 	MySQLSelectAllFromTestUser = `
-SELECT * FROM test_user
+SELECT * FROM test_user ORDER BY id
 `
 	MySQLSelectAllFromTestUserWhereIDEq1 = `
 SELECT * FROM test_user WHERE id = 1
 `
 	MySQLSelectIDFromTestUser = `
-SELECT id FROM test_user
+SELECT id FROM test_user ORDER BY id
 `
 	MySQLSelectIDFromTestUserWhereIDEq1 = `
 SELECT id FROM test_user WHERE id = 1
@@ -144,7 +145,7 @@ SELECT * FROM test_user WHERE id = 999999
 `
 )
 
-func InitTestDB(ctx context.Context, db *sql.DB) (err error) {
+func InitTestDBMySQL(ctx context.Context, db *sql.DB) (err error) {
 	if _, err := db.ExecContext(ctx, MySQLCreateTableTestUser); err != nil {
 		return errorz.Errorf("db.Exec: q=%q: %w", MySQLCreateTableTestUser, err)
 	}
@@ -155,11 +156,11 @@ func InitTestDB(ctx context.Context, db *sql.DB) (err error) {
 	return nil
 }
 
-func TestQuery(t *testing.T) {
+func TestQuery_MySQL(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	dsn, cleanup, err := mysql.NewTestDBv8_1(ctx)
+	dsn, cleanup, err := mysql.NewTestDB(ctx)
 	if err != nil {
 		t.Fatalf("❌: mysql.NewTestDBv8_1: %v", err)
 	}
@@ -173,7 +174,7 @@ func TestQuery(t *testing.T) {
 	if err != nil {
 		t.Fatalf("❌: sqlz.OpenContext: %v", err)
 	}
-	if err := InitTestDB(ctx, db); err != nil {
+	if err := InitTestDBMySQL(ctx, db); err != nil {
 		t.Fatalf("❌: InitTestDB: %v", err)
 	}
 
@@ -181,7 +182,7 @@ func TestQuery(t *testing.T) {
 
 	t.Run("success,QueryContext,slice", func(t *testing.T) {
 		t.Parallel()
-		var testUsers []TestUser
+		var testUsers []sqltest.TestUser
 		if err := dbz.QueryContext(ctx, &testUsers, MySQLSelectAllFromTestUser); err != nil {
 			t.Fatalf("❌: dbz.QueryContext: %v", err)
 		}
@@ -198,7 +199,7 @@ func TestQuery(t *testing.T) {
 
 	t.Run("success,QueryContext,pointerSlice", func(t *testing.T) {
 		t.Parallel()
-		var testPointerUsers []*TestUser
+		var testPointerUsers []*sqltest.TestUser
 		if err := dbz.QueryContext(ctx, &testPointerUsers, MySQLSelectAllFromTestUser); err != nil {
 			t.Fatalf("❌: dbz.QueryContext: %v", err)
 		}
@@ -231,6 +232,7 @@ func TestQuery(t *testing.T) {
 		t.Logf("\n✅: %s: testUserIDs[0]: %#v", t.Name(), testUserIDs[0])
 		t.Logf("\n✅: %s: testUserIDs[1]: %#v", t.Name(), testUserIDs[1])
 		t.Logf("\n✅: %s: testUserIDs[len(testUserIDs)-1]: %#v", t.Name(), testUserIDs[len(testUserIDs)-1])
+		t.Logf("\n🪲: %s: testUserIDs: %#v", t.Name(), testUserIDs)
 	})
 
 	t.Run("success,QueryContext,intPointerSlice", func(t *testing.T) {
@@ -256,7 +258,7 @@ func TestQuery(t *testing.T) {
 	t.Run("failure,QueryContext", func(t *testing.T) {
 		t.Parallel()
 
-		var testUsers []TestUser
+		var testUsers []sqltest.TestUser
 		if err := dbz.QueryContext(ctx, &testUsers, MySQLSelectAllFromTestUserWhereIDEq999999); err != nil {
 			t.Fatalf("❌: dbz.QueryContext: %v", err)
 		}
@@ -264,7 +266,7 @@ func TestQuery(t *testing.T) {
 			t.Errorf("❌: len(testUsers): expect(%v) != actual(%v)", expect, actual)
 		}
 
-		var testPointerUsers []*TestUser
+		var testPointerUsers []*sqltest.TestUser
 		if err := dbz.QueryContext(ctx, &testPointerUsers, MySQLSelectAllFromTestUserWhereIDEq999999); err != nil {
 			t.Fatalf("❌: dbz.QueryContext: %v", err)
 		}
@@ -275,7 +277,7 @@ func TestQuery(t *testing.T) {
 
 	t.Run("success,QueryRowContext,reflect.Struct", func(t *testing.T) {
 		t.Parallel()
-		var testUser TestUser
+		var testUser sqltest.TestUser
 		if err := dbz.QueryRowContext(ctx, &testUser, MySQLSelectAllFromTestUserWhereIDEq1); err != nil {
 			t.Fatalf("❌: dbz.QueryContext: %v", err)
 		}
@@ -299,7 +301,7 @@ func TestQuery(t *testing.T) {
 
 	t.Run("failure,QueryRowContext", func(t *testing.T) {
 		t.Parallel()
-		var overflowTestUser TestUser
+		var overflowTestUser sqltest.TestUser
 		if err := dbz.QueryRowContext(ctx, &overflowTestUser, MySQLSelectAllFromTestUser); err != nil {
 			t.Fatalf("❌: dbz.QueryRowContext: %v", err)
 		}
@@ -307,7 +309,7 @@ func TestQuery(t *testing.T) {
 			t.Errorf("❌: overflowTestUser.ID: expect(%v) != actual(%v)", expect, actual)
 		}
 
-		var notFoundTestUser TestUser
+		var notFoundTestUser sqltest.TestUser
 		if expect, actual := sql.ErrNoRows, dbz.QueryRowContext(ctx, &notFoundTestUser, MySQLSelectAllFromTestUserWhereIDEq999999); !errors.Is(actual, expect) {
 			t.Errorf("❌: dbz.QueryRowContext: expect(%v) != actual(%v)", expect, actual)
 		}
