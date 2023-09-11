@@ -23,7 +23,7 @@ const (
 
 type statusError struct {
 	error
-	*status.Status
+	s      *status.Status
 	level  Level
 	logger Logger
 }
@@ -44,14 +44,14 @@ func WithLogger(handler Logger) ErrorOption { //nolint:ireturn
 }
 
 func (o *newOptionDetails) apply(e *statusError) {
-	statusWithDetails, err := e.WithDetails(o.details...)
+	statusWithDetails, err := e.s.WithDetails(o.details...)
 	if err != nil {
-		err = errorz.NewErrorf(errorz.WithCallerSkip(2))("e.WithDetails: details=%v: %w", o.details, err)
+		err = errorz.NewErrorf(errorz.WithCallerSkip(2))("e.s.WithDetails: details=%v: %w", o.details, err)
 		e.logger(context.Background(), ErrorLevel, status.New(codes.Unknown, "WithDetails failed"), err)
 		return
 	}
 
-	e.Status = statusWithDetails
+	e.s = statusWithDetails
 }
 
 func WithDetails(details ...protoiface.MessageV1) ErrorOption { //nolint:ireturn
@@ -70,13 +70,17 @@ var (
 func New(ctx context.Context, level Level, code codes.Code, msg string, err error, opts ...ErrorOption) error {
 	e := &statusError{
 		error:  errorf("errgrpc.New: level=%s code=%s message=%s: %w", level, code, msg, err),
-		Status: status.New(code, msg),
+		s:      status.New(code, msg),
 		level:  level,
 		logger: DefaultLogger,
 	}
 	for _, opt := range opts {
 		opt.apply(e)
 	}
-	e.logger(ctx, e.level, e.Status, err)
+	e.logger(ctx, e.level, e.s, err)
 	return errorf("%s: %s", msg, err)
+}
+
+func (e *statusError) GRPCStatus() *status.Status {
+	return e.s
 }
