@@ -10,8 +10,6 @@ import (
 	syncz "github.com/kunitsucom/util.go/sync"
 )
 
-const defaultStructTag = "db"
-
 //nolint:gochecknoglobals
 var (
 	columnsCache = syncz.NewMap[[]string](context.Background())
