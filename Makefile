@@ -59,6 +59,8 @@ test: githooks ## Run go test and display coverage
 	@[ -x "${DOTLOCAL_DIR}/bin/godotnev" ] || GOBIN="${DOTLOCAL_DIR}/bin" go install github.com/joho/godotenv/cmd/godotenv@latest
 	# Unit testing
 	godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./... && go tool cover -func=./coverage.txt
+	# Unit testing (with external modules)
+	cd grpc && godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./... && go tool cover -func=./coverage.txt
 	# Integration testing
 	cd tests && godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./... && go tool cover -func=./coverage.txt
 

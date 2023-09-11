@@ -12,7 +12,7 @@ import (
 	databaseadminpb "cloud.google.com/go/spanner/admin/database/apiv1/databasepb"
 	instanceadmin "cloud.google.com/go/spanner/admin/instance/apiv1"
 	instanceadminpb "cloud.google.com/go/spanner/admin/instance/apiv1/instancepb"
-	spannerdriver "github.com/googleapis/go-sql-spanner"
+	_ "github.com/googleapis/go-sql-spanner" //nolint:revive
 	"github.com/ory/dockertest"
 	"github.com/ory/dockertest/docker"
 	"google.golang.org/grpc/codes"
@@ -22,8 +22,6 @@ import (
 	errorz "github.com/kunitsucom/util.go/errors"
 	syncz "github.com/kunitsucom/util.go/sync"
 )
-
-var _ spannerdriver.Driver
 
 //nolint:gosec,revive,stylecheck
 const (
