@@ -44,13 +44,16 @@ __main__() {
   LogshInfo "$(printf "targets: %s" "${targets:-none}")"
   if [ -n "${targets:-}" ]; then
     while read -r mod; do
-      mod_tag="${mod:?}/${latest_git_tag:?}"
-      if git tag --sort=v:refname | grep -qE "^${mod_tag:?}$"; then
-        LogshInfo "$(printf "tag already exists: %s" "${mod_tag:?}")"
+      go_module_tag="${mod:?}/${latest_git_tag:?}"
+      if git tag --sort=v:refname | grep -qE "^${go_module_tag:?}$"; then
+        # skip
+        LogshInfo "$(printf "tag already exists: %s" "${go_module_tag:?}")"
         continue
       fi
-      git tag -a "${mod_tag:?}" -m "${mod_tag:?}" "${latest_git_tag_commit:?}"
+      # add tag
+      LogshExec git tag -a "${go_module_tag:?}" -m "${go_module_tag:?}" "${latest_git_tag_commit:?}"
     done <<<"${targets:?}"
+
     git push --tags
   fi
 }
