@@ -15,8 +15,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/kunitsucom/util.go/cache"
 	slicez "github.com/kunitsucom/util.go/slices"
+	syncz "github.com/kunitsucom/util.go/sync"
 )
 
 var (
@@ -545,8 +545,8 @@ func (jwk *JSONWebKey) DecodePublicKey() (crypto.PublicKey, error) {
 // }
 
 type Client struct { //nolint:revive
-	client     *http.Client
-	cacheStore *cache.Store[*JWKSet]
+	client   *http.Client
+	cacheMap syncz.Map[*JWKSet]
 }
 
 func NewClient(ctx context.Context, opts ...ClientOption) *Client {
@@ -557,7 +557,7 @@ func NewClient(ctx context.Context, opts ...ClientOption) *Client {
 				return http.ErrUseLastResponse
 			},
 		},
-		cacheStore: cache.NewStore(ctx, cache.WithDefaultTTL[*JWKSet](10*time.Minute)),
+		cacheMap: syncz.NewMap[*JWKSet](ctx, syncz.WithNewMapOptionTTL(10*time.Minute)),
 	}
 
 	for _, opt := range opts {
@@ -575,38 +575,41 @@ func WithHTTPClient(client *http.Client) ClientOption {
 	}
 }
 
-func WithCacheStore(store *cache.Store[*JWKSet]) ClientOption {
+func WithCacheMap(cacheMap syncz.Map[*JWKSet]) ClientOption {
 	return func(d *Client) {
-		d.cacheStore = store
+		d.cacheMap = cacheMap
 	}
 }
 
 func (d *Client) GetJWKSet(ctx context.Context, jwksURL JWKSetURL) (*JWKSet, error) {
-	return d.cacheStore.GetOrSet(jwksURL, func() (*JWKSet, error) { //nolint:wrapcheck
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, jwksURL, nil)
-		if err != nil {
-			return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
-		}
+	if jwks, ok := d.cacheMap.Load(jwksURL); ok {
+		return jwks, nil
+	}
 
-		resp, err := d.client.Do(req)
-		if err != nil {
-			return nil, fmt.Errorf("(*http.Client).Do: %w", err)
-		}
-		defer resp.Body.Close()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, jwksURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("http.NewRequestWithContext: %w", err)
+	}
 
-		if resp.StatusCode < 200 || 300 <= resp.StatusCode {
-			body, _ := io.ReadAll(resp.Body)
-			bodyCutOff := slicez.CutOff(body, 100)
-			return nil, fmt.Errorf("code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
-		}
+	resp, err := d.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("(*http.Client).Do: %w", err)
+	}
+	defer resp.Body.Close()
 
-		r := new(JWKSet)
-		if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
-			return nil, fmt.Errorf("(*json.Decoder).Decode(*discovery.JWKSet): %w", err)
-		}
+	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
+		body, _ := io.ReadAll(resp.Body)
+		bodyCutOff := slicez.CutOff(body, 100)
+		return nil, fmt.Errorf("code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
+	}
 
-		return r, nil
-	})
+	r := new(JWKSet)
+	if err := json.NewDecoder(resp.Body).Decode(r); err != nil {
+		return nil, fmt.Errorf("(*json.Decoder).Decode(*discovery.JWKSet): %w", err)
+	}
+
+	d.cacheMap.Store(jwksURL, r)
+	return r, nil
 }
 
 //nolint:gochecknoglobals
