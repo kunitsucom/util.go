@@ -176,7 +176,7 @@ loop:
 			e.Format(s, verb)
 			break loop
 		default:
-			fmt.Fprint(s, e)
+			fmt.Fprintf(s, fmt.FormatString(s, verb), e)
 			break loop
 		}
 		if err == nil {

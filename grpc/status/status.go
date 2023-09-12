@@ -23,7 +23,7 @@ const (
 
 type statusError struct {
 	error
-	*status.Status
+	s      *status.Status
 	level  Level
 	logger Logger
 }
@@ -44,14 +44,14 @@ func WithLogger(handler Logger) ErrorOption { //nolint:ireturn
 }
 
 func (o *newOptionDetails) apply(e *statusError) {
-	statusWithDetails, err := e.WithDetails(o.details...)
+	statusWithDetails, err := e.s.WithDetails(o.details...)
 	if err != nil {
-		err = errorz.NewErrorf(errorz.WithCallerSkip(2))("e.WithDetails: details=%v: %w", o.details, err)
+		err = errorz.NewErrorf(errorz.WithCallerSkip(2))("e.s.WithDetails: details=%v: %w", o.details, err)
 		e.logger(context.Background(), ErrorLevel, status.New(codes.Unknown, "WithDetails failed"), err)
 		return
 	}
 
-	e.Status = statusWithDetails
+	e.s = statusWithDetails
 }
 
 func WithDetails(details ...protoiface.MessageV1) ErrorOption { //nolint:ireturn
@@ -64,19 +64,33 @@ var (
 	DefaultLogger Logger = func(_ context.Context, level Level, stat *status.Status, err error) {
 		log.Printf("level=%s code=%s message=%q details=%s error=%q stacktrace=%q", level, stat.Code(), stat.Message(), stat.Details(), fmt.Sprintf("%v", err), fmt.Sprintf("%+v", err))
 	}
-	errorf = errorz.NewErrorf(errorz.WithCallerSkip(1))
+	_      interface{ GRPCStatus() *status.Status } = (*statusError)(nil)
+	errorf                                          = errorz.NewErrorf(errorz.WithCallerSkip(1))
 )
 
 func New(ctx context.Context, level Level, code codes.Code, msg string, err error, opts ...ErrorOption) error {
 	e := &statusError{
 		error:  errorf("errgrpc.New: level=%s code=%s message=%s: %w", level, code, msg, err),
-		Status: status.New(code, msg),
+		s:      status.New(code, msg),
 		level:  level,
 		logger: DefaultLogger,
 	}
 	for _, opt := range opts {
 		opt.apply(e)
 	}
-	e.logger(ctx, e.level, e.Status, err)
-	return errorf("%s: %s", msg, err)
+	e.logger(ctx, e.level, e.s, err)
+	return e
+}
+
+func (e *statusError) Format(s fmt.State, verb rune) {
+	if formatter, ok := e.error.(fmt.Formatter); ok { //nolint:errorlint
+		formatter.Format(s, verb)
+		return
+	}
+
+	_, _ = fmt.Fprintf(s, fmt.FormatString(s, verb), e.error)
+}
+
+func (e *statusError) GRPCStatus() *status.Status {
+	return e.s
 }

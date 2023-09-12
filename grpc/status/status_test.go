@@ -1,15 +1,16 @@
-package statz_test
+package statz
 
 import (
 	"context"
+	"errors"
 	"io"
 	"testing"
 
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	errorz "github.com/kunitsucom/util.go/errors"
-	statz "github.com/kunitsucom/util.go/grpc/status"
 )
 
 func TestNew(t *testing.T) {
@@ -20,9 +21,21 @@ func TestNew(t *testing.T) {
 
 		ctx := context.Background()
 		before := errorz.Errorf("err: %w", io.ErrUnexpectedEOF)
-		err := statz.New(ctx, statz.ErrorLevel, codes.Internal, "my error message", before, statz.WithDetails(&errdetails.DebugInfo{StackEntries: []string{"stack1", "stack2"}}), statz.WithDetails(nil), statz.WithLogger(statz.DefaultLogger))
+		err := New(ctx, ErrorLevel, codes.Internal, "my error message", before, WithDetails(&errdetails.DebugInfo{StackEntries: []string{"stack1", "stack2"}}), WithDetails(nil), WithLogger(DefaultLogger))
 		t.Logf("🪲: [%%v]:\n%v", err)
 		t.Logf("🪲: [%%+v]:\n%+v", err)
-		_ = statz.New(ctx, statz.ErrorLevel, codes.Internal, "my error message", before, statz.WithLogger(statz.DiscardLogger))
+
+		var e *statusError
+		if !errors.As(err, &e) {
+			t.Errorf("❌: something wrong")
+		}
+		e.error = io.ErrUnexpectedEOF
+		t.Logf("🪲: [%%v]:\n%v", e)
+
+		s, ok := New(ctx, ErrorLevel, codes.Internal, "my error message", io.ErrUnexpectedEOF, WithLogger(DiscardLogger)).(interface{ GRPCStatus() *status.Status }) //nolint:errorlint
+		if !ok {
+			t.Errorf("❌: New: not implement interface{ GRPCStatus() *status.Status }")
+		}
+		t.Logf("🪲: [%%v]:\n%v", s.GRPCStatus())
 	})
 }
