@@ -64,7 +64,8 @@ var (
 	DefaultLogger Logger = func(_ context.Context, level Level, stat *status.Status, err error) {
 		log.Printf("level=%s code=%s message=%q details=%s error=%q stacktrace=%q", level, stat.Code(), stat.Message(), stat.Details(), fmt.Sprintf("%v", err), fmt.Sprintf("%+v", err))
 	}
-	errorf = errorz.NewErrorf(errorz.WithCallerSkip(1))
+	_      interface{ GRPCStatus() *status.Status } = (*statusError)(nil)
+	errorf                                          = errorz.NewErrorf(errorz.WithCallerSkip(1))
 )
 
 func New(ctx context.Context, level Level, code codes.Code, msg string, err error, opts ...ErrorOption) error {
@@ -78,7 +79,16 @@ func New(ctx context.Context, level Level, code codes.Code, msg string, err erro
 		opt.apply(e)
 	}
 	e.logger(ctx, e.level, e.s, err)
-	return errorf("%s: %s", msg, err)
+	return e
+}
+
+func (e *statusError) Format(s fmt.State, verb rune) {
+	if formatter, ok := e.error.(fmt.Formatter); ok { //nolint:errorlint
+		formatter.Format(s, verb)
+		return
+	}
+
+	_, _ = fmt.Fprintf(s, fmt.FormatString(s, verb), e.error)
 }
 
 func (e *statusError) GRPCStatus() *status.Status {
