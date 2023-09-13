@@ -124,7 +124,8 @@ var (
 
 type formatter interface {
 	error
-	formatError(s fmt.State, verb rune) (next error)
+	format(s fmt.State, verb rune)
+	Unwrap() error
 }
 
 func (e *wrapError) writeCallers(w io.Writer) {
@@ -169,14 +170,15 @@ func (e *wrapError) Format(s fmt.State, verb rune) {
 	var err error = e
 loop:
 	for {
-		switch e := err.(type) { //nolint:errorlint
+		switch fe := err.(type) { //nolint:errorlint
 		case formatter:
-			err = e.formatError(s, verb)
+			fe.format(s, verb)
+			err = fe.Unwrap()
 		case fmt.Formatter:
-			e.Format(s, verb)
+			fe.Format(s, verb)
 			break loop
 		default:
-			fmt.Fprintf(s, fmt.FormatString(s, verb), e)
+			_, _ = fmt.Fprintf(s, fmt.FormatString(s, verb), fe)
 			break loop
 		}
 		if err == nil {
@@ -185,7 +187,7 @@ loop:
 	}
 }
 
-func (e *wrapError) formatError(s fmt.State, verb rune) (next error) {
+func (e *wrapError) format(s fmt.State, verb rune) {
 	var withStacktrace bool
 Verb:
 	switch verb {
@@ -195,7 +197,7 @@ Verb:
 		switch {
 		case s.Flag('#'):
 			_, _ = io.WriteString(s, e.GoString())
-			return nil
+			return
 		case s.Flag('+'):
 			withStacktrace = true
 			break Verb
@@ -227,8 +229,6 @@ Verb:
 			//      ^^     ^^     ^^
 		}
 	}
-
-	return e.err
 }
 
 func (e *wrapError) GoString() string {
@@ -243,4 +243,18 @@ func (e *wrapError) GoString() string {
 
 func (e *wrapError) Unwrap() error {
 	return e.err
+}
+
+// FormatError is intended to be used as follows:
+//
+//	func (e *customError) Format(s fmt.State, verb rune) {
+//		errorz.FormatError(s, verb, e.Unwrap())
+//	}
+func FormatError(s fmt.State, verb rune, err error) {
+	if formatter, ok := err.(fmt.Formatter); ok { //nolint:errorlint
+		formatter.Format(s, verb)
+		return
+	}
+
+	_, _ = fmt.Fprintf(s, fmt.FormatString(s, verb), err)
 }
