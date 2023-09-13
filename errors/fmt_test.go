@@ -233,3 +233,41 @@ func Test_wrapError_writeCallers(t *testing.T) {
 		}
 	})
 }
+
+type testFormatter struct {
+	WriteFunc     func(b []byte) (n int, err error)
+	WidthFunc     func() (wid int, ok bool)
+	PrecisionFunc func() (prec int, ok bool)
+	FlagFunc      func(c int) bool
+}
+
+func (f *testFormatter) Write(b []byte) (n int, err error) { return f.WriteFunc(b) }
+func (f *testFormatter) Width() (wid int, ok bool)         { return f.WidthFunc() }
+func (f *testFormatter) Precision() (prec int, ok bool)    { return f.PrecisionFunc() }
+func (f *testFormatter) Flag(c int) bool                   { return f.FlagFunc(c) }
+
+func TestFormatError(t *testing.T) {
+	t.Parallel()
+	f := &testFormatter{
+		WriteFunc: func(b []byte) (n int, err error) {
+			return len(b), nil
+		},
+		WidthFunc: func() (wid int, ok bool) {
+			return 0, false
+		},
+		PrecisionFunc: func() (prec int, ok bool) {
+			return 0, false
+		},
+		FlagFunc: func(c int) bool {
+			return false
+		},
+	}
+	t.Run("success,fmt.Formatter", func(t *testing.T) {
+		t.Parallel()
+		FormatError(f, 'v', Errorf("Errorf: %w", io.ErrUnexpectedEOF))
+	})
+	t.Run("success,not", func(t *testing.T) {
+		t.Parallel()
+		FormatError(f, 'v', io.ErrUnexpectedEOF)
+	})
+}

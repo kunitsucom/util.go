@@ -70,7 +70,7 @@ var (
 
 func New(ctx context.Context, level Level, code codes.Code, msg string, err error, opts ...ErrorOption) error {
 	e := &statusError{
-		error:  errorf("errgrpc.New: level=%s code=%s message=%s: %w", level, code, msg, err),
+		error:  errorf("statz.New: level=%s code=%s message=%s: %w", level, code, msg, err),
 		s:      status.New(code, msg),
 		level:  level,
 		logger: DefaultLogger,
@@ -83,12 +83,11 @@ func New(ctx context.Context, level Level, code codes.Code, msg string, err erro
 }
 
 func (e *statusError) Format(s fmt.State, verb rune) {
-	if formatter, ok := e.error.(fmt.Formatter); ok { //nolint:errorlint
-		formatter.Format(s, verb)
-		return
-	}
+	errorz.FormatError(s, verb, e.Unwrap())
+}
 
-	_, _ = fmt.Fprintf(s, fmt.FormatString(s, verb), e.error)
+func (e *statusError) Unwrap() error {
+	return e.error
 }
 
 func (e *statusError) GRPCStatus() *status.Status {
