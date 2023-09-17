@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/kunitsucom/util.go/pointer"
+	genericz "github.com/kunitsucom/util.go/generics"
 	slicez "github.com/kunitsucom/util.go/slices"
 )
 
@@ -44,7 +44,7 @@ func Test_DB_queryContext(t *testing.T) {
 							case "username":
 								reflect.ValueOf(dest[dstIdx]).Elem().SetString(columns[colIdx] + "_" + fmt.Sprintf("%03d", i))
 							case "null_string":
-								reflect.ValueOf(dest[dstIdx]).Elem().Set(reflect.ValueOf(pointer.Pointer(columns[colIdx] + "_" + fmt.Sprintf("%03d", i))))
+								reflect.ValueOf(dest[dstIdx]).Elem().Set(reflect.ValueOf(genericz.Pointer(columns[colIdx] + "_" + fmt.Sprintf("%03d", i))))
 							}
 						}
 					}
@@ -105,7 +105,7 @@ func Test_DB_queryRowContext(t *testing.T) {
 							case "username":
 								reflect.ValueOf(dest[dstIdx]).Elem().SetString(columns[colIdx] + "_" + fmt.Sprintf("%03d", i))
 							case "null_string":
-								reflect.ValueOf(dest[dstIdx]).Elem().Set(reflect.ValueOf(pointer.Pointer(columns[colIdx] + "_" + fmt.Sprintf("%03d", i))))
+								reflect.ValueOf(dest[dstIdx]).Elem().Set(reflect.ValueOf(genericz.Pointer(columns[colIdx] + "_" + fmt.Sprintf("%03d", i))))
 							}
 						}
 					}

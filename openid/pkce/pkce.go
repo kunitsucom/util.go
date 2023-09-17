@@ -56,8 +56,8 @@ func createCodeVerifier(randReader io.Reader, length int) (CodeVerifier, error) 
 		return "", ErrCodeVerifierLength
 	}
 
-	r := randz.NewReader(randz.WithRandomSource(UnreservedCharacters), randz.WithRandomReader(randReader))
-	random, err := r.ReadString(length)
+	r := randz.NewReader(randz.WithNewReaderRandomSource(UnreservedCharacters), randz.WithNewReaderOptionRandomReader(randReader))
+	random, err := randz.ReadString(r, length)
 	if err != nil {
 		return "", fmt.Errorf("randz.GenerateRandomString: %w", err)
 	}
