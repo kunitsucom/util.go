@@ -2,6 +2,7 @@ package signalz
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/signal"
 )
@@ -14,7 +15,8 @@ func Notify(c chan os.Signal, sig ...os.Signal) chan os.Signal {
 
 type ContextSignalHandler func(signal os.Signal, stop context.CancelCauseFunc)
 
-func DefaultContextSignalHandler(_ os.Signal, stop context.CancelCauseFunc) {
+func DefaultContextSignalHandler(sig os.Signal, stop context.CancelCauseFunc) {
+	log.Printf("signal received: %s", sig)
 	stop(context.Canceled)
 }
 

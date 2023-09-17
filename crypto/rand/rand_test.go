@@ -29,8 +29,8 @@ var ExampleReader = bytes.NewBufferString("" +
 )
 
 func Example() {
-	r := randz.NewReader(randz.WithRandomReader(ExampleReader))
-	s, err := r.ReadString(128)
+	r := randz.NewReader(randz.WithNewReaderOptionRandomReader(ExampleReader))
+	s, err := randz.ReadString(r, 128)
 	if err != nil {
 		log.Printf("(*randz.Reader).ReadString: %v", err)
 		return
@@ -45,16 +45,16 @@ func TestCreateCodeVerifier(t *testing.T) {
 
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
-		actual, err := randz.ReadString(128)
+		actual, err := randz.ReadString(randz.StringReader, 128)
 		if err != nil {
 			t.Errorf("❌: err != nil: %v", err)
 		}
 		t.Logf("✅: cv=%s", actual)
 
-		backup := randz.DefaultReader
-		t.Cleanup(func() { randz.DefaultReader = backup })
-		randz.DefaultReader = bytes.NewBuffer(nil)
-		if _, err := randz.ReadString(128); err == nil {
+		backup := randz.StringReader
+		t.Cleanup(func() { randz.StringReader = backup })
+		randz.StringReader = bytes.NewBuffer(nil)
+		if _, err := randz.ReadString(randz.StringReader, 128); err == nil {
 			t.Errorf("❌: err == nil: %v", err)
 		}
 	})
@@ -62,10 +62,10 @@ func TestCreateCodeVerifier(t *testing.T) {
 	t.Run("success()", func(t *testing.T) {
 		t.Parallel()
 		const expect = "wxyz012345wxyz012345wxyz012345wxyz012345wxyz012345wxyz012345wxyz012345wxyz012345wxyz012345wxyz012345wxyz012345wxyz012345wxyz0123"
-		r := randz.NewReader(randz.WithRandomReader(bytes.NewBufferString(
+		r := randz.NewReader(randz.WithNewReaderOptionRandomReader(bytes.NewBufferString(
 			"01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567",
-		)), randz.WithRandomSource(randz.DefaultRandomSource))
-		actual, err := r.ReadString(128)
+		)), randz.WithNewReaderRandomSource(randz.DefaultStringReaderRandomSource))
+		actual, err := randz.ReadString(r, 128)
 		if err != nil {
 			t.Errorf("❌: err != nil: %v", err)
 		}
@@ -76,8 +76,8 @@ func TestCreateCodeVerifier(t *testing.T) {
 
 	t.Run("failure(io.EOF)", func(t *testing.T) {
 		t.Parallel()
-		r := randz.NewReader(randz.WithRandomReader(bytes.NewReader(nil)))
-		_, actual := r.ReadString(128)
+		r := randz.NewReader(randz.WithNewReaderOptionRandomReader(bytes.NewReader(nil)))
+		_, actual := randz.ReadString(r, 128)
 		if actual == nil {
 			t.Errorf("❌: err == nil")
 		}
@@ -92,7 +92,7 @@ func BenchmarkGenerateRandomString(b *testing.B) {
 	b.ResetTimer()
 
 	b.Run("r.Read/mrand.Reader", func(b *testing.B) {
-		r := randz.NewReader(randz.WithRandomReader(mrand.New(mrand.NewSource(0))))
+		r := randz.NewReader(randz.WithNewReaderOptionRandomReader(mrand.New(mrand.NewSource(0))))
 		buf := make([]byte, 128)
 
 		for i := 0; i < b.N; i++ {
@@ -101,7 +101,7 @@ func BenchmarkGenerateRandomString(b *testing.B) {
 	})
 
 	b.Run("r.Read/crypto_rand.Reader", func(b *testing.B) {
-		r := randz.NewReader(randz.WithRandomReader(crypto_rand.Reader))
+		r := randz.NewReader(randz.WithNewReaderOptionRandomReader(crypto_rand.Reader))
 		buf := make([]byte, 128)
 
 		for i := 0; i < b.N; i++ {

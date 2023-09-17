@@ -36,6 +36,8 @@ func WithZipDirOptionWalkFunc(f func(path string, info os.FileInfo, err error) e
 }
 
 func (f zipDirOptionPathInZipHandlerFunc) apply(cfg *zipDirConfig) { cfg.pathInZipHandlerFunc = f.f }
+
+// WithZipDirOptionPathInZipHandlerFunc is a function to specify the path in the zip file.
 func WithZipDirOptionPathInZipHandlerFunc(f func(path string) string) ZipDirOption { //nolint:ireturn
 	return zipDirOptionPathInZipHandlerFunc{f}
 }

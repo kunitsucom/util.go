@@ -2,39 +2,40 @@ package randz
 
 import (
 	crypto_rand "crypto/rand"
+	"fmt"
 	"io"
 )
 
-const DefaultRandomSource = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+const DefaultStringReaderRandomSource = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 //nolint:gochecknoglobals
 var (
-	DefaultReader io.Reader = NewReader()
+	StringReader = NewReader()
 )
 
-type Reader struct {
-	RandomSource string
-	RandomReader io.Reader
+type reader struct {
+	randomSource string
+	randomReader io.Reader
 }
 
-type ReaderOption func(r *Reader)
+type NewReaderOption func(r *reader)
 
-func WithRandomSource(str string) ReaderOption {
-	return func(r *Reader) {
-		r.RandomSource = str
+func WithNewReaderRandomSource(s string) NewReaderOption {
+	return func(r *reader) {
+		r.randomSource = s
 	}
 }
 
-func WithRandomReader(reader io.Reader) ReaderOption {
-	return func(r *Reader) {
-		r.RandomReader = reader
+func WithNewReaderOptionRandomReader(random io.Reader) NewReaderOption {
+	return func(r *reader) {
+		r.randomReader = random
 	}
 }
 
-func NewReader(opts ...ReaderOption) *Reader {
-	r := &Reader{
-		RandomSource: DefaultRandomSource,
-		RandomReader: crypto_rand.Reader,
+func NewReader(opts ...NewReaderOption) io.Reader {
+	r := &reader{
+		randomSource: DefaultStringReaderRandomSource,
+		randomReader: crypto_rand.Reader,
 	}
 
 	for _, opt := range opts {
@@ -44,32 +45,25 @@ func NewReader(opts ...ReaderOption) *Reader {
 	return r
 }
 
-func (r *Reader) Read(p []byte) (n int, err error) {
-	n, err = io.ReadFull(r.RandomReader, p)
+func (r *reader) Read(p []byte) (n int, err error) {
+	n, err = io.ReadFull(r.randomReader, p)
+	if err != nil {
+		return n, fmt.Errorf("io.ReadFull: %w", err)
+	}
 
-	randomSourceLength := len(r.RandomSource)
+	randomSourceLength := len(r.randomSource)
 	for i := range p {
-		p[i] = r.RandomSource[int(p[i])%randomSourceLength]
+		p[i] = r.randomSource[int(p[i])%randomSourceLength]
 	}
 
-	return n, err //nolint:wrapcheck
+	return n, nil
 }
 
-func (r *Reader) ReadString(length int) (random string, err error) {
+func ReadString(random io.Reader, length int) (string, error) {
 	b := make([]byte, length)
 
-	if _, err := io.ReadFull(r, b); err != nil {
-		return "", err //nolint:wrapcheck
-	}
-
-	return string(b), nil
-}
-
-func ReadString(length int) (random string, err error) {
-	b := make([]byte, length)
-
-	if _, err := io.ReadFull(DefaultReader, b); err != nil {
-		return "", err //nolint:wrapcheck
+	if _, err := io.ReadFull(random, b); err != nil {
+		return "", fmt.Errorf("io.ReadFull: %w", err)
 	}
 
 	return string(b), nil

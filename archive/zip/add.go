@@ -22,7 +22,7 @@ func (f addFileToZipDecompressionBombLimit) apply(cfg *addFileToZipConfig) {
 	cfg.decompressionBombLimit = int64(f)
 }
 
-func WithAddFileToZipDecompressionBombLimit(decompressionBombLimit int64) AddFileToZipOption { //nolint:ireturn
+func WithAddFileToZipOptionDecompressionBombLimit(decompressionBombLimit int64) AddFileToZipOption { //nolint:ireturn
 	return addFileToZipDecompressionBombLimit(decompressionBombLimit)
 }
 
