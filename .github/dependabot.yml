@@ -10,19 +10,26 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
-      time: "09:00"
+      time: "11:00"
       timezone: "Asia/Tokyo"
 
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "daily"
-      time: "09:00"
+      time: "11:00"
+      timezone: "Asia/Tokyo"
+
+  - package-ecosystem: "gomod"
+    directory: "/grpc"
+    schedule:
+      interval: "daily"
+      time: "11:00"
       timezone: "Asia/Tokyo"
 
   - package-ecosystem: "gomod"
     directory: "/tests"
     schedule:
       interval: "daily"
-      time: "09:00"
+      time: "11:00"
       timezone: "Asia/Tokyo"

@@ -106,8 +106,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
         working-directory: ${{ env.WORKDIR }}
         run: |
-          direnv exec . go mod tidy
-          git diff --exit-code go.mod go.sum
+          direnv exec . go-mod-tidy.sh
+          git diff --exit-code
       - uses: golangci/golangci-lint-action@v3.7.0 # ref. https://github.com/golangci/golangci-lint-action#how-to-use
         with:
           working-directory: ${{ env.WORKDIR }}

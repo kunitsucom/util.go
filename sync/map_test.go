@@ -9,11 +9,11 @@ import (
 func TestNewMap(t *testing.T) {
 	t.Parallel()
 
-	t.Run("success,all", func(t *testing.T) {
+	t.Run("success,all,foreground", func(t *testing.T) {
 		t.Parallel()
 
 		ctx, cancel := context.WithCancel(context.Background())
-		m := NewMap[[]string](ctx, WithNewMapOptionTTL(1*time.Second), WithNewMapOptionUseGoroutineCleaner(1*time.Millisecond))
+		m := NewMap[[]string](ctx, WithNewMapOptionTTL(1*time.Second), WithNewMapOptionCleanerInterval(1*time.Millisecond))
 		if m == nil {
 			t.Errorf("❌: NewMap: m == nil")
 		}
@@ -66,11 +66,11 @@ func TestNewMap(t *testing.T) {
 		if v := m.Len(); v != 0 {
 			t.Errorf("❌: m.Len(): expect(%v) != actual(%v)", 0, v)
 		}
-
 		cancel()
+		time.Sleep(10 * time.Millisecond)
 	})
 
-	t.Run("success,all", func(t *testing.T) {
+	t.Run("success,all,background", func(t *testing.T) {
 		t.Parallel()
 		ctx := context.Background()
 		m := NewMap[[]string](ctx, WithNewMapOptionTTL(1*time.Second))
@@ -113,5 +113,11 @@ func TestNewMap(t *testing.T) {
 		if v := m.Len(); v != 0 {
 			t.Errorf("❌: m.Len(): expect(%v) != actual(%v)", 0, v)
 		}
+	})
+
+	t.Run("success,misc", func(t *testing.T) {
+		t.Parallel()
+		m := &_Map[string]{}
+		m.private()
 	})
 }

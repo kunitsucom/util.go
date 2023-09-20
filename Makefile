@@ -44,7 +44,7 @@ clean:  ## Clean up cache, etc
 .PHONY: lint
 lint: githooks ## Run secretlint, go mod tidy, golangci-lint
 	# tidy
-	go mod tidy
+	go-mod-tidy.sh
 	git diff --exit-code go.mod go.sum
 	# golangci-lint
 	# ref. https://golangci-lint.run/usage/linters/
@@ -70,3 +70,7 @@ bench: ## Run benchmarks
 
 .PHONY: ci
 ci: lint test ## CI command set
+
+.PHONY: git-tag-go-mod
+git-tag-go-mod:
+	${REPO_ROOT}/.bin/git-tag-go-mod.sh

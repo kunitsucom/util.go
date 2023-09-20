@@ -79,7 +79,7 @@ type Client struct {
 func New(ctx context.Context, opts ...ClientOption) *Client {
 	c := &Client{
 		client:   http.DefaultClient,
-		cacheMap: syncz.NewMap[*ProviderMetadata](ctx, syncz.WithNewMapOptionUseGoroutineCleaner(10*time.Minute)),
+		cacheMap: syncz.NewMap[*ProviderMetadata](ctx, syncz.WithNewMapOptionCleanerInterval(10*time.Minute)),
 	}
 
 	for _, opt := range opts {

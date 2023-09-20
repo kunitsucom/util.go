@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2156
+set -Eeu -o pipefail
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+# LISENCE: https://github.com/kunitsucom/log.sh/blob/HEAD/LICENSE
+# Common
+if [ "${LOGSH_COLOR:-}" ] || [ -t 2 ]; then LOGSH_COLOR=true; else LOGSH_COLOR=''; fi
+_logshRFC3339() { date "+%Y-%m-%dT%H:%M:%S%z" | sed "s/\(..\)$/:\1/"; }
+_logshCmd() { for a in "$@"; do if echo "${a:-}" | grep -Eq "[[:blank:]]"; then printf "'%s' " "${a:-}"; else printf "%s " "${a:-}"; fi; done | sed "s/ $//"; }
+# Color
+LogshDefault() { test "  ${LOGSH_LEVEL:-0}" -gt 000 || echo "$*" | awk "{print   \"$(_logshRFC3339) [${LOGSH_COLOR:+\\033[0;35m}  DEFAULT${LOGSH_COLOR:+\\033[0m}] \"\$0\"\"}" 1>&2; }
+LogshDebug() { test "    ${LOGSH_LEVEL:-0}" -gt 100 || echo "$*" | awk "{print   \"$(_logshRFC3339) [${LOGSH_COLOR:+\\033[0;34m}    DEBUG${LOGSH_COLOR:+\\033[0m}] \"\$0\"\"}" 1>&2; }
+LogshInfo() { test "     ${LOGSH_LEVEL:-0}" -gt 200 || echo "$*" | awk "{print   \"$(_logshRFC3339) [${LOGSH_COLOR:+\\033[0;32m}     INFO${LOGSH_COLOR:+\\033[0m}] \"\$0\"\"}" 1>&2; }
+LogshNotice() { test "   ${LOGSH_LEVEL:-0}" -gt 300 || echo "$*" | awk "{print   \"$(_logshRFC3339) [${LOGSH_COLOR:+\\033[0;36m}   NOTICE${LOGSH_COLOR:+\\033[0m}] \"\$0\"\"}" 1>&2; }
+LogshWarn() { test "     ${LOGSH_LEVEL:-0}" -gt 400 || echo "$*" | awk "{print   \"$(_logshRFC3339) [${LOGSH_COLOR:+\\033[0;33m}     WARN${LOGSH_COLOR:+\\033[0m}] \"\$0\"\"}" 1>&2; }
+LogshWarning() { test "  ${LOGSH_LEVEL:-0}" -gt 400 || echo "$*" | awk "{print   \"$(_logshRFC3339) [${LOGSH_COLOR:+\\033[0;33m}  WARNING${LOGSH_COLOR:+\\033[0m}] \"\$0\"\"}" 1>&2; }
+LogshError() { test "    ${LOGSH_LEVEL:-0}" -gt 500 || echo "$*" | awk "{print   \"$(_logshRFC3339) [${LOGSH_COLOR:+\\033[0;31m}    ERROR${LOGSH_COLOR:+\\033[0m}] \"\$0\"\"}" 1>&2; }
+LogshCritical() { test " ${LOGSH_LEVEL:-0}" -gt 600 || echo "$*" | awk "{print \"$(_logshRFC3339) [${LOGSH_COLOR:+\\033[0;1;31m} CRITICAL${LOGSH_COLOR:+\\033[0m}] \"\$0\"\"}" 1>&2; }
+LogshAlert() { test "    ${LOGSH_LEVEL:-0}" -gt 700 || echo "$*" | awk "{print   \"$(_logshRFC3339) [${LOGSH_COLOR:+\\033[0;41m}    ALERT${LOGSH_COLOR:+\\033[0m}] \"\$0\"\"}" 1>&2; }
+LogshEmergency() { test "${LOGSH_LEVEL:-0}" -gt 800 || echo "$*" | awk "{print \"$(_logshRFC3339) [${LOGSH_COLOR:+\\033[0;1;41m}EMERGENCY${LOGSH_COLOR:+\\033[0m}] \"\$0\"\"}" 1>&2; }
+LogshExec() { LogshInfo "$ $(_logshCmd "$@")" && "$@"; }
+LogshRun() { _dlm="####R#E#C#D#E#L#I#M#I#T#E#R####" && _all=$({ _out=$("$@") && _rtn=$? || _rtn=$? && printf "\n%s" "${_dlm:?}${_out:-}" && return "${_rtn:-0}"; } 2>&1) && _rtn=$? || _rtn=$? && _dlmno=$(echo "${_all:-}" | sed -n "/${_dlm:?}/=") && _cmd=$(_logshCmd "$@") && _stdout=$(echo "${_all:-}" | tail -n +"${_dlmno:-1}" | sed "s/^${_dlm:?}//") && _stderr=$(echo "${_all:-}" | head -n "${_dlmno:-1}" | grep -v "^${_dlm:?}") && LogshInfo "$ ${_cmd:-}" && LogshInfo "${_stdout:-}" && { [ -z "${_stderr:-}" ] || LogshWarning "${_stderr:?}"; } && return "${_rtn:-0}"; }
+
+__main__() {
+  cd "${REPO_ROOT:?}" || return $? # cd repo root
+
+  git fetch --tags
+
+  trap "git switch -" EXIT
+
+  latest_git_tag=$(git tag --sort=v:refname | grep -E "^v[0-9]+" | tail -n 1)
+  latest_git_tag_commit=$(git rev-list -n 1 "${latest_git_tag:?}")
+
+  git switch --detach "${latest_git_tag:?}"
+  targets=$(
+    find "${REPO_ROOT:?}" -name go.mod -print |    # find go.mod
+      sed "s@${REPO_ROOT:?}/@@g; s@/*go\.mod@@g" | # trim repo root path
+      grep -v "^$" |                               # ignore root go.mod
+      grep -v "^tests$" |                          # ignore tests/go.mod
+      cat || true
+  )
+  LogshInfo "targets:" "$(tr '\n' ' ' <<< "${targets:-none}")"
+  if [ -n "${targets:-}" ]; then
+    while read -r mod; do
+      go_module_tag="${mod:?}/${latest_git_tag:?}"
+      if git tag --sort=v:refname | grep -qE "^${go_module_tag:?}$"; then
+        # skip
+        LogshInfo "$(printf "tag already exists: %s" "${go_module_tag:?}")"
+        continue
+      fi
+      # add tag
+      LogshExec git tag -a "${go_module_tag:?}" -m "${go_module_tag:?}" "${latest_git_tag_commit:?}"
+    done <<<"${targets:?}"
+
+    git push --tags
+  fi
+}
+
+__main__ "$@"
