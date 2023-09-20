@@ -26,35 +26,16 @@ LogshRun() { _dlm="####R#E#C#D#E#L#I#M#I#T#E#R####" && _all=$({ _out=$("$@") && 
 __main__() {
   cd "${REPO_ROOT:?}" || return $? # cd repo root
 
-  git fetch --tags
-
-  trap "git switch -" EXIT
-
-  latest_git_tag=$(git tag --sort=v:refname | grep -E "^v[0-9]+" | tail -n 1)
-  latest_git_tag_commit=$(git rev-list -n 1 "${latest_git_tag:?}")
-
-  git switch --detach "${latest_git_tag:?}"
   targets=$(
     find "${REPO_ROOT:?}" -name go.mod -print |    # find go.mod
-      sed "s@${REPO_ROOT:?}/@@g; s@/*go\.mod@@g" | # trim repo root path
-      grep -v "^$" |                               # ignore root go.mod
-      grep -v "^tests$" |                          # ignore tests/go.mod
+      sed "s@${REPO_ROOT:?}/@@g; s@/*go\.mod@@g; s@^@./@;" | # trim repo root path
       cat || true
   )
   LogshInfo "targets:" "$(tr '\n' ' ' <<< "${targets:-none}")"
   if [ -n "${targets:-}" ]; then
     while read -r mod; do
-      go_module_tag="${mod:?}/${latest_git_tag:?}"
-      if git tag --sort=v:refname | grep -qE "^${go_module_tag:?}$"; then
-        # skip
-        LogshInfo "$(printf "tag already exists: %s" "${go_module_tag:?}")"
-        continue
-      fi
-      # add tag
-      LogshExec git tag -a "${go_module_tag:?}" -m "${go_module_tag:?}" "${latest_git_tag_commit:?}"
+      LogshExec bash -c "cd ${REPO_ROOT:?}/${mod:?} && go mod tidy"
     done <<<"${targets:?}"
-
-    git push --tags
   fi
 }
 

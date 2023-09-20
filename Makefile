@@ -44,7 +44,7 @@ clean:  ## Clean up cache, etc
 .PHONY: lint
 lint: githooks ## Run secretlint, go mod tidy, golangci-lint
 	# tidy
-	go mod tidy
+	go-mod-tidy.sh
 	git diff --exit-code go.mod go.sum
 	# golangci-lint
 	# ref. https://golangci-lint.run/usage/linters/
