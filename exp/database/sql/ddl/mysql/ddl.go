@@ -1,86 +1,178 @@
-package ddlz
+package mysql
+
+// MySQL :: MySQL 8.0 リファレンスマニュアル :: 13.1.20 CREATE TABLE ステートメント https://dev.mysql.com/doc/refman/8.0/ja/create-table.html
 
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"strings"
+
+	ddlz "github.com/kunitsucom/util.go/exp/database/sql/ddl"
 )
+
+const Dialect = "mysql"
 
 type Logger interface {
 	Printf(format string, v ...interface{})
 }
 
-type DefaultLogger struct {
+type logger struct {
 	enable bool
 	l      *log.Logger
 }
 
-func (l *DefaultLogger) Printf(format string, v ...interface{}) {
+func (l *logger) Printf(format string, v ...interface{}) {
 	if !l.enable {
 		return
 	}
 	l.l.Printf(format, v...)
 }
 
-var DebugLogger Logger = &DefaultLogger{enable: true, l: log.New(os.Stdout, "[DEBUG] ", log.LstdFlags|log.Lmicroseconds)}
+func debugf(format string, v ...interface{}) {
+	if DebugLogger != nil {
+		DebugLogger.Printf(format, v...)
+	}
+}
 
-// NOTE: MySQL :: MySQL 8.0 リファレンスマニュアル :: 13.1.20 CREATE TABLE ステートメント https://dev.mysql.com/doc/refman/8.0/ja/create-table.html
-
-type VerbType string
-
-const (
-	StatementTypeUnknown VerbType = "UNKNOWN"
-	StatementTypeCreate  VerbType = "CREATE"
-	StatementTypeAlter   VerbType = "ALTER"
-	StatementTypeDrop    VerbType = "DROP"
+//nolint:gochecknoglobals
+var (
+	DebugLogger Logger = &logger{enable: true, l: log.New(os.Stdout, "[DEBUG] ", log.LstdFlags|log.Lmicroseconds)}
 )
-
-type StmtType string
-
-const (
-	StmtTypeUnknown StmtType = "UNKNOWN"
-	StmtTypeTable   StmtType = "TABLE"
-)
-
-type ColumnOption string
 
 type Column struct {
 	Name          string
+	NameQuotation string
 	Type          string
 	AutoIncrement bool
 	PrimaryKey    bool
 	NotNull       bool
 	Default       []string
 	OnUpdate      []string
-	Options       []ColumnOption
+	Options       []string
 	Comments      []string
 }
 
-type TableOption string
+//nolint:gochecknoglobals
+var columnStringer = func(column *Column) string {
+	var buf bytes.Buffer
+	if column.NameQuotation != "" {
+		buf.WriteString(column.NameQuotation)
+	}
+	buf.WriteString(column.Name)
+	if column.NameQuotation != "" {
+		buf.WriteString(column.NameQuotation)
+	}
+	buf.WriteString(" ")
+	buf.WriteString(column.Type)
+	if column.AutoIncrement {
+		buf.WriteString(" AUTO_INCREMENT")
+	}
+	if column.PrimaryKey {
+		buf.WriteString(" PRIMARY KEY")
+	}
+	if column.NotNull {
+		buf.WriteString(" NOT NULL")
+	}
+	if len(column.Default) > 0 {
+		buf.WriteString(" DEFAULT ")
+		buf.WriteString(strings.Join(column.Default, " "))
+	}
+	if len(column.OnUpdate) > 0 {
+		buf.WriteString(" ON UPDATE ")
+		buf.WriteString(strings.Join(column.OnUpdate, " "))
+	}
+	if len(column.Options) > 0 {
+		buf.WriteString(" ")
+		buf.WriteString(strings.Join(column.Options, " "))
+	}
+	return buf.String()
+}
+
+func (column *Column) String() string {
+	return columnStringer(column)
+}
 
 type Stmt struct {
-	VerbType VerbType
-	StmtType StmtType
-	Name     string
-	Columns  []Column
-	Options  []TableOption
-	Comments []string
+	VerbType      ddlz.StmtVerb
+	StmtType      ddlz.StmtResource
+	Name          string
+	NameQuotation string
+	Columns       []Column
+	Options       []string
+	Comments      []string
 }
+
+//nolint:gochecknoglobals
+var stmtStringer = func(stmt *Stmt) string {
+	var buf bytes.Buffer
+	buf.WriteString(string(stmt.VerbType) + " " + string(stmt.StmtType) + " ")
+
+	if stmt.NameQuotation != "" {
+		buf.WriteString(stmt.NameQuotation)
+	}
+	if stmt.Name != "" {
+		buf.WriteString(stmt.Name)
+	}
+	if stmt.NameQuotation != "" {
+		buf.WriteString(stmt.NameQuotation)
+	}
+
+	if len(stmt.Columns) > 0 {
+		buf.WriteString(" (\n")
+		for i := range stmt.Columns {
+			if i > 0 {
+				buf.WriteString(",\n    ")
+			}
+			buf.WriteString(stmt.Columns[i].String())
+		}
+		buf.WriteString("\n)")
+	}
+	if len(stmt.Options) > 0 {
+		buf.WriteString(" ")
+		buf.WriteString(strings.Join(stmt.Options, " "))
+	}
+	buf.WriteString(";")
+	return buf.String()
+}
+
+var _ ddlz.DDL[*DDL] = (*DDL)(nil)
 
 type DDL struct {
 	Stmts    []Stmt
 	Comments []string
 }
 
+func (ddl *DDL) PrettyPrint(indent string) string {
+	_ = indent
+	return ddl.String()
+}
+
+func (ddl *DDL) Diff(before ddlz.DDL[*DDL]) (ddlz.DDL[*DDL], error) {
+	_ = before
+	return nil, errors.New("not implemented") //nolint:goerr113
+}
+
+func (ddl *DDL) String() string {
+	var buf bytes.Buffer
+	for i := range ddl.Stmts {
+		if i > 0 {
+			buf.WriteString("\n")
+		}
+		buf.WriteString(stmtStringer(&ddl.Stmts[i]))
+	}
+	return buf.String()
+}
+
 type Token string
 
 //nolint:gochecknoglobals
 var (
-	tokenTypes = map[Token]struct{}{
+	keywords = map[Token]struct{}{
 		Token("INTEGER"):   {},
 		Token("INT"):       {},
 		Token("TINYINT"):   {},
@@ -89,13 +181,14 @@ var (
 		Token("VARCHAR"):   {},
 		Token("TIMESTAMP"): {},
 	}
-	parseTokenFuncs = []func(token Token) bool{
-		func(token Token) bool {
-			if _, ok := tokenTypes[token]; ok {
+	isKeywordFuncs = []isKeywordFunc{
+		func(upperStr string) (isKeyword bool) {
+			if _, ok := keywords[Token(upperStr)]; ok {
 				return true
 			}
-			for k := range tokenTypes {
-				if strings.HasPrefix(string(token), string(k)) {
+			for kw := range keywords {
+				// for MySQL
+				if strings.HasPrefix(upperStr, string(kw)+"(") && strings.HasSuffix(upperStr, ")") {
 					return true
 				}
 			}
@@ -103,6 +196,21 @@ var (
 		},
 	}
 )
+
+type isKeywordFunc = func(upperStr string) (isKeyword bool)
+
+func RegisterIsKeywordFunc(f isKeywordFunc) {
+	isKeywordFuncs = append(isKeywordFuncs, f)
+}
+
+func isKeyword(upperStr string) bool {
+	for i := range isKeywordFuncs {
+		if isKeywordFuncs[i](upperStr) {
+			return true
+		}
+	}
+	return false
+}
 
 const (
 	TokenUnknown          Token = "UNKNOWN"
@@ -162,22 +270,26 @@ func isDigit(c rune) bool {
 }
 
 func parseToken(s string) (Token, bool) {
-	switch kw := Token(strings.ToUpper(s)); kw {
+	upperStr := strings.ToUpper(s)
+	switch kw := Token(upperStr); kw {
 	case TokenCreate, TokenAlter, TokenDrop,
 		TokenTable, TokenIf, TokenExists,
 		TokenPrimary, TokenKey,
 		TokenNot, TokenNull,
-		TokenDefault, TokenAutoIncrement: // キーワード
+		TokenDefault,
+		TokenOn, TokenUpdate,
+		TokenAutoIncrement: // キーワード
 		return kw, true
-	case TokenUnknown, TokenEOF, TokenWS, TokenComma, TokenParenthesisOpen, TokenParenthesisClose, TokenComment, TokenSemicolon: // メタ文字
+	case TokenUnknown, TokenEOF, TokenWS, TokenComma,
+		TokenSingleQuote, TokenDoubleQuote, TokenBackQuote,
+		TokenParenthesisOpen, TokenParenthesisClose,
+		TokenComment, TokenSemicolon: // メタ文字
 		return kw, false
 	case TokenIdent: // 以前に isLetter を通っているのでここには来ないはず
 		return kw, false
 	default: // 型など
-		for i := range parseTokenFuncs {
-			if parseTokenFuncs[i](kw) {
-				return kw, true
-			}
+		if isKeyword(upperStr) {
+			return kw, true
 		}
 		return kw, false
 	}
@@ -188,7 +300,9 @@ type Scanner struct {
 }
 
 func NewScanner(r io.Reader) *Scanner {
-	return &Scanner{r: bufio.NewReader(r)}
+	return &Scanner{
+		r: bufio.NewReader(r),
+	}
 }
 
 func (s *Scanner) readRune() rune {
@@ -334,7 +448,7 @@ func (p *Parser) readToken() (token Token, literal string) {
 }
 
 func (p *Parser) unreadToken() {
-	DebugLogger.Printf("🪲: unreadToken")
+	debugf("🪲: unreadToken")
 	p.buf.n = 1
 }
 
@@ -353,7 +467,7 @@ func (p *Parser) Parse() (*DDL, error) {
 	)
 	for {
 		token, literal := p.scanIgnoreWhitespace()
-		DebugLogger.Printf("🪲: Parse: token: %q, literal: %q", token, literal)
+		debugf("🪲: Parse: token: %q, literal: %q", token, literal)
 		switch token {
 		case TokenCreate, TokenAlter, TokenDrop:
 			verb = token
@@ -378,18 +492,18 @@ func (p *Parser) Parse() (*DDL, error) {
 
 func (p *Parser) parseCreateTable(ddl *DDL) error {
 	stmt := Stmt{
-		VerbType: StatementTypeCreate,
-		StmtType: StmtTypeTable,
+		VerbType: ddlz.VerbCreate,
+		StmtType: ddlz.StmtTypeTable,
 	}
 	for {
 		token, literal := p.scanIgnoreWhitespace()
-		DebugLogger.Printf("🪲: parseCreateTable: token: %q, literal: %q", token, literal)
+		debugf("🪲: parseCreateTable: token: %q, literal: %q", token, literal)
 		switch token {
 		case TokenIdent:
 			if stmt.Name == "" {
 				stmt.Name = literal
 			} else {
-				stmt.Options = append(stmt.Options, TableOption(literal))
+				stmt.Options = append(stmt.Options, literal)
 			}
 		case TokenParenthesisOpen:
 			if err := p.parseCreateTableColumns(&stmt); err != nil {
@@ -411,7 +525,7 @@ func (p *Parser) parseCreateTableColumns(out *Stmt) error {
 	column := Column{}
 	for {
 		token, literal := p.scanIgnoreWhitespace()
-		DebugLogger.Printf("🪲: parseCreateTableColumns: token: %q, literal: %q", token, literal)
+		debugf("🪲: parseCreateTableColumns: token: %q, literal: %q", token, literal)
 		switch token {
 		case TokenIdent, TokenSingleQuote, TokenDoubleQuote, TokenBackQuote:
 			p.unreadToken()
@@ -426,8 +540,8 @@ func (p *Parser) parseCreateTableColumns(out *Stmt) error {
 		case TokenComment:
 			column.Comments = append(column.Comments, literal)
 		default:
-			for i := range parseTokenFuncs {
-				if parseTokenFuncs[i](token) {
+			for i := range isKeywordFuncs {
+				if isKeywordFuncs[i](string(token)) {
 					column.Type = literal
 					continue
 				}
@@ -443,47 +557,47 @@ func (p *Parser) parseCreateTableColumns(out *Stmt) error {
 
 func (p *Parser) parseCreateTableColumn(out *Column) error {
 	var (
-		not         bool
-		on          bool
-		onUpdate    bool
-		defaultVal  bool
-		doubleQuote bool
+		_not             bool
+		_on              bool
+		_onUpdate        bool
+		_default         bool
+		_nameDoubleQuote bool
 	)
 Parser:
 	for {
 		token, literal := p.scanIgnoreWhitespace()
-		DebugLogger.Printf("🪲: parseCreateTableColumn: token: %q, literal: %q", token, literal)
+		debugf("🪲: parseCreateTableColumn: token: %q, literal: %q", token, literal)
 		switch token {
 		case TokenIdent:
 			switch {
 			case out.Name == "":
 				out.Name = literal
-			case defaultVal:
+			case _default:
 				out.Default = append(out.Default, literal)
-			case onUpdate:
+			case _onUpdate:
 				out.OnUpdate = append(out.OnUpdate, literal)
 			default:
-				out.Options = append(out.Options, ColumnOption(literal))
+				out.Options = append(out.Options, literal)
 			}
 		case TokenPrimary, TokenKey:
 			out.PrimaryKey = true
 		case TokenNot:
-			not = true
+			_not = true
 		case TokenNull:
-			if not {
-				out.NotNull = not
-				not = false
+			if _not {
+				out.NotNull = _not
+				_not = false
 			}
 		case TokenAutoIncrement:
 			out.AutoIncrement = true
 		case TokenDefault:
-			defaultVal = true
+			_default = true
 		case TokenOn:
-			on = true
+			_on = true
 		case TokenUpdate:
-			if on {
-				onUpdate = true
-				on = false
+			if _on {
+				_onUpdate = true
+				_on = false
 			}
 		case TokenParenthesisOpen:
 			// TODO: implement
@@ -492,7 +606,10 @@ Parser:
 			p.unreadToken()
 			return nil
 		case TokenDoubleQuote:
-			doubleQuote = !doubleQuote
+			if out.NameQuotation == "" {
+				out.NameQuotation = literal
+			}
+			_nameDoubleQuote = !_nameDoubleQuote
 			// TODO: implement
 		case TokenComma:
 			p.unreadToken()
@@ -503,11 +620,16 @@ Parser:
 			p.unreadToken()
 			return fmt.Errorf("unexpected token: %q", token)
 		default:
-			for i := range parseTokenFuncs {
-				if parseTokenFuncs[i](token) {
+			if isKeyword(string(token)) {
+				if out.Type == "" {
+					// カラムの最初のキーワードは型
 					out.Type = literal
-					continue Parser
+				} else {
+					// そうでなければオプション
+					out.Options = append(out.Options, literal)
 				}
+
+				continue Parser
 			}
 			return fmt.Errorf("unexpected token: %q", token)
 		}

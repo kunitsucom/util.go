@@ -1,12 +1,14 @@
-package ddlz
+package mysql_test
 
 import (
 	"log"
 	"strings"
+
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/mysql"
 )
 
-func ExampleParse() {
-	p := NewParser(strings.NewReader(`--   これは先頭行 (DDL 以前) のコメントです。
+func ExampleParser_Parse() {
+	p := mysql.NewParser(strings.NewReader(`--   これは先頭行 (DDL 以前) のコメントです。
 CREATE TABLE IF NOT EXISTS users -- これは CREATE TABLE 文のコメントです。
 (
     -- これは id カラムのこめんとです。
@@ -29,7 +31,8 @@ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='これはテ�
 	if err != nil {
 		panic(err)
 	}
-	log.Printf("%#v", ddl)
+	log.Printf("%s", ddl)
 	// Output:
 	//
+	log.Printf("%#v", ddl)
 }
