@@ -1,4 +1,4 @@
-module github.com/kunitsucom/util.go/tests
+module github.com/kunitsucom/util.go/integrationtest
 
 go 1.21
 

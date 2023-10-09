@@ -38,7 +38,7 @@ __main__() {
     find "${REPO_ROOT:?}" -name go.mod -print |    # find go.mod
       sed "s@${REPO_ROOT:?}/@@g; s@/*go\.mod@@g" | # trim repo root path
       grep -v "^$" |                               # ignore root go.mod
-      grep -v "^tests$" |                          # ignore tests/go.mod
+      grep -v "^integrationtest$" |                # ignore integrationtest/go.mod
       cat || true
   )
   LogshInfo "targets:" "$(tr '\n' ' ' <<< "${targets:-none}")"
