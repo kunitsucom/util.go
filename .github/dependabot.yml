@@ -28,7 +28,7 @@ updates:
       timezone: "Asia/Tokyo"
 
   - package-ecosystem: "gomod"
-    directory: "/tests"
+    directory: "/integrationtest"
     schedule:
       interval: "daily"
       time: "11:00"
