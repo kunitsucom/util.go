@@ -72,5 +72,5 @@ bench: ## Run benchmarks
 ci: lint test ## CI command set
 
 .PHONY: git-tag-go-mod
-git-tag-go-mod:
+git-tag-go-mod:  ## git tag per go modules
 	${REPO_ROOT}/.bin/git-tag-go-mod.sh
