@@ -30,7 +30,7 @@ __main__() {
 
   trap "git switch -" EXIT
 
-  latest_git_tag=$(git tag --sort=v:refname | grep -E "^v[0-9]+" | tail -n 1)
+  latest_git_tag=$(git tag --sort=committerdate | grep -E "^v[0-9]+" | tail -n 1)
   latest_git_tag_commit=$(git rev-list -n 1 "${latest_git_tag:?}")
 
   git switch --detach "${latest_git_tag:?}"
@@ -45,7 +45,7 @@ __main__() {
   if [ -n "${targets:-}" ]; then
     while read -r mod; do
       go_module_tag="${mod:?}/${latest_git_tag:?}"
-      if git tag --sort=v:refname | grep -qE "^${go_module_tag:?}$"; then
+      if git tag --sort=committerdate | grep -qE "^${go_module_tag:?}$"; then
         # skip
         LogshInfo "$(printf "tag already exists: %s" "${go_module_tag:?}")"
         continue
