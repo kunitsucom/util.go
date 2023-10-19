@@ -22,6 +22,7 @@ func OpenContext(ctx context.Context, driverName string, dataSourceName string) 
 func MustOpenContext(ctx context.Context, driverName string, dataSourceName string) *sql.DB {
 	db, err := OpenContext(ctx, driverName, dataSourceName)
 	if err != nil {
+		err = fmt.Errorf("OpenContext: %w", err)
 		panic(err)
 	}
 
