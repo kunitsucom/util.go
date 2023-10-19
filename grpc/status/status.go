@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"runtime"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/runtime/protoiface"
 
 	errorz "github.com/kunitsucom/util.go/errors"
+	filepathz "github.com/kunitsucom/util.go/path/filepath"
 )
 
 type Level string
@@ -58,16 +60,30 @@ func WithDetails(details ...protoiface.MessageV1) ErrorOption { //nolint:ireturn
 	return &newOptionDetails{details: details}
 }
 
+// DiscardLogger is a logger to discard logs. If you want to disable logging, assign DiscardLogger to DefaultLogger.
+func DiscardLogger(_ context.Context, _ Level, _ *status.Status, _ error) {}
+
 //nolint:gochecknoglobals
 var (
-	DiscardLogger Logger = func(_ context.Context, _ Level, _ *status.Status, _ error) {}
+	// DefaultLogger is a logger to record the location of statz.New() calls.
 	DefaultLogger Logger = func(_ context.Context, level Level, stat *status.Status, err error) {
-		log.Printf("level=%s code=%s message=%q details=%s error=%q stacktrace=%q", level, stat.Code(), stat.Message(), stat.Details(), fmt.Sprintf("%v", err), fmt.Sprintf("%+v", err))
+		_, file, line, _ := runtime.Caller(2)
+		log.Printf("level=%s caller=%s:%d code=%s message=%q details=%s error=%q stacktrace=%q", level, filepathz.Short(file), line, stat.Code(), stat.Message(), stat.Details(), fmt.Sprintf("%v", err), fmt.Sprintf("%+v", err))
 	}
-	_      interface{ GRPCStatus() *status.Status } = (*statusError)(nil)
-	errorf                                          = errorz.NewErrorf(errorz.WithCallerSkip(1))
+
+	errorf = errorz.NewErrorf(errorz.WithCallerSkip(1))
 )
 
+var (
+	_ error                                    = (*statusError)(nil)
+	_ fmt.Formatter                            = (*statusError)(nil)
+	_ interface{ Unwrap() error }              = (*statusError)(nil)
+	_ interface{ GRPCStatus() *status.Status } = (*statusError)(nil)
+)
+
+// New is a function like errors.New() for gRPC status.Status.
+//
+// The location where statz.New() is called is logged by DefaultLogger.
 func New(ctx context.Context, level Level, code codes.Code, msg string, err error, opts ...ErrorOption) error {
 	e := &statusError{
 		error:  errorf("statz.New: level=%s code=%s message=%s: %w", level, code, msg, err),
