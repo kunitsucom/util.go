@@ -13,7 +13,7 @@ type sqlRows interface {
 	Close() error
 	Columns() ([]string, error)
 	Next() bool
-	Scan(...interface{}) error
+	Scan(dest ...interface{}) error
 	Err() error
 }
 

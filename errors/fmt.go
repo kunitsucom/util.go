@@ -10,7 +10,7 @@ import (
 
 type (
 	ErrorfOption interface {
-		apply(*errorfConfig)
+		apply(c *errorfConfig)
 	}
 	errorfConfig struct {
 		callerSkip int
@@ -163,7 +163,7 @@ func (e *wrapError) writeCallers(w io.Writer) {
 }
 
 func (e *wrapError) Error() string {
-	return fmt.Sprint(e)
+	return fmt.Sprint(e) //nolint:perfsprint
 }
 
 func (e *wrapError) Format(s fmt.State, verb rune) {

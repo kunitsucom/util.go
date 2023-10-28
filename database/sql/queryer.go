@@ -26,7 +26,7 @@ type (
 		structTag string
 	}
 
-	NewDBOption interface{ apply(*queryerContext) }
+	NewDBOption interface{ apply(qc *queryerContext) }
 
 	newDBOptionStructTag string
 )
