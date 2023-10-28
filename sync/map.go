@@ -26,7 +26,7 @@ type (
 		LoadAndDelete(key Key) (v T, loaded bool)
 		Delete(key Key)
 		Clear()
-		Range(func(key Key, value T) bool)
+		Range(f func(key Key, value T) bool)
 	}
 )
 
@@ -52,7 +52,7 @@ func WithNewMapOptionCleanerInterval(interval time.Duration) NewMapOption { //no
 	return syncMapConfigCleanerInterval(interval)
 }
 
-type NewMapOption interface{ apply(*syncMapConfig) }
+type NewMapOption interface{ apply(cfg *syncMapConfig) }
 
 type _Map[T any] struct {
 	mu     sync.RWMutex

@@ -101,7 +101,7 @@ type (
 	}
 
 	NewXRealIPHandlerOption interface {
-		apply(*xRealIPHandlerConfig)
+		apply(cfg *xRealIPHandlerConfig)
 	}
 
 	newXRealIPHandlerOptionClientIPAddressHeader string

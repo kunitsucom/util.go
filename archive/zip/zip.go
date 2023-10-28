@@ -20,7 +20,7 @@ type (
 		pathInZipHandlerFunc func(path string) string
 	}
 
-	ZipDirOption interface{ apply(*zipDirConfig) }
+	ZipDirOption interface{ apply(cfg *zipDirConfig) }
 
 	zipDirOptionWalkFunc struct {
 		f func(path string, info os.FileInfo, err error) error
@@ -97,7 +97,7 @@ type (
 		unzipFileFileInZipHandler func(zipfile *zip.File, dstDir string) error
 	}
 
-	UnzipFileOption interface{ apply(*unzipFileConfig) }
+	UnzipFileOption interface{ apply(cfg *unzipFileConfig) }
 
 	unzipFileOptionFileInZipHandler struct {
 		f func(zipfile *zip.File, dstDir string) error

@@ -9,7 +9,7 @@ import (
 )
 
 type (
-	AddFileToZipOption interface{ apply(*addFileToZipConfig) }
+	AddFileToZipOption interface{ apply(cfg *addFileToZipConfig) }
 
 	addFileToZipDecompressionBombLimit int64
 )
