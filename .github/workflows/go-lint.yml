@@ -1,7 +1,7 @@
 name: go-lint
-#     ~~~~~~~
+#     ^^^^^^^
 # https://github.com/kunitsucom/util.go/workflows/go-lint/badge.svg
-#                                                 ~~~~~~~
+#                                                 ^^^^^^^
 
 on:
   push:
@@ -11,19 +11,17 @@ on:
       - '.github/dependabot.yml'
       - '.github/pull_request_template.md'
       - '.github/release.yml'
-      - 'README.md'
+      - '**.md'
   pull_request:
-    # branches:
-    #   - main
     paths-ignore:
       - '.github/dependabot.yml'
       - '.github/pull_request_template.md'
       - '.github/release.yml'
-      - 'README.md'
+      - '**.md'
   workflow_dispatch:
     inputs: {}
 
-# NOTE: 連続で commit ＆ push した時に最新の commit 以外のワークフローをキャンセルする
+# NOTE: If commit & push continuously, cancel the workflow other than the latest commit.
 concurrency:
   group: ${{ github.workflow }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ github.ref }}
   cancel-in-progress: true
@@ -41,6 +39,7 @@ defaults:
 
 jobs:
   go-lint: # NOTE: for Branch protection rule `Status checks that are required.`
+    name: Run golangci-lint
     runs-on: ubuntu-latest # ref. https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
     steps:
       - uses: actions/checkout@v4
@@ -69,6 +68,7 @@ jobs:
         run: |
           # Update GITHUB_PATH
           cat <<GITHUB_PATH >> $GITHUB_PATH
+          ${PWD}/.local/bin
           ${PWD}/${{ env.WORKDIR }}/.local/bin
           ${PWD}/.bin
           GITHUB_PATH
@@ -103,7 +103,8 @@ jobs:
       - name: Run go mod tidy
         if: ${{ steps.setup-go.outputs.cache-hit != 'true' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+          DEBIAN_FRONTEND: noninteractive
+          # GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
         working-directory: ${{ env.WORKDIR }}
         run: |
           direnv exec . go-mod-tidy.sh

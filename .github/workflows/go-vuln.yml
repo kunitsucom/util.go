@@ -1,6 +1,6 @@
-name: go-test
+name: go-vuln
 #     ^^^^^^^
-# https://github.com/kunitsucom/util.go/workflows/go-test/badge.svg
+# https://github.com/kunitsucom/util.go/workflows/go-vuln/badge.svg
 #                                                 ^^^^^^^
 
 on:
@@ -38,8 +38,8 @@ defaults:
     shell: bash
 
 jobs:
-  go-test: # NOTE: for Branch protection rule `Status checks that are required.`
-    name: Run go test
+  go-vuln: # NOTE: for Branch protection rule `Status checks that are required.`
+    name: Check Golang vulnerability
     runs-on: ubuntu-latest # ref. https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +48,7 @@ jobs:
           cat <<'DEBUG_DOC'
           == DEBUG =======================================================
           github.ref: ${{ github.ref }}
+          github.ref_name: ${{ github.ref_name }}
           github.event_name: ${{ github.event_name }}
           -- toJSON(github.event.inputs) ---------------------------------
           ${{ toJSON(github.event.inputs) }}
@@ -100,14 +101,10 @@ jobs:
             ${{ runner.os }}-go-${{ steps.golang-info.outputs.GOVERSION }}-${{ hashFiles('**/go.sum') }}-
             ${{ runner.os }}-go-${{ steps.golang-info.outputs.GOVERSION }}-
             ${{ runner.os }}-go-
-      - name: Run go test
-        env:
-          DEBIAN_FRONTEND: noninteractive
-          # GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
-        working-directory: ${{ env.WORKDIR }}
-        run: |
-          direnv exec . make test
-      - uses: codecov/codecov-action@v3 # ref. https://github.com/codecov/codecov-action#example-workflowyml-with-codecov-action
+      - id: govulncheck
+        uses: golang/govulncheck-action@v1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ env.WORKDIR }}/coverage.txt
+          work-dir: ${{ env.WORKDIR }}
+          go-version-file: ${{ env.WORKDIR }}/go.mod
+          go-package: ./...
+          repo-checkout: false
