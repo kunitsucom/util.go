@@ -17,7 +17,7 @@ updates:
       - "dependencies"
       - "github_actions"
     assignees:
-      - "dependabot"
+      - "ginokent"
     reviewers:
       - "ginokent"
 
@@ -32,7 +32,7 @@ updates:
       - "dependencies"
       - "go"
     assignees:
-      - "dependabot"
+      - "ginokent"
     reviewers:
       - "ginokent"
 
@@ -47,7 +47,7 @@ updates:
       - "dependencies"
       - "go"
     assignees:
-      - "dependabot"
+      - "ginokent"
     reviewers:
       - "ginokent"
 
@@ -62,6 +62,6 @@ updates:
       - "dependencies"
       - "go"
     assignees:
-      - "dependabot"
+      - "ginokent"
     reviewers:
       - "ginokent"
