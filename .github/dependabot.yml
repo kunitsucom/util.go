@@ -12,6 +12,14 @@ updates:
       interval: "daily"
       time: "11:00"
       timezone: "Asia/Tokyo"
+    labels:
+      - "build"
+      - "dependencies"
+      - "github_actions"
+    assignees:
+      - "ginokent"
+    reviewers:
+      - "ginokent"
 
   - package-ecosystem: "gomod"
     directory: "/"
@@ -19,6 +27,14 @@ updates:
       interval: "daily"
       time: "11:00"
       timezone: "Asia/Tokyo"
+    labels:
+      - "build"
+      - "dependencies"
+      - "go"
+    assignees:
+      - "ginokent"
+    reviewers:
+      - "ginokent"
 
   - package-ecosystem: "gomod"
     directory: "/grpc"
@@ -26,6 +42,14 @@ updates:
       interval: "daily"
       time: "11:00"
       timezone: "Asia/Tokyo"
+    labels:
+      - "build"
+      - "dependencies"
+      - "go"
+    assignees:
+      - "ginokent"
+    reviewers:
+      - "ginokent"
 
   - package-ecosystem: "gomod"
     directory: "/integrationtest"
@@ -33,3 +57,11 @@ updates:
       interval: "daily"
       time: "11:00"
       timezone: "Asia/Tokyo"
+    labels:
+      - "build"
+      - "dependencies"
+      - "go"
+    assignees:
+      - "ginokent"
+    reviewers:
+      - "ginokent"
