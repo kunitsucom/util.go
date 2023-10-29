@@ -46,7 +46,7 @@ jobs:
           # Add labels based on PR title
           GH_PR_TITLE=$(gh pr view --json title --jq .title)
           gh label list --json name --jq ".[].name" | while read -r LINE; do
-            grep -Eo "^${LINE:?}" <<<"${GH_PR_TITLE:?}" || true # NOTE: Ignore the return value of grep because we just want to output the string
+            awk -F: "/^${LINE-}(\([^\)]+\))?:/ {print \$1}" <<<"${GH_PR_TITLE:?}" | grep -Eo "^${LINE:?}" || true # NOTE: Ignore the return value of grep because we just want to output the string
           done | xargs -t -I{} gh pr edit --add-label {}
 
           # If any of the labels are present, exit with success

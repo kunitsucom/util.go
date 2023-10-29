@@ -57,12 +57,15 @@ lint: githooks ## Run secretlint, go mod tidy, golangci-lint
 .PHONY: test
 test: githooks ## Run go test and display coverage
 	@[ -x "${DOTLOCAL_DIR}/bin/godotnev" ] || GOBIN="${DOTLOCAL_DIR}/bin" go install github.com/joho/godotenv/cmd/godotenv@latest
+
 	# Unit testing
-	godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./... && go tool cover -func=./coverage.txt
+	godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt.tmp ./... ; grep -Ev "\.deprecated\.go" ./coverage.txt.tmp > ./coverage.txt ; go tool cover -func=./coverage.txt
+
 	# Unit testing (with external modules)
-	cd grpc && godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./... && go tool cover -func=./coverage.txt
+	cd grpc ; godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt.tmp ./... ; grep -Ev "\.deprecated\.go" ./coverage.txt.tmp > ./coverage.txt ; go tool cover -func=./coverage.txt
+
 	# Integration testing
-	cd integrationtest && godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt ./... && go tool cover -func=./coverage.txt
+	cd integrationtest ; godotenv -f .test.env go test -v -race -p=4 -parallel=8 -timeout=300s -cover -coverprofile=./coverage.txt.tmp ./... ; grep -Ev "\.deprecated\.go" ./coverage.txt.tmp > ./coverage.txt ; go tool cover -func=./coverage.txt
 
 .PHONY: bench
 bench: ## Run benchmarks

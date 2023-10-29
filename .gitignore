@@ -9,7 +9,7 @@ Thumbs.db
 /.tmp/
 
 # codecov
-coverage.txt
+coverage.txt*
 coverage.html
 
 # env
