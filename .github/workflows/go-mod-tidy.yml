@@ -1,18 +1,12 @@
-name: go-lint
-#     ^^^^^^^
-# https://github.com/kunitsucom/util.go/workflows/go-lint/badge.svg
-#                                                 ^^^^^^^
+name: go-mod-tidy
+#     ^^^^^^
+# https://github.com/kunitsucom/util.go/workflows/go-mod-tidy/badge.svg
+#                                                 ^^^^^^
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '.github/dependabot.yml'
-      - '.github/pull_request_template.md'
-      - '.github/release.yml'
-      - '**.md'
   pull_request:
+    types:
+      - synchronize
     paths-ignore:
       - '.github/dependabot.yml'
       - '.github/pull_request_template.md'
@@ -38,8 +32,11 @@ defaults:
     shell: bash
 
 jobs:
-  go-lint: # NOTE: for Branch protection rule `Status checks that are required.`
-    name: Run golangci-lint
+  go-mod-tidy: # NOTE: for Branch protection rule `Status checks that are required.`
+    name: Run go mod tidy
+    permissions:
+      id-token: write
+      contents: write
     runs-on: ubuntu-latest # ref. https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
     steps:
       - uses: actions/checkout@v4
@@ -100,16 +97,21 @@ jobs:
             ${{ runner.os }}-go-${{ steps.golang-info.outputs.GOVERSION }}-${{ hashFiles('**/go.sum') }}-
             ${{ runner.os }}-go-${{ steps.golang-info.outputs.GOVERSION }}-
             ${{ runner.os }}-go-
-      # - name: Run go mod tidy
-      #   if: ${{ steps.setup-go.outputs.cache-hit != 'true' }}
-      #   env:
-      #     DEBIAN_FRONTEND: noninteractive
-      #     # GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
-      #   working-directory: ${{ env.WORKDIR }}
-      #   run: |
-      #     direnv exec . go-mod-tidy-all
-      - uses: golangci/golangci-lint-action@v3.7.0 # ref. https://github.com/golangci/golangci-lint-action#how-to-use
-        with:
-          working-directory: ${{ env.WORKDIR }}
-          args: --timeout=600s
-          version: latest # or v${{ env.GOLANGCI_LINT_VERSION }}
+      - name: Run go mod tidy
+        if: ${{ steps.setup-go.outputs.cache-hit != 'true' }}
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          # GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+        working-directory: ${{ env.WORKDIR }}
+        run: |
+          direnv exec . go-mod-tidy-all
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          DIFF_FILES=$(git diff --name-only)
+          if [ -z "${DIFF_FILES-}" ]; then
+            echo "No changes to the output on this push; exiting."
+            exit 0
+          fi
+          echo "${DIFF_FILES:?}" | grep -E "go\.(mod|sum)" | xargs -t git add
+          git commit -m "build: go mod tidy (by github-actions[bot])"
+          git push

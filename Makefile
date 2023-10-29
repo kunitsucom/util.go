@@ -44,7 +44,7 @@ clean:  ## Clean up cache, etc
 .PHONY: lint
 lint: githooks ## Run secretlint, go mod tidy, golangci-lint
 	# tidy
-	go-mod-tidy.sh
+	go-mod-tidy-all
 	git diff --exit-code go.mod go.sum
 	# golangci-lint
 	# ref. https://golangci-lint.run/usage/linters/
@@ -74,3 +74,26 @@ ci: lint test ## CI command set
 .PHONY: git-tag-go-mod
 git-tag-go-mod:  ## git tag per go modules
 	${REPO_ROOT}/.bin/git-tag-go-mod.sh
+
+.PHONY: act-check
+act-check:
+	@if ! command -v act >/dev/null 2>&1; then \
+		printf "\033[31;1m%s\033[0m\n" "act is not installed: brew install act" 1>&2; \
+		exit 1; \
+	fi
+
+.PHONY: act-go-mod-tidy
+act-go-mod-tidy: act-check ## Run go-mod-tidy workflow in act
+	act pull_request --container-architecture linux/amd64 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/go-mod-tidy.yml
+
+.PHONY: act-go-lint
+act-go-lint: act-check ## Run go-lint workflow in act
+	act pull_request --container-architecture linux/amd64 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/go-lint.yml
+
+.PHONY: act-go-test
+act-go-test: act-check ## Run go-test workflow in act
+	act pull_request --container-architecture linux/amd64 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/go-test.yml
+
+.PHONY: act-go-vuln
+act-go-vuln: act-check ## Run go-vuln workflow in act
+	act pull_request --container-architecture linux/amd64 -P ubuntu-latest=catthehacker/ubuntu:act-latest -W .github/workflows/go-vuln.yml
