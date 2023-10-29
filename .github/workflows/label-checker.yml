@@ -6,6 +6,7 @@ on:
       - opened
       - edited
       - labeled
+      - unlabeled
       - ready_for_review
       - reopened
       - synchronize
@@ -21,8 +22,10 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      pull-requests: read
-      statuses: write
+      pull-requests: write # required to add labels
+      statuses: read
+      checks: read
+      repository-projects: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -36,17 +39,19 @@ jobs:
           set -Eeuo pipefail -x
 
           # If any of the labels are present, exit with success
-          if [[ -n "$(gh pr view --json labels --jq ".labels[].name")" ]]; then
+          if [[ -n "$(gh pr view --json labels --jq ".labels[].name" | grep -E "^($(tr , "|" <<<"${LABELS:?}"))$")" ]]; then
             exit 0
           fi
 
           # Add labels based on PR title
           GH_PR_TITLE=$(gh pr view --json title --jq .title)
-          gh label list --json name --jq ".[].name" | while read -r LINE; do echo "${GH_PR_TITLE:?}" | awk -F: "/^${LINE-}:/ {print \$1}" ; done | xargs -t -I{} gh pr edit --add-label {}
+          gh label list --json name --jq ".[].name" | while read -r LINE; do
+            grep -Eo "^${LINE:?}" <<<"${GH_PR_TITLE:?}" || true # NOTE: Ignore the return value of grep because we just want to output the string
+          done | xargs -t -I{} gh pr edit --add-label {}
 
           # If any of the labels are present, exit with success
           while read -r LINE; do
-            if grep -E "$(tr , "|" <<<"${LABELS:?}")" <<<"${LINE-}"; then
+            if grep -E "^($(tr , "|" <<<"${LABELS:?}"))$" <<<"${LINE-}"; then
               exit 0
             fi
           done <<<"$(gh pr view --json labels --jq ".labels[].name")"
