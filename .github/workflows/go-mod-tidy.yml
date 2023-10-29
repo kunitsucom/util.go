@@ -42,7 +42,10 @@ jobs:
     runs-on: ubuntu-latest # ref. https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }} # needed for gh pr view
       - name: DEBUG
+        shell: bash
         run: |
           cat <<'DEBUG_DOC'
           == DEBUG =======================================================
@@ -54,7 +57,6 @@ jobs:
           ${{ toJSON(github) }}
           ================================================================
           DEBUG_DOC
-        shell: bash
       - name: actions/cache for versenv
         uses: actions/cache@v3
         with:
@@ -64,6 +66,7 @@ jobs:
           restore-keys: |
             versenv-${{ runner.os }}-
       - name: Add GITHUB_PATH, GITHUB_ENV
+        shell: bash
         run: |
           # Update GITHUB_PATH
           cat <<GITHUB_PATH >> $GITHUB_PATH
@@ -74,6 +77,7 @@ jobs:
           # Update GITHUB_ENV
           grep -Ev '^\s*$|^\s*#' .versenv.env >> $GITHUB_ENV
       - name: Setup versenv
+        shell: bash
         run: |
           # Setup versenv
           direnv allow ${{ env.WORKDIR }}
@@ -85,6 +89,7 @@ jobs:
           go-version-file: ${{ env.WORKDIR }}/go.mod
       - name: Get Golang info
         id: golang-info
+        shell: bash
         run: |
           echo "GOVERSION=$(go version | cut -d' ' -f3)" >> "$GITHUB_OUTPUT"
           echo "GOCACHE=$(go env GOCACHE)" >> "$GITHUB_OUTPUT"
@@ -99,12 +104,23 @@ jobs:
             ${{ runner.os }}-go-${{ steps.golang-info.outputs.GOVERSION }}-${{ hashFiles('**/go.sum') }}-
             ${{ runner.os }}-go-${{ steps.golang-info.outputs.GOVERSION }}-
             ${{ runner.os }}-go-
+      - name: Setup git config for go mod download
+        env:
+          DEBIAN_FRONTEND: noninteractive
+          # GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
+        working-directory: ${{ env.WORKDIR }}
+        shell: bash
+        run: |
+          set -Eeu -o pipefail -x
+          direnv allow .
+          direnv exec . bash -Eeux -o pipefail -c 'echo "${GOPRIVATE:-}${GOPRIVATE+,}" | while read -d , -r LINE; do echo "set git config: ${LINE}"; git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@${LINE}".insteadOf "https://${LINE}"; done'
       - name: Run go mod tidy
         if: ${{ steps.setup-go.outputs.cache-hit != 'true' }}
         env:
           DEBIAN_FRONTEND: noninteractive
           # GITHUB_TOKEN: ${{ secrets.GH_BOT_TOKEN }}
         working-directory: ${{ env.WORKDIR }}
+        shell: bash
         run: |
           direnv exec . go-mod-tidy-all
           git config --local user.name "github-actions[bot]"
