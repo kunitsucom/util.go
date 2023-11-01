@@ -1,7 +1,7 @@
 name: go-vuln
 #     ^^^^^^^
-# https://github.com/kunitsucom/util.go/workflows/go-vuln/badge.svg
-#                                                 ^^^^^^^
+# https://github.com/organization/repository/workflows/go-vuln/badge.svg
+#                                                      ^^^^^^^
 
 on:
   push:
