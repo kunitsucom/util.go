@@ -1,7 +1,7 @@
 name: go-test
 #     ^^^^^^^
-# https://github.com/kunitsucom/util.go/workflows/go-test/badge.svg
-#                                                 ^^^^^^^
+# https://github.com/organization/repository/workflows/go-test/badge.svg
+#                                                      ^^^^^^^
 
 on:
   push:

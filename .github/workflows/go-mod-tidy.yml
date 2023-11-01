@@ -1,7 +1,4 @@
 name: go-mod-tidy
-#     ^^^^^^
-# https://github.com/kunitsucom/util.go/workflows/go-mod-tidy/badge.svg
-#                                                 ^^^^^^
 
 on:
   pull_request:
