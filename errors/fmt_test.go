@@ -196,6 +196,14 @@ func TestErrorf(t *testing.T) {
 		}
 		t.Logf("ℹ️: [%s]:\nError():\n%s\n", t.Name(), actual.Error())
 	})
+
+	t.Run("success,SuffixDetectionLogic", func(t *testing.T) {
+		actual := Errorf("%s %s: %w", "my", "test", io.ErrUnexpectedEOF)
+		expect := io.ErrUnexpectedEOF
+		if !errors.Is(actual, io.ErrUnexpectedEOF) {
+			t.Errorf("❌: [%s]: [%%s]:\n[EXPECT]:\n%v\n[ACTUAL]:\n%v\n", t.Name(), expect, actual)
+		}
+	})
 }
 
 func Test_wrapError_FormatError(t *testing.T) {
