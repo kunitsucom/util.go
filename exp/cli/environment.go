@@ -18,10 +18,12 @@ func (cmd *Command) loadEnvironments() error {
 		switch o := opt.(type) {
 		case *StringOption:
 			if s := os.Getenv(o.Environment); s != "" {
+				DebugLog.Printf("%s: %s=%s", cmd.Name, o.Environment, s)
 				o.value = &s
 			}
 		case *BoolOption:
 			if s := os.Getenv(o.Environment); s != "" {
+				DebugLog.Printf("%s: %s=%s", cmd.Name, o.Environment, s)
 				v, err := strconv.ParseBool(s)
 				if err != nil {
 					return errorz.Errorf("%s: %w", o.Environment, err)
@@ -30,6 +32,7 @@ func (cmd *Command) loadEnvironments() error {
 			}
 		case *IntOption:
 			if s := os.Getenv(o.Environment); s != "" {
+				DebugLog.Printf("%s: %s=%s", cmd.Name, o.Environment, s)
 				v, err := strconv.Atoi(s)
 				if err != nil {
 					return errorz.Errorf("%s: %w", o.Environment, err)

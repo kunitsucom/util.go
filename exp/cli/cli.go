@@ -14,19 +14,25 @@ import (
 
 //nolint:gochecknoglobals
 var (
+	// Stdout is the writer to be used for standard output.
 	Stdout io.Writer = os.Stdout
+	// Stderr is the writer to be used for standard error.
 	Stderr io.Writer = os.Stderr
 )
 
 //nolint:revive,stylecheck
 const (
+	// UTIL_GO_CLI_TRACE is the environment variable name for trace log.
 	UTIL_GO_CLI_TRACE = "UTIL_GO_CLI_TRACE"
+	// UTIL_GO_CLI_DEBUG is the environment variable name for debug log.
 	UTIL_GO_CLI_DEBUG = "UTIL_GO_CLI_DEBUG"
 )
 
 //nolint:gochecknoglobals
 var (
+	// TraceLog is the logger to be used for trace log.
 	TraceLog = newLogger(Stderr, UTIL_GO_CLI_TRACE, "TRACE: ")
+	// DebugLog is the logger to be used for debug log.
 	DebugLog = newLogger(Stderr, UTIL_GO_CLI_DEBUG, "DEBUG: ")
 )
 
@@ -39,60 +45,96 @@ func newLogger(w io.Writer, environ string, prefix string) *log.Logger {
 }
 
 const (
+	// HelpOptionName is the option name for help.
+	HelpOptionName    = "help"
 	breakArg          = "--"
 	longOptionPrefix  = "--"
 	shortOptionPrefix = "-"
-	HelpOptionName    = "help"
 )
 
 type (
 	Command struct {
-		Name        string
+		// Name is the name of the command.
+		Name string
+		// Description is the description of the command.
 		Description string
+		// SubCommands is the subcommands of the command.
 		SubCommands []*Command
-		Options     []Option
-		Usage       func(c *Command)
+		// Options is the options of the command.
+		Options []Option
+		// Usage is the usage of the command.
+		Usage func(c *Command)
 
 		cmdStack []string
 	}
 
+	// Option is the interface for the option.
 	Option interface {
+		// GetName returns the name of the option.
 		GetName() string
+		// GetShort returns the short name of the option.
 		GetShort() string
+		// GetEnvironment returns the environment variable name of the option.
 		GetEnvironment() string
+		// HasDefault returns whether the option has a default value.
 		HasDefault() bool
+		// getDefault returns the default value of the option.
 		getDefault() interface{}
+		// GetDescription returns the description of the option.
 		GetDescription() string
+
+		// private is the private method for internal interface.
 		private()
 	}
 
+	// StringOption is the option for string value.
 	StringOption struct {
-		Name        string
-		Short       string
+		// Name is the name of the option.
+		Name string
+		// Short is the short name of the option.
+		Short string
+		// Environment is the environment variable name of the option.
 		Environment string
-		Default     *string
+		// Default is the default value of the option.
+		Default *string
+		// Description is the description of the option.
 		Description string
 
+		// value is the value of the option.
 		value *string
 	}
 
+	// BoolOption is the option for bool value.
 	BoolOption struct {
-		Name        string
-		Short       string
+		// Name is the name of the option.
+		Name string
+		// Short is the short name of the option.
+		Short string
+		// Environment is the environment variable name of the option.
 		Environment string
-		Default     *bool
+		// Default is the default value of the option.
+		Default *bool
+		// Description is the description of the option.
 		Description string
 
+		// value is the value of the option.
 		value *bool
 	}
 
+	// IntOption is the option for int value.
 	IntOption struct {
-		Name        string
-		Short       string
+		// Name is the name of the option.
+		Name string
+		// Short is the short name of the option.
+		Short string
+		// Environment is the environment variable name of the option.
 		Environment string
-		Default     *int
+		// Default is the default value of the option.
+		Default *int
+		// Description is the description of the option.
 		Description string
 
+		// value is the value of the option.
 		value *int
 	}
 )
@@ -104,6 +146,7 @@ func (cmd *Command) getDescription() string {
 	return fmt.Sprintf("command %q description", strings.Join(cmd.cmdStack, " "))
 }
 
+// Default is the helper function to create a default value.
 func Default[T interface{}](v T) *T {
 	return ptr[T](v)
 }
@@ -197,45 +240,51 @@ argsLoop:
 				case *StringOption:
 					switch {
 					case optionArg(o, arg):
+						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
 						if hasOptionValue(args, i) {
 							return nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
 						}
 						o.value = ptr(args[i+1])
 						i++
-						TraceLog.Printf("%s: parse: option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
 						continue argsLoop
 					case optionEqualArg(o, arg):
+						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
 						o.value = ptr(optionEqualArgExtractValue(arg))
-						TraceLog.Printf("%s: parse: option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
 						continue argsLoop
 					}
 				case *BoolOption:
 					switch {
 					case optionArg(o, arg):
+						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
 						o.value = ptr(true)
-						TraceLog.Printf("%s: parse: option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
 						continue argsLoop
 					case optionEqualArg(o, arg):
+						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
 						optVal, _ := strconv.ParseBool(optionEqualArgExtractValue(arg))
 						o.value = &optVal
-						TraceLog.Printf("%s: parse: option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
 						continue argsLoop
 					}
 				case *IntOption:
 					switch {
 					case optionArg(o, arg):
+						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
 						if hasOptionValue(args, i) {
 							return nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
 						}
 						optVal, _ := strconv.Atoi(args[i+1])
 						o.value = &optVal
 						i++
-						TraceLog.Printf("%s: parse: option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
 						continue argsLoop
 					case optionEqualArg(o, arg):
+						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
 						optVal, _ := strconv.Atoi(optionEqualArgExtractValue(arg))
 						o.value = &optVal
-						TraceLog.Printf("%s: parse: option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
 						continue argsLoop
 					}
 				default:
@@ -346,6 +395,11 @@ func defaultUsage(cmd *Command, w io.Writer) {
 	_, _ = fmt.Fprint(w, usage)
 }
 
+// Parse parses the commands and options.
+//
+// If the help option is specified, it will be displayed and ErrHelp will be returned.
+//
+// If the option is not specified, the default value will be used.
 func (cmd *Command) Parse(args []string) (remaining []string, err error) {
 	appendHelpOption(cmd)
 
@@ -373,6 +427,7 @@ func (cmd *Command) Parse(args []string) (remaining []string, err error) {
 	return r, nil
 }
 
+// IsHelp returns whether the error is ErrHelp.
 func IsHelp(err error) bool {
 	return errors.Is(err, ErrHelp)
 }
