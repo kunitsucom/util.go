@@ -56,11 +56,11 @@ func newErrorf(c *errorfConfig) func(format string, a ...interface{}) error {
 			suffixW      = ": %w"
 		)
 		var (
-			hasSuffixS      = strings.Contains(format, suffixS)
-			hasSuffixV      = strings.Contains(format, suffixV)
-			hasSuffixPlusV  = strings.Contains(format, suffixPlusV)
-			hasSuffixSharpV = strings.Contains(format, suffixSharpV)
-			hasSuffixW      = strings.Contains(format, suffixW)
+			hasSuffixS      = strings.HasSuffix(format, suffixS)
+			hasSuffixV      = strings.HasSuffix(format, suffixV)
+			hasSuffixPlusV  = strings.HasSuffix(format, suffixPlusV)
+			hasSuffixSharpV = strings.HasSuffix(format, suffixSharpV)
+			hasSuffixW      = strings.HasSuffix(format, suffixW)
 		)
 
 		if !hasSuffixS && !hasSuffixV && !hasSuffixPlusV && !hasSuffixSharpV && !hasSuffixW {
