@@ -3,8 +3,8 @@ package cliz
 import errorz "github.com/kunitsucom/util.go/errors"
 
 func (cmd *Command) postCheckOptions() error {
-	// NOTE: duplicate check
-	if err := cmd.postCheckDuplicateOptions(make(map[string]bool)); err != nil {
+	// NOTE: required check
+	if err := cmd.postCheckOptionRequired(); err != nil {
 		return errorz.Errorf("%s: %w", cmd.Name, err)
 	}
 
@@ -12,10 +12,10 @@ func (cmd *Command) postCheckOptions() error {
 }
 
 //nolint:cyclop
-func (cmd *Command) postCheckDuplicateOptions(envs map[string]bool) error {
+func (cmd *Command) postCheckOptionRequired() error {
 	for _, opt := range cmd.Options {
 		name := opt.GetName()
-		TraceLog.Printf("postCheckDuplicateOptions: %s: option: %s", cmd.Name, name)
+		TraceLog.Printf("postCheckOptionRequired: %s: option: %s", cmd.Name, name)
 
 		if !opt.HasValue() {
 			return errorz.Errorf("option: %s%s: %w", longOptionPrefix, name, ErrOptionRequired)
@@ -23,7 +23,7 @@ func (cmd *Command) postCheckDuplicateOptions(envs map[string]bool) error {
 	}
 
 	for _, subcmd := range cmd.SubCommands {
-		if err := subcmd.postCheckDuplicateOptions(envs); err != nil {
+		if err := subcmd.postCheckOptionRequired(); err != nil {
 			return errorz.Errorf("%s: %w", subcmd.Name, err)
 		}
 	}

@@ -34,6 +34,30 @@ func TestCommand(t *testing.T) {
 		return &Command{
 			Name:        "main-cli",
 			Description: `My awesome CLI tool.`,
+			Options: []Option{
+				&BoolOption{
+					Name:        "version",
+					Short:       "v",
+					Description: "show version",
+					Default:     Default(false),
+				},
+				&IntOption{
+					Name:        "priority",
+					Description: "priority number",
+					Default:     Default(1),
+				},
+				&BoolOption{
+					Name:        "verbose",
+					Environment: "VERBOSE",
+					Description: "output verbose",
+					Default:     Default(false),
+				},
+				&StringOption{
+					Name:        "annotation",
+					Description: "annotate value",
+					Default:     Default(""),
+				},
+			},
 			SubCommands: []*Command{
 				{
 					Name:        "sub-cmd",
@@ -122,27 +146,6 @@ func TestCommand(t *testing.T) {
 							Name: "bar-int",
 						},
 					},
-				},
-			},
-			Options: []Option{
-				&BoolOption{
-					Name:        "version",
-					Short:       "v",
-					Description: "show version",
-				},
-				&IntOption{
-					Name:        "priority",
-					Description: "priority number",
-					Default:     Default(1),
-				},
-				&BoolOption{
-					Name:        "verbose",
-					Environment: "VERBOSE",
-					Description: "output verbose",
-				},
-				&StringOption{
-					Name:        "annotation",
-					Description: "show version",
 				},
 			},
 		}
@@ -372,7 +375,7 @@ options:
 		}
 	})
 
-	t.Run("failure,ErrInvalidOptionType", func(t *testing.T) {
+	t.Run("failure,ErrInvalidOptionType,Environment", func(t *testing.T) {
 		t.Parallel()
 
 		c := newCmd()
@@ -383,6 +386,29 @@ options:
 
 		if _, err := c.Parse([]string{"main-cli", "sub-cmd"}); !errors.Is(err, ErrInvalidOptionType) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrInvalidOptionType, err)
+		}
+	})
+
+	t.Run("failure,ErrInvalidOptionType,Default", func(t *testing.T) {
+		t.Parallel()
+
+		c := newCmd()
+		c.SubCommands[0].Options = append(c.SubCommands[0].Options, &testOption{
+			Name:    "test-option",
+			Default: Default("test-option"),
+		})
+
+		if _, err := c.Parse([]string{"main-cli", "sub-cmd", "--host=host"}); !errors.Is(err, ErrInvalidOptionType) {
+			t.Errorf("❌: expect != actual: %v != %+v", ErrInvalidOptionType, err)
+		}
+	})
+
+	t.Run("failure,ErrOptionRequired", func(t *testing.T) {
+		t.Parallel()
+
+		c := newCmd()
+		if _, err := c.Parse([]string{"main-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int=1"}); !errors.Is(err, ErrOptionRequired) {
+			t.Errorf("❌: expect != actual: %v != %+v", ErrOptionRequired, err)
 		}
 	})
 }
