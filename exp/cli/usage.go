@@ -7,22 +7,38 @@ import (
 )
 
 func (cmd *Command) usage() {
-	if cmd.Usage != nil {
-		cmd.Usage(cmd)
+	if cmd.UsageFunc != nil {
+		cmd.UsageFunc(cmd)
 		return
 	}
-	defaultUsage(cmd, Stderr)
+	defaultUsage(Stderr, cmd)
 }
 
-//nolint:gocognit,cyclop
-func defaultUsage(cmd *Command, w io.Writer) {
+//nolint:cyclop,funlen,gocognit
+func defaultUsage(w io.Writer, cmd *Command) {
 	const indent = "    "
 
+	// Usage
 	usage := "Usage:" + "\n"
-	usage += indent + fmt.Sprintf("%s [options] [arguments]\n", strings.Join(cmd.cmdStack, " ")) + "\n"
+	if cmd.Usage != "" {
+		usage += indent + cmd.Usage + "\n"
+	} else {
+		usage += indent + strings.Join(cmd.called, " ")
+		if len(cmd.Options) > 0 {
+			usage += " [options]"
+		}
+		if len(cmd.SubCommands) > 0 {
+			usage += " <subcommand>"
+		}
+		usage += "\n"
+	}
+	usage += "\n"
+
+	// Description
 	usage += "Description:" + "\n"
 	usage += indent + cmd.getDescription() + "\n"
 
+	// Options
 	{
 		if len(cmd.SubCommands) > 0 {
 			usage += "\n"
@@ -69,5 +85,6 @@ func defaultUsage(cmd *Command, w io.Writer) {
 		}
 	}
 
+	// Output
 	_, _ = fmt.Fprint(w, usage)
 }

@@ -3,6 +3,7 @@ package cliz
 import (
 	"bytes"
 	"errors"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -35,7 +36,7 @@ func TestCommand(t *testing.T) {
 
 	newCmd := func() *Command {
 		return &Command{
-			Name:        "main-cli",
+			Name:        "my-cli",
 			Description: `My awesome CLI tool.`,
 			Options: []Option{
 				&BoolOption{
@@ -177,12 +178,19 @@ func TestCommand(t *testing.T) {
 		t.Setenv(PORT, "8000")
 
 		c := newCmd()
-		args := []string{"main-cli", "-v", "--priority=1", "--annotation=4main", "--verbose=false", "--ratio", "0.98", "sub-cmd", "--host", "localhost", "--port", "8081", "--annotation=4sub", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64=1.11", "sub-sub-cmd", "--annotation=4subsub", "path/to/source", "path/to/destination", "--recursive", "--", "path/to/abc"}
-		remaining, err := c.Parse(args[1:])
+		args := []string{"my-cli", "-v", "--priority=1", "--annotation=4main", "--verbose=false", "--ratio", "0.98", "sub-cmd", "--host", "localhost", "--port", "8081", "--annotation=4sub", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64=1.11", "sub-sub-cmd", "--annotation=4subsub", "path/to/source", "path/to/destination", "--recursive", "--", "path/to/abc"}
+		calledCommands, remainingArgs, err := c.Parse(args[1:])
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
-		t.Logf("✅: %v: remaining: %+v", args, remaining)
+
+		if expect, actual := []string{"my-cli", "sub-cmd", "sub-sub-cmd"}, calledCommands; !reflect.DeepEqual(expect, actual) {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+
+		if expect, actual := []string{"path/to/source", "path/to/destination", "path/to/abc"}, remainingArgs; !reflect.DeepEqual(expect, actual) {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
 
 		version, err := c.GetBoolOption("version")
 		if err != nil {
@@ -280,7 +288,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%f", "baz", args, ff)
 		}
 
-		if expect, actual := "path/to/source path/to/destination path/to/abc", strings.Join(remaining, " "); expect != actual {
+		if expect, actual := "path/to/source path/to/destination path/to/abc", strings.Join(remainingArgs, " "); expect != actual {
 			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
@@ -289,13 +297,13 @@ func TestCommand(t *testing.T) {
 		c := newCmd()
 
 		const golden = `Usage:
-    main-cli sub-cmd [options] [arguments]
+    my-cli sub-cmd [options] <subcommand>
 
 Description:
     My awesome CLI tool's sub command.
 
 sub commands:
-    sub-sub-cmd: command "main-cli sub-cmd sub-sub-cmd" description
+    sub-sub-cmd: command "my-cli sub-cmd sub-sub-cmd" description
 
 options:
     --host (env: HOST, required)
@@ -324,10 +332,12 @@ options:
         show usage
 `
 
+		backup := Stderr
+		t.Cleanup(func() { Stderr = backup })
 		Stderr = bytes.NewBufferString("")
 
-		args := []string{"main-cli", "sub-cmd", "not-subcmd", "--help", "sub-sub-cmd"}
-		remaining, err := c.Parse(args)
+		args := []string{"my-cli", "sub-cmd", "not-subcmd", "--help", "sub-sub-cmd"}
+		_, remaining, err := c.Parse(args)
 		if !IsHelp(err) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrHelp, err)
 		}
@@ -341,12 +351,31 @@ options:
 	})
 
 	t.Run("success,Usage", func(t *testing.T) {
+		backup := Stderr
+		t.Cleanup(func() { Stderr = backup })
+		Stderr = bytes.NewBufferString("")
+
+		c := newCmd()
+		c.Usage = "my awesome CLI tool"
+		_, remaining, err := c.Parse([]string{"my-cli", "--help"})
+		if !IsHelp(err) {
+			t.Fatalf("❌: expect != actual: %v != %+v", ErrHelp, err)
+		}
+		if len(remaining) > 0 {
+			t.Errorf("❌: expect != actual: %v != %v", []string{}, remaining)
+		}
+		if !strings.Contains(Stderr.(*bytes.Buffer).String(), c.Usage) { //nolint:forcetypeassert
+			t.Errorf("❌: not contains: %v", c.Usage)
+		}
+	})
+
+	t.Run("success,UsageFunc", func(t *testing.T) {
 		c := newCmd()
 		called := false
-		c.Usage = func(c *Command) {
+		c.UsageFunc = func(c *Command) {
 			called = true
 		}
-		remaining, err := c.Parse([]string{"main-cli", "--help"})
+		_, remaining, err := c.Parse([]string{"my-cli", "--help"})
 		if !IsHelp(err) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrHelp, err)
 		}
@@ -363,15 +392,15 @@ options:
 
 		c := newCmd()
 
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd", "--host"}); !errors.Is(err, ErrMissingOptionValue) {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host"}); !errors.Is(err, ErrMissingOptionValue) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrMissingOptionValue, err)
 		}
 
-		if _, err := c.Parse([]string{"main-cli", "--priority"}); !errors.Is(err, ErrMissingOptionValue) {
+		if _, _, err := c.Parse([]string{"my-cli", "--priority"}); !errors.Is(err, ErrMissingOptionValue) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrMissingOptionValue, err)
 		}
 
-		if _, err := c.Parse([]string{"main-cli", "--ratio"}); !errors.Is(err, ErrMissingOptionValue) {
+		if _, _, err := c.Parse([]string{"my-cli", "--ratio"}); !errors.Is(err, ErrMissingOptionValue) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrMissingOptionValue, err)
 		}
 	})
@@ -384,7 +413,7 @@ options:
 			Name: "foo",
 		})
 
-		if _, err := c.Parse([]string{"main-cli", "--foo", "string"}); !errors.Is(err, ErrInvalidOptionType) {
+		if _, _, err := c.Parse([]string{"my-cli", "--foo", "string"}); !errors.Is(err, ErrInvalidOptionType) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrInvalidOptionType, err)
 		}
 	})
@@ -394,7 +423,7 @@ options:
 
 		c := newCmd()
 
-		if _, err := c.Parse([]string{"main-cli", "--foo", "string"}); !errors.Is(err, ErrUnknownOption) {
+		if _, _, err := c.Parse([]string{"my-cli", "--foo", "string"}); !errors.Is(err, ErrUnknownOption) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrUnknownOption, err)
 		}
 	})
@@ -405,7 +434,7 @@ options:
 		c := newCmd()
 		c.SubCommands = append(c.SubCommands, c.SubCommands...)
 
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd"}); !errors.Is(err, ErrDuplicateSubCommand) {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd"}); !errors.Is(err, ErrDuplicateSubCommand) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrDuplicateSubCommand, err)
 		}
 	})
@@ -416,7 +445,7 @@ options:
 		c := newCmd()
 		c.Options = append(c.Options, c.Options...)
 
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd"}); !errors.Is(err, ErrDuplicateOptionName) {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd"}); !errors.Is(err, ErrDuplicateOptionName) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrDuplicateOptionName, err)
 		}
 	})
@@ -430,7 +459,7 @@ options:
 			Environment: "FOO",
 		})
 
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd"}); !errors.Is(err, ErrInvalidOptionType) {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd"}); !errors.Is(err, ErrInvalidOptionType) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrInvalidOptionType, err)
 		}
 	})
@@ -444,7 +473,7 @@ options:
 			Default: Default("test-option"),
 		})
 
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd", "--host=host"}); !errors.Is(err, ErrInvalidOptionType) {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host"}); !errors.Is(err, ErrInvalidOptionType) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrInvalidOptionType, err)
 		}
 	})
@@ -453,7 +482,7 @@ options:
 		t.Parallel()
 
 		c := newCmd()
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64=1.11"}); !errors.Is(err, ErrOptionRequired) {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64=1.11"}); !errors.Is(err, ErrOptionRequired) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrOptionRequired, err)
 		}
 	})
@@ -462,19 +491,19 @@ options:
 		t.Parallel()
 
 		c := newCmd()
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=INVALID", "--bar-int=100", "--bar-float64=1.11"}); !errorz.Contains(err, "invalid syntax") {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=INVALID", "--bar-int=100", "--bar-float64=1.11"}); !errorz.Contains(err, "invalid syntax") {
 			t.Errorf("❌: expect != actual: err != \"invalid syntax\": %+v", err)
 		}
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int", "INVALID", "--bar-float64=1.11"}); !errorz.Contains(err, "invalid syntax") {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int", "INVALID", "--bar-float64=1.11"}); !errorz.Contains(err, "invalid syntax") {
 			t.Errorf("❌: expect != actual: err != \"invalid syntax\": %+v", err)
 		}
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int=INVALID", "--bar-float64=1.11"}); !errorz.Contains(err, "invalid syntax") {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int=INVALID", "--bar-float64=1.11"}); !errorz.Contains(err, "invalid syntax") {
 			t.Errorf("❌: expect != actual: err != \"invalid syntax\": %+v", err)
 		}
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64", "INVALID"}); !errorz.Contains(err, "invalid syntax") {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64", "INVALID"}); !errorz.Contains(err, "invalid syntax") {
 			t.Errorf("❌: expect != actual: err != \"invalid syntax\": %+v", err)
 		}
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64=INVALID"}); !errorz.Contains(err, "invalid syntax") {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64=INVALID"}); !errorz.Contains(err, "invalid syntax") {
 			t.Errorf("❌: expect != actual: err != \"invalid syntax\": %+v", err)
 		}
 	})

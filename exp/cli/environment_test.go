@@ -10,6 +10,7 @@ import (
 
 //nolint:paralleltest
 func TestCommand_loadEnvironment(t *testing.T) {
+	//nolint:stylecheck
 	const (
 		fooString   = "foo-string"
 		fooBool     = "foo-bool"

@@ -13,7 +13,7 @@ func (cmd *Command) postCheckOptions() error {
 
 //nolint:cyclop
 func (cmd *Command) postCheckOptionRequired() error {
-	if len(cmd.cmdStack) > 0 {
+	if len(cmd.called) > 0 {
 		for _, opt := range cmd.Options {
 			name := opt.GetName()
 			TraceLog.Printf("postCheckOptionRequired: %s: option: %s", cmd.Name, name)
