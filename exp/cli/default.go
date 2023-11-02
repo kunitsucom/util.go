@@ -22,6 +22,9 @@ func (cmd *Command) loadDefaults() error {
 		case *IntOption:
 			DebugLog.Printf("%s: %s=%d", cmd.Name, o.Environment, *o.Default)
 			o.value = o.Default
+		case *Float64Option:
+			DebugLog.Printf("%s: %s=%f", cmd.Name, o.Environment, *o.Default)
+			o.value = o.Default
 		default:
 			return errorz.Errorf("%s: %w", o.GetName(), ErrInvalidOptionType)
 		}

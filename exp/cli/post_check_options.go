@@ -13,12 +13,14 @@ func (cmd *Command) postCheckOptions() error {
 
 //nolint:cyclop
 func (cmd *Command) postCheckOptionRequired() error {
-	for _, opt := range cmd.Options {
-		name := opt.GetName()
-		TraceLog.Printf("postCheckOptionRequired: %s: option: %s", cmd.Name, name)
+	if len(cmd.cmdStack) > 0 {
+		for _, opt := range cmd.Options {
+			name := opt.GetName()
+			TraceLog.Printf("postCheckOptionRequired: %s: option: %s", cmd.Name, name)
 
-		if !opt.HasValue() {
-			return errorz.Errorf("option: %s%s: %w", longOptionPrefix, name, ErrOptionRequired)
+			if !opt.HasValue() {
+				return errorz.Errorf("option: %s%s: %w", longOptionPrefix, name, ErrOptionRequired)
+			}
 		}
 	}
 
