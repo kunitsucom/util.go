@@ -76,12 +76,12 @@ type (
 		GetShort() string
 		// GetEnvironment returns the environment variable name of the option.
 		GetEnvironment() string
+		// GetDescription returns the description of the option.
+		GetDescription() string
 		// HasDefault returns whether the option has a default value.
 		HasDefault() bool
 		// getDefault returns the default value of the option.
 		getDefault() interface{}
-		// GetDescription returns the description of the option.
-		GetDescription() string
 
 		// private is the private method for internal interface.
 		private()
@@ -95,10 +95,10 @@ type (
 		Short string
 		// Environment is the environment variable name of the option.
 		Environment string
-		// Default is the default value of the option.
-		Default *string
 		// Description is the description of the option.
 		Description string
+		// Default is the default value of the option.
+		Default *string
 
 		// value is the value of the option.
 		value *string
@@ -112,10 +112,10 @@ type (
 		Short string
 		// Environment is the environment variable name of the option.
 		Environment string
-		// Default is the default value of the option.
-		Default *bool
 		// Description is the description of the option.
 		Description string
+		// Default is the default value of the option.
+		Default *bool
 
 		// value is the value of the option.
 		value *bool
@@ -129,10 +129,10 @@ type (
 		Short string
 		// Environment is the environment variable name of the option.
 		Environment string
-		// Default is the default value of the option.
-		Default *int
 		// Description is the description of the option.
 		Description string
+		// Default is the default value of the option.
+		Default *int
 
 		// value is the value of the option.
 		value *int
@@ -336,11 +336,11 @@ func (cmd *Command) checkHelp() error {
 func (cmd *Command) Parse(args []string) (remaining []string, err error) {
 	appendHelpOption(cmd)
 
-	if err := cmd.checkSubCommands(); err != nil {
+	if err := cmd.preCheckSubCommands(); err != nil {
 		return nil, errorz.Errorf("failed to check commands: %w", err)
 	}
 
-	if err := cmd.checkOptions(); err != nil {
+	if err := cmd.preCheckOptions(); err != nil {
 		return nil, errorz.Errorf("failed to check options: %w", err)
 	}
 
