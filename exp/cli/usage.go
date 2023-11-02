@@ -48,21 +48,20 @@ func defaultUsage(cmd *Command, w io.Writer) {
 					}
 					usage += fmt.Sprintf("%s%s", shortOptionPrefix, short)
 				}
+
+				usage += " ("
+
 				if env != "" {
-					usage += " ("
-					usage += fmt.Sprintf("env: %s", env)
+					usage += fmt.Sprintf("env: %s, ", env)
 				}
+
 				if opt.HasDefault() {
-					if env != "" {
-						usage += ", "
-					} else {
-						usage += " ("
-					}
 					usage += fmt.Sprintf("default: %v", opt.getDefault())
+				} else {
+					usage += "required"
 				}
-				if env != "" || opt.HasDefault() {
-					usage += ")"
-				}
+
+				usage += ")"
 
 				usage += "\n"
 				usage += indent + indent + opt.GetDescription() + "\n"

@@ -257,7 +257,7 @@ sub commands:
     sub-sub-cmd: command "main-cli sub-cmd sub-sub-cmd" description
 
 options:
-    --host (env: HOST)
+    --host (env: HOST, required)
         host name
     --port (env: PORT, default: 8080)
         port number
@@ -269,11 +269,11 @@ options:
         my foo int opt
     --foo-bool, -fb (default: true)
         my foo bool opt
-    --bar-string
+    --bar-string (required)
         string value
-    --bar-bool
+    --bar-bool (required)
         bool value
-    --bar-int
+    --bar-int (required)
         int value
     --help (default: false)
         show usage
