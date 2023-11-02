@@ -84,8 +84,8 @@ func TestCommand(t *testing.T) {
 						&IntOption{
 							Name:        "port",
 							Environment: PORT,
-							Description: "port number",
 							Default:     Default(8080),
+							Description: "port number",
 						},
 						&StringOption{
 							Name:        "annotation",
