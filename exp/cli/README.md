@@ -4,6 +4,8 @@
 
 ```go
 import (
+    "log"
+
     cliz "github.com/kunitsucom/util.go/exp/cli"
 )
 
@@ -28,11 +30,14 @@ func main() {
         },
     }
 
-    remaining, err := cmd.Parse(os.Args[0:])
+    called, remaining, err := cmd.Parse(os.Args[1:])
     if err != nil {
         if errors.Is(err, cliz.ErrHelp) {
             return
         }
         log.Fatalf("failed to parse command line arguments: %+v", err)
     }
+
+    // ...
+}
 ```

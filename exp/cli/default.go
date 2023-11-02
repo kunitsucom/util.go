@@ -14,16 +14,16 @@ func (cmd *Command) loadDefaults() error {
 
 		switch o := opt.(type) {
 		case *StringOption:
-			DebugLog.Printf("%s: %s=%s", cmd.Name, o.Environment, *o.Default)
+			DebugLog.Printf("%s: %s=%s", cmd.Name, o.Name, *o.Default)
 			o.value = o.Default
 		case *BoolOption:
-			DebugLog.Printf("%s: %s=%t", cmd.Name, o.Environment, *o.Default)
+			DebugLog.Printf("%s: %s=%t", cmd.Name, o.Name, *o.Default)
 			o.value = o.Default
 		case *IntOption:
-			DebugLog.Printf("%s: %s=%d", cmd.Name, o.Environment, *o.Default)
+			DebugLog.Printf("%s: %s=%d", cmd.Name, o.Name, *o.Default)
 			o.value = o.Default
 		case *Float64Option:
-			DebugLog.Printf("%s: %s=%f", cmd.Name, o.Environment, *o.Default)
+			DebugLog.Printf("%s: %s=%f", cmd.Name, o.Name, *o.Default)
 			o.value = o.Default
 		default:
 			return errorz.Errorf("%s: %w", o.GetName(), ErrInvalidOptionType)

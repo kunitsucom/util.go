@@ -6,16 +6,16 @@ import (
 	"strings"
 )
 
-func (cmd *Command) usage() {
+func (cmd *Command) ShowUsage() {
 	if cmd.UsageFunc != nil {
 		cmd.UsageFunc(cmd)
 		return
 	}
-	defaultUsage(Stderr, cmd)
+	showUsage(Stderr, cmd)
 }
 
 //nolint:cyclop,funlen,gocognit
-func defaultUsage(w io.Writer, cmd *Command) {
+func showUsage(w io.Writer, cmd *Command) {
 	const indent = "    "
 
 	// Usage
@@ -23,7 +23,7 @@ func defaultUsage(w io.Writer, cmd *Command) {
 	if cmd.Usage != "" {
 		usage += indent + cmd.Usage + "\n"
 	} else {
-		usage += indent + strings.Join(cmd.called, " ")
+		usage += indent + strings.Join(cmd.calledCommands, " ")
 		if len(cmd.Options) > 0 {
 			usage += " [options]"
 		}

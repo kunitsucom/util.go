@@ -71,8 +71,8 @@ type (
 		// Otherwise, set the custom usage function.
 		UsageFunc func(c *Command)
 
-		called    []string
-		remaining []string
+		calledCommands []string
+		remainingArgs  []string
 	}
 
 	// Option is the interface for the option.
@@ -101,7 +101,7 @@ func (cmd *Command) getDescription() string {
 	if cmd.Description != "" {
 		return cmd.Description
 	}
-	return fmt.Sprintf("command %q description", strings.Join(cmd.called, " "))
+	return fmt.Sprintf("command %q description", strings.Join(cmd.calledCommands, " "))
 }
 
 // Default is the helper function to create a default value.
@@ -109,8 +109,8 @@ func Default[T interface{}](v T) *T { return ptr[T](v) }
 
 func ptr[T interface{}](v T) *T { return &v }
 
-// getSubcommand returns the subcommand if cmd contains the subcommand.
-func (cmd *Command) getSubcommand(arg string) (subcmd *Command) {
+// GetSubcommand returns the subcommand if cmd contains the subcommand.
+func (cmd *Command) GetSubcommand(arg string) (subcmd *Command) {
 	for _, subcmd := range cmd.SubCommands {
 		if subcmd.Name == arg {
 			return subcmd
@@ -137,9 +137,9 @@ func hasOptionValue(args []string, i int) bool {
 }
 
 //nolint:funlen,gocognit,cyclop
-func (cmd *Command) parseArgs(args []string) (calledCommands []string, remainingArgs []string, err error) {
-	cmd.called = append(cmd.called, cmd.Name)
-	cmd.remaining = make([]string, 0)
+func (cmd *Command) parseArgs(args []string) (called []string, remaining []string, err error) {
+	cmd.calledCommands = append(cmd.calledCommands, cmd.Name)
+	cmd.remainingArgs = make([]string, 0)
 
 	i := 0
 argsLoop:
@@ -148,7 +148,7 @@ argsLoop:
 
 		switch {
 		case arg == breakArg:
-			cmd.remaining = append(cmd.remaining, args[i+1:]...)
+			cmd.remainingArgs = append(cmd.remainingArgs, args[i+1:]...)
 			break argsLoop
 		case strings.HasPrefix(arg, shortOptionPrefix):
 			for _, opt := range cmd.Options {
@@ -243,15 +243,15 @@ argsLoop:
 			}
 			return nil, nil, errorz.Errorf("%s: %w", arg, ErrUnknownOption)
 		default:
-			subcmd := cmd.getSubcommand(arg)
+			subcmd := cmd.GetSubcommand(arg)
 			// If subcmd is nil, it is not a subcommand.
 			if subcmd == nil {
-				cmd.remaining = append(cmd.remaining, arg)
+				cmd.remainingArgs = append(cmd.remainingArgs, arg)
 				continue argsLoop
 			}
 
 			TraceLog.Printf("parse: subcommand: %s", arg)
-			subcmd.called = append(subcmd.called, cmd.called...)
+			subcmd.calledCommands = append(subcmd.calledCommands, cmd.calledCommands...)
 			called, remaining, err := subcmd.parseArgs(args[i+1:])
 			if err != nil {
 				return nil, nil, errorz.Errorf("%s: %w", arg, err)
@@ -260,14 +260,14 @@ argsLoop:
 		}
 	}
 
-	return cmd.called, cmd.remaining, nil
+	return cmd.calledCommands, cmd.remainingArgs, nil
 }
 
 func (cmd *Command) checkHelp() error {
 	TraceLog.Printf("checkHelp: %s", cmd.Name)
 	v, err := cmd.getBoolOption(HelpOptionName)
 	if err == nil && v {
-		cmd.usage()
+		cmd.ShowUsage()
 		return ErrHelp
 	}
 	for _, subcmd := range cmd.SubCommands {
@@ -285,7 +285,7 @@ func (cmd *Command) checkHelp() error {
 // If the option is not specified, the default value will be used.
 //
 // If the environment variable is specified, it will be used as the value of the option.
-func (cmd *Command) Parse(args []string) (calledCommands []string, remainingArgs []string, err error) {
+func (cmd *Command) Parse(args []string) (called []string, remaining []string, err error) {
 	appendHelpOption(cmd)
 
 	if err := cmd.preCheckSubCommands(); err != nil {
@@ -304,7 +304,7 @@ func (cmd *Command) Parse(args []string) (calledCommands []string, remainingArgs
 		return nil, nil, errorz.Errorf("failed to load environment: %w", err)
 	}
 
-	called, remaining, err := cmd.parseArgs(args)
+	calledCommands, remainingArgs, err := cmd.parseArgs(args)
 	if err != nil {
 		return nil, nil, errorz.Errorf("failed to parse commands and options: %w", err)
 	}
@@ -317,7 +317,7 @@ func (cmd *Command) Parse(args []string) (calledCommands []string, remainingArgs
 		return nil, nil, errorz.Errorf("failed to post-check options: %w", err)
 	}
 
-	return called, remaining, nil
+	return calledCommands, remainingArgs, nil
 }
 
 func (cmd *Command) GetStringOption(name string) (string, error) {
@@ -340,7 +340,7 @@ func (cmd *Command) GetStringOption(name string) (string, error) {
 
 //nolint:cyclop
 func (cmd *Command) getStringOption(name string) (string, error) {
-	if len(cmd.called) > 0 { //nolint:nestif
+	if len(cmd.calledCommands) > 0 { //nolint:nestif
 		for _, opt := range cmd.Options {
 			if o, ok := opt.(*StringOption); ok {
 				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
@@ -374,7 +374,7 @@ func (cmd *Command) GetBoolOption(name string) (bool, error) {
 
 //nolint:cyclop
 func (cmd *Command) getBoolOption(name string) (bool, error) {
-	if len(cmd.called) > 0 { //nolint:nestif
+	if len(cmd.calledCommands) > 0 { //nolint:nestif
 		for _, opt := range cmd.Options {
 			if o, ok := opt.(*BoolOption); ok {
 				TraceLog.Printf("getBoolOption: %s: option: %#v", cmd.Name, o)
@@ -410,7 +410,7 @@ func (cmd *Command) GetIntOption(name string) (int, error) {
 
 //nolint:cyclop
 func (cmd *Command) getIntOption(name string) (int, error) {
-	if len(cmd.called) > 0 { //nolint:nestif
+	if len(cmd.calledCommands) > 0 { //nolint:nestif
 		for _, opt := range cmd.Options {
 			if o, ok := opt.(*IntOption); ok {
 				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
@@ -444,7 +444,7 @@ func (cmd *Command) GetFloat64Option(name string) (float64, error) {
 
 //nolint:cyclop
 func (cmd *Command) getFloat64Option(name string) (float64, error) {
-	if len(cmd.called) > 0 { //nolint:nestif
+	if len(cmd.calledCommands) > 0 { //nolint:nestif
 		for _, opt := range cmd.Options {
 			if o, ok := opt.(*Float64Option); ok {
 				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
