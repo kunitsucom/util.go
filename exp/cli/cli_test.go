@@ -45,6 +45,7 @@ func TestCommand(t *testing.T) {
 								&BoolOption{
 									Name:        HelpOptionName,
 									Description: "show usage",
+									Default:     Default(false),
 								},
 								&BoolOption{
 									Name:        "recursive",
@@ -114,11 +115,11 @@ func TestCommand(t *testing.T) {
 						&StringOption{
 							Name: "bar-string",
 						},
-						&IntOption{
-							Name: "bar-int",
-						},
 						&BoolOption{
 							Name: "bar-bool",
+						},
+						&IntOption{
+							Name: "bar-int",
 						},
 					},
 				},
@@ -151,7 +152,7 @@ func TestCommand(t *testing.T) {
 		t.Setenv(PORT, "8000")
 
 		c := newCmd()
-		args := []string{"main-cli", "-v", "--priority=1", "--annotation=4main", "--verbose=false", "sub-cmd", "--host", "localhost", "--port", "8081", "--annotation=4sub", "sub-sub-cmd", "--annotation=4subsub", "path/to/source", "path/to/destination", "--recursive", "--", "path/to/abc"}
+		args := []string{"main-cli", "-v", "--priority=1", "--annotation=4main", "--verbose=false", "sub-cmd", "--host", "localhost", "--port", "8081", "--annotation=4sub", "--bar-string=bar", "--bar-bool=true", "--bar-int=1", "sub-sub-cmd", "--annotation=4subsub", "path/to/source", "path/to/destination", "--recursive", "--", "path/to/abc"}
 		remaining, err := c.Parse(args[1:])
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
@@ -270,11 +271,11 @@ options:
         my foo bool opt
     --bar-string
         string value
-    --bar-int
-        int value
     --bar-bool
         bool value
-    --help
+    --bar-int
+        int value
+    --help (default: false)
         show usage
 `
 

@@ -1,7 +1,6 @@
 package cliz
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -45,8 +44,6 @@ func newLogger(w io.Writer, environ string, prefix string) *log.Logger {
 }
 
 const (
-	// HelpOptionName is the option name for help.
-	HelpOptionName    = "help"
 	breakArg          = "--"
 	longOptionPrefix  = "--"
 	shortOptionPrefix = "-"
@@ -82,6 +79,8 @@ type (
 		HasDefault() bool
 		// getDefault returns the default value of the option.
 		getDefault() interface{}
+		// HasValue returns whether the option has a value.
+		HasValue() bool
 
 		// private is the private method for internal interface.
 		private()
@@ -160,6 +159,7 @@ func (o *StringOption) GetShort() string        { return o.Short }
 func (o *StringOption) GetEnvironment() string  { return o.Environment }
 func (o *StringOption) HasDefault() bool        { return o.Default != nil }
 func (o *StringOption) getDefault() interface{} { return *o.Default }
+func (o *StringOption) HasValue() bool          { return o.value != nil }
 func (o *StringOption) GetDescription() string {
 	if o.Description != "" {
 		return o.Description
@@ -173,6 +173,7 @@ func (o *BoolOption) GetShort() string        { return o.Short }
 func (o *BoolOption) GetEnvironment() string  { return o.Environment }
 func (o *BoolOption) HasDefault() bool        { return o.Default != nil }
 func (o *BoolOption) getDefault() interface{} { return *o.Default }
+func (o *BoolOption) HasValue() bool          { return o.value != nil }
 func (o *BoolOption) GetDescription() string {
 	if o.Description != "" {
 		return o.Description
@@ -186,6 +187,7 @@ func (o *IntOption) GetShort() string        { return o.Short }
 func (o *IntOption) GetEnvironment() string  { return o.Environment }
 func (o *IntOption) HasDefault() bool        { return o.Default != nil }
 func (o *IntOption) getDefault() interface{} { return *o.Default }
+func (o *IntOption) HasValue() bool          { return o.value != nil }
 func (o *IntOption) GetDescription() string {
 	if o.Description != "" {
 		return o.Description
@@ -337,11 +339,15 @@ func (cmd *Command) Parse(args []string) (remaining []string, err error) {
 	appendHelpOption(cmd)
 
 	if err := cmd.preCheckSubCommands(); err != nil {
-		return nil, errorz.Errorf("failed to check commands: %w", err)
+		return nil, errorz.Errorf("failed to pre-check commands: %w", err)
 	}
 
 	if err := cmd.preCheckOptions(); err != nil {
-		return nil, errorz.Errorf("failed to check options: %w", err)
+		return nil, errorz.Errorf("failed to pre-check options: %w", err)
+	}
+
+	if err := cmd.loadDefaults(); err != nil {
+		return nil, errorz.Errorf("failed to load default: %w", err)
 	}
 
 	if err := cmd.loadEnvironments(); err != nil {
@@ -357,12 +363,11 @@ func (cmd *Command) Parse(args []string) (remaining []string, err error) {
 		return nil, err //nolint:wrapcheck
 	}
 
-	return r, nil
-}
+	if err := cmd.postCheckOptions(); err != nil {
+		return nil, errorz.Errorf("failed to post-check options: %w", err)
+	}
 
-// IsHelp returns whether the error is ErrHelp.
-func IsHelp(err error) bool {
-	return errors.Is(err, ErrHelp)
+	return r, nil
 }
 
 func (cmd *Command) GetStringOption(name string) (string, error) {
@@ -391,9 +396,6 @@ func (cmd *Command) getStringOption(name string) (string, error) {
 				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
 					if o.value != nil {
 						return *o.value, nil
-					}
-					if o.Default != nil {
-						return *o.Default, nil
 					}
 				}
 			}
@@ -431,10 +433,6 @@ func (cmd *Command) getBoolOption(name string) (bool, error) {
 					if o.value != nil {
 						return *o.value, nil
 					}
-					// If o.value is nil, use o.Default.
-					if o.Default != nil {
-						return *o.Default, nil
-					}
 				}
 			}
 		}
@@ -468,9 +466,6 @@ func (cmd *Command) getIntOption(name string) (int, error) {
 				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
 					if o.value != nil {
 						return *o.value, nil
-					}
-					if o.Default != nil {
-						return *o.Default, nil
 					}
 				}
 			}
