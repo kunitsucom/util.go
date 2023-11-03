@@ -7,36 +7,36 @@ import (
 )
 
 // NoError asserts that err is nil.
-func NoError(tb testing.TB, err error) {
+func NoError(tb testing.TB, err error) bool {
 	tb.Helper()
 
-	internal.NoError(tb, tb.Fatalf, err)
+	return internal.NoError(tb, tb.Fatalf, err)
 }
 
 // Error asserts that err is not nil.
-func Error(tb testing.TB, err error) {
+func Error(tb testing.TB, err error) bool {
 	tb.Helper()
 
-	internal.Error(tb, tb.Fatalf, err)
+	return internal.Error(tb, tb.Fatalf, err)
 }
 
 // True asserts that value is true.
-func True(tb testing.TB, value bool) {
+func True(tb testing.TB, value bool) bool {
 	tb.Helper()
 
-	internal.True(tb, tb.Fatalf, value)
+	return internal.True(tb, tb.Fatalf, value)
 }
 
 // Equal asserts that expected and actual are deeply equal.
-func Equal(tb testing.TB, expected, actual interface{}) {
+func Equal(tb testing.TB, expected, actual interface{}) bool {
 	tb.Helper()
 
-	internal.Equal(tb, tb.Fatalf, expected, actual)
+	return internal.Equal(tb, tb.Fatalf, expected, actual)
 }
 
 // NotEqual asserts that expected and actual are not deeply equal.
-func NotEqual(tb testing.TB, expected, actual interface{}) {
+func NotEqual(tb testing.TB, expected, actual interface{}) bool {
 	tb.Helper()
 
-	internal.NotEqual(tb, tb.Fatalf, expected, actual)
+	return internal.NotEqual(tb, tb.Fatalf, expected, actual)
 }
