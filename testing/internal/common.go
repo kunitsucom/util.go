@@ -24,7 +24,7 @@ func Error(tb testing.TB, printf func(format string, args ...any), err error) bo
 	tb.Helper()
 
 	if err == nil {
-		printf("❌: err == nil: %+v", err)
+		printf("❌: err == nil")
 		return false
 	}
 	return true
