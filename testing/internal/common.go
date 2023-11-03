@@ -34,7 +34,7 @@ func ErrorsIs(tb testing.TB, printf func(format string, args ...any), err, targe
 	tb.Helper()
 
 	if !errors.Is(err, target) {
-		printf("❌: err != target:\n---TARGET\n+++ERROR\n%s\n%s",
+		printf("❌: err != target:\n--- TARGET\n+++ ERROR\n%s\n%s",
 			stringz.AddPrefix("-", fmt.Sprintf("%v", target), "\n"), //nolint:perfsprint
 			stringz.AddPrefix("+", fmt.Sprintf("%+v", err), "\n"),
 		)
@@ -67,7 +67,7 @@ func Equal(tb testing.TB, printf func(format string, args ...any), expected, act
 	tb.Helper()
 
 	if !reflect.DeepEqual(expected, actual) {
-		printf("❌: expected != actual:\n---EXPECTED\n+++ACTUAL\n%s", simplediff.Diff(fmt.Sprintf("%+v", expected), fmt.Sprintf("%+v", actual)))
+		printf("❌: expected != actual:\n--- EXPECTED\n+++ ACTUAL\n%s", simplediff.Diff(fmt.Sprintf("%+v", expected), fmt.Sprintf("%+v", actual)))
 		return false
 	}
 	return true
@@ -77,7 +77,7 @@ func NotEqual(tb testing.TB, printf func(format string, args ...any), expected, 
 	tb.Helper()
 
 	if reflect.DeepEqual(expected, actual) {
-		printf("❌: expected == actual:\n---EXPECTED\n+++ACTUAL\n%s", simplediff.Diff(fmt.Sprintf("%+v", expected), fmt.Sprintf("%+v", actual)))
+		printf("❌: expected == actual:\n--- EXPECTED\n+++ ACTUAL\n%s", simplediff.Diff(fmt.Sprintf("%+v", expected), fmt.Sprintf("%+v", actual)))
 		return false
 	}
 	return true
