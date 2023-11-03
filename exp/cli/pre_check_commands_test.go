@@ -18,7 +18,7 @@ func TestCommand_checkCommands(t *testing.T) {
 			},
 		}
 
-		if err := c.checkSubCommands(); err != nil {
+		if err := c.preCheckSubCommands(); err != nil {
 			t.Fatalf("❌: %+v", err)
 		}
 	})
@@ -43,7 +43,7 @@ func TestCommand_checkCommands(t *testing.T) {
 			},
 		}
 
-		if err := c.checkSubCommands(); !errors.Is(err, ErrDuplicateSubCommand) {
+		if err := c.preCheckSubCommands(); !errors.Is(err, ErrDuplicateSubCommand) {
 			t.Fatalf("❌: err != ErrDuplicateSubCommand: %+v", err)
 		}
 	})

@@ -1,10 +1,21 @@
 package cliz
 
+import "errors"
+
+// HelpOptionName is the option name for help.
+const HelpOptionName = "help"
+
+// IsHelp returns whether the error is ErrHelp.
+func IsHelp(err error) bool {
+	return errors.Is(err, ErrHelp)
+}
+
 func appendHelpOption(cmd *Command) {
 	if _, ok := cmd.getHelpOption(); !ok {
 		cmd.Options = append(cmd.Options, &BoolOption{
 			Name:        HelpOptionName,
 			Description: "show usage",
+			Default:     Default(false),
 		})
 	}
 

@@ -1,7 +1,6 @@
 package cliz
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -45,14 +44,13 @@ func newLogger(w io.Writer, environ string, prefix string) *log.Logger {
 }
 
 const (
-	// HelpOptionName is the option name for help.
-	HelpOptionName    = "help"
 	breakArg          = "--"
 	longOptionPrefix  = "--"
 	shortOptionPrefix = "-"
 )
 
 type (
+	// Command is a structure for building command lines. Please fill in each field for the structure you are facing.
 	Command struct {
 		// Name is the name of the command.
 		Name string
@@ -63,9 +61,18 @@ type (
 		// Options is the options of the command.
 		Options []Option
 		// Usage is the usage of the command.
-		Usage func(c *Command)
+		//
+		// If you want to use the default usage, remain empty.
+		// Otherwise, set the custom usage.
+		Usage string
+		// UsageFunc is custom usage function.
+		//
+		// If you want to use the default usage function, remain nil.
+		// Otherwise, set the custom usage function.
+		UsageFunc func(c *Command)
 
-		cmdStack []string
+		calledCommands []string
+		remainingArgs  []string
 	}
 
 	// Option is the interface for the option.
@@ -76,66 +83,17 @@ type (
 		GetShort() string
 		// GetEnvironment returns the environment variable name of the option.
 		GetEnvironment() string
+		// GetDescription returns the description of the option.
+		GetDescription() string
 		// HasDefault returns whether the option has a default value.
 		HasDefault() bool
 		// getDefault returns the default value of the option.
 		getDefault() interface{}
-		// GetDescription returns the description of the option.
-		GetDescription() string
+		// HasValue returns whether the option has a value.
+		HasValue() bool
 
 		// private is the private method for internal interface.
 		private()
-	}
-
-	// StringOption is the option for string value.
-	StringOption struct {
-		// Name is the name of the option.
-		Name string
-		// Short is the short name of the option.
-		Short string
-		// Environment is the environment variable name of the option.
-		Environment string
-		// Default is the default value of the option.
-		Default *string
-		// Description is the description of the option.
-		Description string
-
-		// value is the value of the option.
-		value *string
-	}
-
-	// BoolOption is the option for bool value.
-	BoolOption struct {
-		// Name is the name of the option.
-		Name string
-		// Short is the short name of the option.
-		Short string
-		// Environment is the environment variable name of the option.
-		Environment string
-		// Default is the default value of the option.
-		Default *bool
-		// Description is the description of the option.
-		Description string
-
-		// value is the value of the option.
-		value *bool
-	}
-
-	// IntOption is the option for int value.
-	IntOption struct {
-		// Name is the name of the option.
-		Name string
-		// Short is the short name of the option.
-		Short string
-		// Environment is the environment variable name of the option.
-		Environment string
-		// Default is the default value of the option.
-		Default *int
-		// Description is the description of the option.
-		Description string
-
-		// value is the value of the option.
-		value *int
 	}
 )
 
@@ -143,57 +101,15 @@ func (cmd *Command) getDescription() string {
 	if cmd.Description != "" {
 		return cmd.Description
 	}
-	return fmt.Sprintf("command %q description", strings.Join(cmd.cmdStack, " "))
+	return fmt.Sprintf("command %q description", strings.Join(cmd.calledCommands, " "))
 }
 
 // Default is the helper function to create a default value.
-func Default[T interface{}](v T) *T {
-	return ptr[T](v)
-}
+func Default[T interface{}](v T) *T { return ptr[T](v) }
 
-func ptr[T interface{}](v T) *T {
-	return &v
-}
+func ptr[T interface{}](v T) *T { return &v }
 
-func (o *StringOption) GetName() string         { return o.Name }
-func (o *StringOption) GetShort() string        { return o.Short }
-func (o *StringOption) GetEnvironment() string  { return o.Environment }
-func (o *StringOption) HasDefault() bool        { return o.Default != nil }
-func (o *StringOption) getDefault() interface{} { return *o.Default }
-func (o *StringOption) GetDescription() string {
-	if o.Description != "" {
-		return o.Description
-	}
-	return "string value"
-}
-func (*StringOption) private() {}
-
-func (o *BoolOption) GetName() string         { return o.Name }
-func (o *BoolOption) GetShort() string        { return o.Short }
-func (o *BoolOption) GetEnvironment() string  { return o.Environment }
-func (o *BoolOption) HasDefault() bool        { return o.Default != nil }
-func (o *BoolOption) getDefault() interface{} { return *o.Default }
-func (o *BoolOption) GetDescription() string {
-	if o.Description != "" {
-		return o.Description
-	}
-	return "bool value"
-}
-func (*BoolOption) private() {}
-
-func (o *IntOption) GetName() string         { return o.Name }
-func (o *IntOption) GetShort() string        { return o.Short }
-func (o *IntOption) GetEnvironment() string  { return o.Environment }
-func (o *IntOption) HasDefault() bool        { return o.Default != nil }
-func (o *IntOption) getDefault() interface{} { return *o.Default }
-func (o *IntOption) GetDescription() string {
-	if o.Description != "" {
-		return o.Description
-	}
-	return "int value"
-}
-func (*IntOption) private() {}
-
+// GetSubcommand returns the subcommand if cmd contains the subcommand.
 func (cmd *Command) GetSubcommand(arg string) (subcmd *Command) {
 	for _, subcmd := range cmd.SubCommands {
 		if subcmd.Name == arg {
@@ -221,9 +137,9 @@ func hasOptionValue(args []string, i int) bool {
 }
 
 //nolint:funlen,gocognit,cyclop
-func (cmd *Command) parse(args []string) (remaining []string, err error) {
-	cmd.cmdStack = append(cmd.cmdStack, cmd.Name)
-	remaining = make([]string, 0)
+func (cmd *Command) parseArgs(args []string) (called []string, remaining []string, err error) {
+	cmd.calledCommands = append(cmd.calledCommands, cmd.Name)
+	cmd.remainingArgs = make([]string, 0)
 
 	i := 0
 argsLoop:
@@ -232,7 +148,7 @@ argsLoop:
 
 		switch {
 		case arg == breakArg:
-			remaining = append(remaining, args[i+1:]...)
+			cmd.remainingArgs = append(cmd.remainingArgs, args[i+1:]...)
 			break argsLoop
 		case strings.HasPrefix(arg, shortOptionPrefix):
 			for _, opt := range cmd.Options {
@@ -242,7 +158,7 @@ argsLoop:
 					case optionArg(o, arg):
 						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
 						if hasOptionValue(args, i) {
-							return nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
+							return nil, nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
 						}
 						o.value = ptr(args[i+1])
 						i++
@@ -263,7 +179,10 @@ argsLoop:
 						continue argsLoop
 					case optionEqualArg(o, arg):
 						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
-						optVal, _ := strconv.ParseBool(optionEqualArgExtractValue(arg))
+						optVal, err := strconv.ParseBool(optionEqualArgExtractValue(arg))
+						if err != nil {
+							return nil, nil, errorz.Errorf("%s: %w", arg, err)
+						}
 						o.value = &optVal
 						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
 						continue argsLoop
@@ -273,51 +192,82 @@ argsLoop:
 					case optionArg(o, arg):
 						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
 						if hasOptionValue(args, i) {
-							return nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
+							return nil, nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
 						}
-						optVal, _ := strconv.Atoi(args[i+1])
+						optVal, err := strconv.Atoi(args[i+1])
+						if err != nil {
+							return nil, nil, errorz.Errorf("%s: %w", arg, err)
+						}
 						o.value = &optVal
 						i++
 						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
 						continue argsLoop
 					case optionEqualArg(o, arg):
 						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
-						optVal, _ := strconv.Atoi(optionEqualArgExtractValue(arg))
+						optVal, err := strconv.Atoi(optionEqualArgExtractValue(arg))
+						if err != nil {
+							return nil, nil, errorz.Errorf("%s: %w", arg, err)
+						}
+						o.value = &optVal
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
+						continue argsLoop
+					}
+				case *Float64Option:
+					switch {
+					case optionArg(o, arg):
+						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
+						if hasOptionValue(args, i) {
+							return nil, nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
+						}
+						optVal, err := strconv.ParseFloat(args[i+1], 64)
+						if err != nil {
+							return nil, nil, errorz.Errorf("%s: %w", arg, err)
+						}
+						o.value = &optVal
+						i++
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
+						continue argsLoop
+					case optionEqualArg(o, arg):
+						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
+						optVal, err := strconv.ParseFloat(optionEqualArgExtractValue(arg), 64)
+						if err != nil {
+							return nil, nil, errorz.Errorf("%s: %w", arg, err)
+						}
 						o.value = &optVal
 						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
 						continue argsLoop
 					}
 				default:
-					return nil, errorz.Errorf("%s: %w", arg, ErrInvalidOptionType)
+					return nil, nil, errorz.Errorf("%s: %w", arg, ErrInvalidOptionType)
 				}
 			}
-			return nil, errorz.Errorf("%s: %w", arg, ErrUnknownOption)
+			return nil, nil, errorz.Errorf("%s: %w", arg, ErrUnknownOption)
 		default:
 			subcmd := cmd.GetSubcommand(arg)
 			// If subcmd is nil, it is not a subcommand.
 			if subcmd == nil {
-				remaining = append(remaining, arg)
+				cmd.remainingArgs = append(cmd.remainingArgs, arg)
 				continue argsLoop
 			}
 
 			TraceLog.Printf("parse: subcommand: %s", arg)
-			subcmd.cmdStack = append(subcmd.cmdStack, cmd.cmdStack...)
-			remaining, err := subcmd.parse(args[i+1:])
+			subcmd.calledCommands = append(subcmd.calledCommands, cmd.calledCommands...)
+			called, remaining, err := subcmd.parseArgs(args[i+1:])
 			if err != nil {
-				return nil, errorz.Errorf("%s: %w", arg, err)
+				return nil, nil, errorz.Errorf("%s: %w", arg, err)
 			}
-			return remaining, nil
+			return called, remaining, nil
 		}
 	}
 
-	return remaining, nil
+	return cmd.calledCommands, cmd.remainingArgs, nil
 }
 
 func (cmd *Command) checkHelp() error {
 	TraceLog.Printf("checkHelp: %s", cmd.Name)
 	v, err := cmd.getBoolOption(HelpOptionName)
 	if err == nil && v {
-		cmd.usage()
+		cmd.ShowUsage()
 		return ErrHelp
 	}
 	for _, subcmd := range cmd.SubCommands {
@@ -328,108 +278,46 @@ func (cmd *Command) checkHelp() error {
 	return nil
 }
 
-func (cmd *Command) usage() {
-	if cmd.Usage != nil {
-		cmd.Usage(cmd)
-		return
-	}
-	defaultUsage(cmd, Stderr)
-}
-
-//nolint:gocognit,cyclop
-func defaultUsage(cmd *Command, w io.Writer) {
-	const indent = "    "
-
-	usage := "Usage:" + "\n"
-	usage += indent + fmt.Sprintf("%s [options] [arguments]\n", strings.Join(cmd.cmdStack, " ")) + "\n"
-	usage += "Description:" + "\n"
-	usage += indent + cmd.getDescription() + "\n"
-
-	{
-		if len(cmd.SubCommands) > 0 {
-			usage += "\n"
-			usage += "sub commands:\n"
-			for _, subcmd := range cmd.SubCommands {
-				usage += indent + fmt.Sprintf("%s: %s", subcmd.Name, subcmd.getDescription()) + "\n"
-			}
-		}
-		if len(cmd.Options) > 0 { //nolint:nestif
-			usage += "\n"
-			usage += "options:\n"
-			for _, opt := range cmd.Options {
-				name := opt.GetName()
-				short := opt.GetShort()
-				env := opt.GetEnvironment()
-				usage += indent
-				if name != "" {
-					usage += fmt.Sprintf("%s%s", longOptionPrefix, name)
-				}
-				if short != "" {
-					if name != "" {
-						usage += ", "
-					}
-					usage += fmt.Sprintf("%s%s", shortOptionPrefix, short)
-				}
-				if env != "" {
-					usage += " ("
-					usage += fmt.Sprintf("env: %s", env)
-				}
-				if opt.HasDefault() {
-					if env != "" {
-						usage += ", "
-					} else {
-						usage += " ("
-					}
-					usage += fmt.Sprintf("default: %v", opt.getDefault())
-				}
-				if env != "" || opt.HasDefault() {
-					usage += ")"
-				}
-
-				usage += "\n"
-				usage += indent + indent + opt.GetDescription() + "\n"
-			}
-		}
-	}
-
-	_, _ = fmt.Fprint(w, usage)
-}
-
-// Parse parses the commands and options.
+// Parse parses the arguments as commands and sub commands and options.
 //
-// If the help option is specified, it will be displayed and ErrHelp will be returned.
+// If the "--help" option is specified, it will be displayed and ErrHelp will be returned.
 //
 // If the option is not specified, the default value will be used.
-func (cmd *Command) Parse(args []string) (remaining []string, err error) {
+//
+// If the environment variable is specified, it will be used as the value of the option.
+func (cmd *Command) Parse(args []string) (called []string, remaining []string, err error) {
 	appendHelpOption(cmd)
 
-	if err := cmd.checkSubCommands(); err != nil {
-		return nil, errorz.Errorf("failed to check commands: %w", err)
+	if err := cmd.preCheckSubCommands(); err != nil {
+		return nil, nil, errorz.Errorf("failed to pre-check commands: %w", err)
 	}
 
-	if err := cmd.checkOptions(); err != nil {
-		return nil, errorz.Errorf("failed to check options: %w", err)
+	if err := cmd.preCheckOptions(); err != nil {
+		return nil, nil, errorz.Errorf("failed to pre-check options: %w", err)
+	}
+
+	if err := cmd.loadDefaults(); err != nil {
+		return nil, nil, errorz.Errorf("failed to load default: %w", err)
 	}
 
 	if err := cmd.loadEnvironments(); err != nil {
-		return nil, errorz.Errorf("failed to load environment: %w", err)
+		return nil, nil, errorz.Errorf("failed to load environment: %w", err)
 	}
 
-	r, err := cmd.parse(args)
+	calledCommands, remainingArgs, err := cmd.parseArgs(args)
 	if err != nil {
-		return nil, errorz.Errorf("failed to parse commands and options: %w", err)
+		return nil, nil, errorz.Errorf("failed to parse commands and options: %w", err)
 	}
 
 	if err := cmd.checkHelp(); err != nil {
-		return nil, err //nolint:wrapcheck
+		return nil, nil, err //nolint:wrapcheck
 	}
 
-	return r, nil
-}
+	if err := cmd.postCheckOptions(); err != nil {
+		return nil, nil, errorz.Errorf("failed to post-check options: %w", err)
+	}
 
-// IsHelp returns whether the error is ErrHelp.
-func IsHelp(err error) bool {
-	return errors.Is(err, ErrHelp)
+	return calledCommands, remainingArgs, nil
 }
 
 func (cmd *Command) GetStringOption(name string) (string, error) {
@@ -452,15 +340,12 @@ func (cmd *Command) GetStringOption(name string) (string, error) {
 
 //nolint:cyclop
 func (cmd *Command) getStringOption(name string) (string, error) {
-	if len(cmd.cmdStack) > 0 { //nolint:nestif
+	if len(cmd.calledCommands) > 0 { //nolint:nestif
 		for _, opt := range cmd.Options {
 			if o, ok := opt.(*StringOption); ok {
 				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
 					if o.value != nil {
 						return *o.value, nil
-					}
-					if o.Default != nil {
-						return *o.Default, nil
 					}
 				}
 			}
@@ -489,7 +374,7 @@ func (cmd *Command) GetBoolOption(name string) (bool, error) {
 
 //nolint:cyclop
 func (cmd *Command) getBoolOption(name string) (bool, error) {
-	if len(cmd.cmdStack) > 0 { //nolint:nestif
+	if len(cmd.calledCommands) > 0 { //nolint:nestif
 		for _, opt := range cmd.Options {
 			if o, ok := opt.(*BoolOption); ok {
 				TraceLog.Printf("getBoolOption: %s: option: %#v", cmd.Name, o)
@@ -497,10 +382,6 @@ func (cmd *Command) getBoolOption(name string) (bool, error) {
 				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
 					if o.value != nil {
 						return *o.value, nil
-					}
-					// If o.value is nil, use o.Default.
-					if o.Default != nil {
-						return *o.Default, nil
 					}
 				}
 			}
@@ -529,15 +410,46 @@ func (cmd *Command) GetIntOption(name string) (int, error) {
 
 //nolint:cyclop
 func (cmd *Command) getIntOption(name string) (int, error) {
-	if len(cmd.cmdStack) > 0 { //nolint:nestif
+	if len(cmd.calledCommands) > 0 { //nolint:nestif
 		for _, opt := range cmd.Options {
 			if o, ok := opt.(*IntOption); ok {
 				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
 					if o.value != nil {
 						return *o.value, nil
 					}
-					if o.Default != nil {
-						return *o.Default, nil
+				}
+			}
+		}
+	}
+	return 0, errorz.Errorf("%s: %s: %w", cmd.Name, name, ErrUnknownOption)
+}
+
+func (cmd *Command) GetFloat64Option(name string) (float64, error) {
+	// Search the contents of the subcommand in reverse order and prioritize the options of the descendant commands.
+	for i := range cmd.SubCommands {
+		subcmd := cmd.SubCommands[len(cmd.SubCommands)-1-i]
+		v, err := subcmd.GetFloat64Option(name)
+		if err == nil {
+			return v, nil
+		}
+	}
+
+	v, err := cmd.getFloat64Option(name)
+	if err == nil {
+		return v, nil
+	}
+
+	return 0, errorz.Errorf("%s: %w", name, ErrUnknownOption)
+}
+
+//nolint:cyclop
+func (cmd *Command) getFloat64Option(name string) (float64, error) {
+	if len(cmd.calledCommands) > 0 { //nolint:nestif
+		for _, opt := range cmd.Options {
+			if o, ok := opt.(*Float64Option); ok {
+				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
+					if o.value != nil {
+						return *o.value, nil
 					}
 				}
 			}

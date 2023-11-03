@@ -23,7 +23,7 @@ func TestCommand_checkOptions(t *testing.T) {
 			},
 		}
 
-		if err := c.checkOptions(); err != nil {
+		if err := c.preCheckOptions(); err != nil {
 			t.Fatalf("❌: %+v", err)
 		}
 	})
@@ -47,7 +47,7 @@ func TestCommand_checkOptions(t *testing.T) {
 			},
 		}
 
-		if err := c.checkOptions(); !errors.Is(err, ErrDuplicateOptionName) {
+		if err := c.preCheckOptions(); !errors.Is(err, ErrDuplicateOptionName) {
 			t.Fatalf("❌: err != ErrDuplicateOptionName: %+v", err)
 		}
 	})
@@ -72,7 +72,7 @@ func TestCommand_checkOptions(t *testing.T) {
 		}
 
 		{
-			err := c.checkOptions()
+			err := c.preCheckOptions()
 			if !errors.Is(err, ErrDuplicateOptionName) {
 				t.Fatalf("❌: err != ErrDuplicateOptionName: %+v", err)
 			}
@@ -99,7 +99,7 @@ func TestCommand_checkOptions(t *testing.T) {
 		}
 
 		{
-			err := c.checkOptions()
+			err := c.preCheckOptions()
 			if !errors.Is(err, ErrDuplicateOptionName) {
 				t.Fatalf("❌: err != ErrDuplicateOptionName: %+v", err)
 			}

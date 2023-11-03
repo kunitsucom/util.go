@@ -10,32 +10,43 @@ import (
 
 //nolint:paralleltest
 func TestCommand_loadEnvironment(t *testing.T) {
+	//nolint:stylecheck
 	const (
-		FOO = "FOO"
-		BAR = "BAR"
-		BAZ = "BAZ"
+		fooString   = "foo-string"
+		fooBool     = "foo-bool"
+		fooInt      = "foo-int"
+		fooFloat64  = "foo-float64"
+		FOO_STRING  = "FOO_STRING"
+		FOO_BOOL    = "BAR"
+		FOO_INT     = "BAZ"
+		FOO_FLOAT64 = "FOO_FLOAT64"
 	)
 	t.Run("success,ALL", func(t *testing.T) {
 		c := &Command{
 			Name: "main-cli",
 			Options: []Option{
 				&StringOption{
-					Name:        "foo",
-					Environment: FOO,
+					Name:        fooString,
+					Environment: FOO_STRING,
 				},
 				&BoolOption{
-					Name:        "bar",
-					Environment: BAR,
+					Name:        fooBool,
+					Environment: FOO_BOOL,
 				},
 				&IntOption{
-					Name:        "baz",
-					Environment: BAZ,
+					Name:        fooInt,
+					Environment: FOO_INT,
+				},
+				&Float64Option{
+					Name:        fooFloat64,
+					Environment: FOO_FLOAT64,
 				},
 			},
 		}
-		t.Setenv(FOO, "foo")
-		t.Setenv(BAR, "true")
-		t.Setenv(BAZ, "100")
+		t.Setenv(FOO_STRING, fooString)
+		t.Setenv(FOO_BOOL, "true")
+		t.Setenv(FOO_INT, "100")
+		t.Setenv(FOO_FLOAT64, "1.11")
 		if err := c.loadEnvironments(); err != nil {
 			t.Fatalf("❌: c.loadEnvironments: err != nil: %+v", err)
 		}
@@ -46,12 +57,12 @@ func TestCommand_loadEnvironment(t *testing.T) {
 			Name: "main-cli",
 			Options: []Option{
 				&BoolOption{
-					Name:        "bar",
-					Environment: BAR,
+					Name:        fooBool,
+					Environment: FOO_BOOL,
 				},
 			},
 		}
-		t.Setenv(BAR, "string")
+		t.Setenv(FOO_BOOL, "string")
 		if err := c.loadEnvironments(); !errorz.Contains(err, "invalid syntax") {
 			t.Fatalf("❌: c.loadEnvironments: err != \"invalid syntax\": %+v", err)
 		}
@@ -62,12 +73,28 @@ func TestCommand_loadEnvironment(t *testing.T) {
 			Name: "main-cli",
 			Options: []Option{
 				&IntOption{
-					Name:        "baz",
-					Environment: BAZ,
+					Name:        fooInt,
+					Environment: FOO_INT,
 				},
 			},
 		}
-		t.Setenv(BAZ, "string")
+		t.Setenv(FOO_INT, "string")
+		if err := c.loadEnvironments(); !errorz.Contains(err, "invalid syntax") {
+			t.Fatalf("❌: c.loadEnvironments: err != \"invalid syntax\": %+v", err)
+		}
+	})
+
+	t.Run("failure,Float64Option", func(t *testing.T) {
+		c := &Command{
+			Name: "main-cli",
+			Options: []Option{
+				&Float64Option{
+					Name:        "foo-float64",
+					Environment: FOO_FLOAT64,
+				},
+			},
+		}
+		t.Setenv(FOO_FLOAT64, "string")
 		if err := c.loadEnvironments(); !errorz.Contains(err, "invalid syntax") {
 			t.Fatalf("❌: c.loadEnvironments: err != \"invalid syntax\": %+v", err)
 		}
@@ -81,8 +108,8 @@ func TestCommand_loadEnvironment(t *testing.T) {
 					Name: "sub-cmd",
 					Options: []Option{
 						&testOption{
-							Name:        "foo",
-							Environment: FOO,
+							Name:        "foo-string",
+							Environment: FOO_STRING,
 						},
 					},
 				},

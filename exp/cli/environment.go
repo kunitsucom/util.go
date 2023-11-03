@@ -7,7 +7,7 @@ import (
 	errorz "github.com/kunitsucom/util.go/errors"
 )
 
-//nolint:cyclop
+//nolint:gocognit,cyclop
 func (cmd *Command) loadEnvironments() error {
 	for _, opt := range cmd.Options {
 		if opt.GetEnvironment() == "" {
@@ -34,6 +34,15 @@ func (cmd *Command) loadEnvironments() error {
 			if s := os.Getenv(o.Environment); s != "" {
 				DebugLog.Printf("%s: %s=%s", cmd.Name, o.Environment, s)
 				v, err := strconv.Atoi(s)
+				if err != nil {
+					return errorz.Errorf("%s: %w", o.Environment, err)
+				}
+				o.value = &v
+			}
+		case *Float64Option:
+			if s := os.Getenv(o.Environment); s != "" {
+				DebugLog.Printf("%s: %s=%s", cmd.Name, o.Environment, s)
+				v, err := strconv.ParseFloat(s, 64)
 				if err != nil {
 					return errorz.Errorf("%s: %w", o.Environment, err)
 				}

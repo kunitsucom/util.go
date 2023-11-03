@@ -3,8 +3,11 @@ package cliz
 import (
 	"bytes"
 	"errors"
+	"reflect"
 	"strings"
 	"testing"
+
+	errorz "github.com/kunitsucom/util.go/errors"
 )
 
 //nolint:paralleltest
@@ -29,11 +32,41 @@ func TestCommand(t *testing.T) {
 	(&StringOption{}).private()
 	(&BoolOption{}).private()
 	(&IntOption{}).private()
+	(&Float64Option{}).private()
 
 	newCmd := func() *Command {
 		return &Command{
-			Name:        "main-cli",
+			Name:        "my-cli",
 			Description: `My awesome CLI tool.`,
+			Options: []Option{
+				&BoolOption{
+					Name:        "version",
+					Short:       "v",
+					Description: "show version",
+					Default:     Default(false),
+				},
+				&IntOption{
+					Name:        "priority",
+					Description: "priority number",
+					Default:     Default(1),
+				},
+				&BoolOption{
+					Name:        "verbose",
+					Environment: "VERBOSE",
+					Description: "output verbose",
+					Default:     Default(false),
+				},
+				&StringOption{
+					Name:        "annotation",
+					Description: "annotate value",
+					Default:     Default(""),
+				},
+				&Float64Option{
+					Name:        "ratio",
+					Description: "ratio value",
+					Default:     Default(0.99),
+				},
+			},
 			SubCommands: []*Command{
 				{
 					Name:        "sub-cmd",
@@ -45,6 +78,7 @@ func TestCommand(t *testing.T) {
 								&BoolOption{
 									Name:        HelpOptionName,
 									Description: "show usage",
+									Default:     Default(false),
 								},
 								&BoolOption{
 									Name:        "recursive",
@@ -58,19 +92,24 @@ func TestCommand(t *testing.T) {
 									Description: "annotate command",
 								},
 								&StringOption{
-									Name:        "foo",
-									Description: "FOO",
-									Default:     Default("foo"),
+									Name:        "foo-string",
+									Description: "FOO_STRING",
+									Default:     Default("string"),
 								},
 								&BoolOption{
-									Name:        "bar",
-									Description: "BAR",
+									Name:        "foo-bool",
+									Description: "FOO_BOOL",
 									Default:     Default(true),
 								},
 								&IntOption{
-									Name:        "baz",
-									Description: "BAZ",
+									Name:        "foo-int",
+									Description: "FOO_INT",
 									Default:     Default(100),
+								},
+								&Float64Option{
+									Name:        "foo-float64",
+									Description: "FOO_FLOAT64",
+									Default:     Default(1.11),
 								},
 							},
 						},
@@ -84,8 +123,8 @@ func TestCommand(t *testing.T) {
 						&IntOption{
 							Name:        "port",
 							Environment: PORT,
-							Description: "port number",
 							Default:     Default(8080),
+							Description: "port number",
 						},
 						&StringOption{
 							Name:        "annotation",
@@ -99,49 +138,37 @@ func TestCommand(t *testing.T) {
 							Default:     Default("foo-value"),
 							Description: "my foo string opt",
 						},
-						&IntOption{
-							Name:        "foo-int",
-							Short:       "fi",
-							Default:     Default(100),
-							Description: "my foo int opt",
-						},
 						&BoolOption{
 							Name:        "foo-bool",
 							Short:       "fb",
 							Default:     Default(true),
 							Description: "my foo bool opt",
 						},
+						&IntOption{
+							Name:        "foo-int",
+							Short:       "fi",
+							Default:     Default(100),
+							Description: "my foo int opt",
+						},
+						&Float64Option{
+							Name:        "foo-float64",
+							Short:       "ff",
+							Default:     Default(float64(1.11)),
+							Description: "my foo float64 opt",
+						},
 						&StringOption{
 							Name: "bar-string",
-						},
-						&IntOption{
-							Name: "bar-int",
 						},
 						&BoolOption{
 							Name: "bar-bool",
 						},
+						&IntOption{
+							Name: "bar-int",
+						},
+						&Float64Option{
+							Name: "bar-float64",
+						},
 					},
-				},
-			},
-			Options: []Option{
-				&BoolOption{
-					Name:        "version",
-					Short:       "v",
-					Description: "show version",
-				},
-				&IntOption{
-					Name:        "priority",
-					Description: "priority number",
-					Default:     Default(1),
-				},
-				&BoolOption{
-					Name:        "verbose",
-					Environment: "VERBOSE",
-					Description: "output verbose",
-				},
-				&StringOption{
-					Name:        "annotation",
-					Description: "show version",
 				},
 			},
 		}
@@ -151,12 +178,19 @@ func TestCommand(t *testing.T) {
 		t.Setenv(PORT, "8000")
 
 		c := newCmd()
-		args := []string{"main-cli", "-v", "--priority=1", "--annotation=4main", "--verbose=false", "sub-cmd", "--host", "localhost", "--port", "8081", "--annotation=4sub", "sub-sub-cmd", "--annotation=4subsub", "path/to/source", "path/to/destination", "--recursive", "--", "path/to/abc"}
-		remaining, err := c.Parse(args[1:])
+		args := []string{"my-cli", "-v", "--priority=1", "--annotation=4main", "--verbose=false", "--ratio", "0.98", "sub-cmd", "--host", "localhost", "--port", "8081", "--annotation=4sub", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64=1.11", "sub-sub-cmd", "--annotation=4subsub", "path/to/source", "path/to/destination", "--recursive", "--", "path/to/abc"}
+		calledCommands, remainingArgs, err := c.Parse(args[1:])
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
-		t.Logf("✅: %v: remaining: %+v", args, remaining)
+
+		if expect, actual := []string{"my-cli", "sub-cmd", "sub-sub-cmd"}, calledCommands; !reflect.DeepEqual(expect, actual) {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
+
+		if expect, actual := []string{"path/to/source", "path/to/destination", "path/to/abc"}, remainingArgs; !reflect.DeepEqual(expect, actual) {
+			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
+		}
 
 		version, err := c.GetBoolOption("version")
 		if err != nil {
@@ -172,6 +206,14 @@ func TestCommand(t *testing.T) {
 		}
 		if annotation4main != "4subsub" {
 			t.Errorf("❌: %v: unexpected value: %s=%s", "annotation", args, annotation4main)
+		}
+
+		ratio, err := c.GetFloat64Option("ratio")
+		if err != nil {
+			t.Fatalf("❌: %v: %+v", args, err)
+		}
+		if ratio != 0.98 {
+			t.Errorf("❌: %v: unexpected value: %s=%f", "ratio", args, ratio)
 		}
 
 		host, err := c.GetStringOption("host")
@@ -214,31 +256,39 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%t", "recursive", args, recursive)
 		}
 
-		foo, err := c.GetStringOption("foo")
+		fs, err := c.GetStringOption("foo-string")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
-		if foo != "foo" {
-			t.Errorf("❌: %v: unexpected value: %s=%s", "foo", args, foo)
+		if fs != "string" {
+			t.Errorf("❌: %v: unexpected value: %s=%s", "foo", args, fs)
 		}
 
-		bar, err := c.GetBoolOption("bar")
+		fb, err := c.GetBoolOption("foo-bool")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
-		if !bar {
-			t.Errorf("❌: %v: unexpected value: %s=%t", "bar", args, bar)
+		if !fb {
+			t.Errorf("❌: %v: unexpected value: %s=%t", "bar", args, fb)
 		}
 
-		baz, err := c.GetIntOption("baz")
+		fi, err := c.GetIntOption("foo-int")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
-		if baz != 100 {
-			t.Errorf("❌: %v: unexpected value: %s=%d", "baz", args, baz)
+		if fi != 100 {
+			t.Errorf("❌: %v: unexpected value: %s=%d", "baz", args, fi)
 		}
 
-		if expect, actual := "path/to/source path/to/destination path/to/abc", strings.Join(remaining, " "); expect != actual {
+		ff, err := c.GetFloat64Option("foo-float64")
+		if err != nil {
+			t.Fatalf("❌: %v: %+v", args, err)
+		}
+		if ff != 1.11 {
+			t.Errorf("❌: %v: unexpected value: %s=%f", "baz", args, ff)
+		}
+
+		if expect, actual := "path/to/source path/to/destination path/to/abc", strings.Join(remainingArgs, " "); expect != actual {
 			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 	})
@@ -247,16 +297,16 @@ func TestCommand(t *testing.T) {
 		c := newCmd()
 
 		const golden = `Usage:
-    main-cli sub-cmd [options] [arguments]
+    my-cli sub-cmd [options] <subcommand>
 
 Description:
     My awesome CLI tool's sub command.
 
 sub commands:
-    sub-sub-cmd: command "main-cli sub-cmd sub-sub-cmd" description
+    sub-sub-cmd: command "my-cli sub-cmd sub-sub-cmd" description
 
 options:
-    --host (env: HOST)
+    --host (env: HOST, required)
         host name
     --port (env: PORT, default: 8080)
         port number
@@ -264,24 +314,30 @@ options:
         my annotate opt
     --foo-string, -fs (default: foo-value)
         my foo string opt
-    --foo-int, -fi (default: 100)
-        my foo int opt
     --foo-bool, -fb (default: true)
         my foo bool opt
-    --bar-string
+    --foo-int, -fi (default: 100)
+        my foo int opt
+    --foo-float64, -ff (default: 1.11)
+        my foo float64 opt
+    --bar-string (required)
         string value
-    --bar-int
-        int value
-    --bar-bool
+    --bar-bool (required)
         bool value
-    --help
+    --bar-int (required)
+        int value
+    --bar-float64 (required)
+        float64 value
+    --help (default: false)
         show usage
 `
 
+		backup := Stderr
+		t.Cleanup(func() { Stderr = backup })
 		Stderr = bytes.NewBufferString("")
 
-		args := []string{"main-cli", "sub-cmd", "not-subcmd", "--help", "sub-sub-cmd"}
-		remaining, err := c.Parse(args)
+		args := []string{"my-cli", "sub-cmd", "not-subcmd", "--help", "sub-sub-cmd"}
+		_, remaining, err := c.Parse(args)
 		if !IsHelp(err) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrHelp, err)
 		}
@@ -295,12 +351,31 @@ options:
 	})
 
 	t.Run("success,Usage", func(t *testing.T) {
+		backup := Stderr
+		t.Cleanup(func() { Stderr = backup })
+		Stderr = bytes.NewBufferString("")
+
+		c := newCmd()
+		c.Usage = "my awesome CLI tool"
+		_, remaining, err := c.Parse([]string{"my-cli", "--help"})
+		if !IsHelp(err) {
+			t.Fatalf("❌: expect != actual: %v != %+v", ErrHelp, err)
+		}
+		if len(remaining) > 0 {
+			t.Errorf("❌: expect != actual: %v != %v", []string{}, remaining)
+		}
+		if !strings.Contains(Stderr.(*bytes.Buffer).String(), c.Usage) { //nolint:forcetypeassert
+			t.Errorf("❌: not contains: %v", c.Usage)
+		}
+	})
+
+	t.Run("success,UsageFunc", func(t *testing.T) {
 		c := newCmd()
 		called := false
-		c.Usage = func(c *Command) {
+		c.UsageFunc = func(c *Command) {
 			called = true
 		}
-		remaining, err := c.Parse([]string{"main-cli", "--help"})
+		_, remaining, err := c.Parse([]string{"my-cli", "--help"})
 		if !IsHelp(err) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrHelp, err)
 		}
@@ -317,11 +392,15 @@ options:
 
 		c := newCmd()
 
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd", "--host"}); !errors.Is(err, ErrMissingOptionValue) {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host"}); !errors.Is(err, ErrMissingOptionValue) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrMissingOptionValue, err)
 		}
 
-		if _, err := c.Parse([]string{"main-cli", "--priority"}); !errors.Is(err, ErrMissingOptionValue) {
+		if _, _, err := c.Parse([]string{"my-cli", "--priority"}); !errors.Is(err, ErrMissingOptionValue) {
+			t.Errorf("❌: expect != actual: %v != %+v", ErrMissingOptionValue, err)
+		}
+
+		if _, _, err := c.Parse([]string{"my-cli", "--ratio"}); !errors.Is(err, ErrMissingOptionValue) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrMissingOptionValue, err)
 		}
 	})
@@ -334,7 +413,7 @@ options:
 			Name: "foo",
 		})
 
-		if _, err := c.Parse([]string{"main-cli", "--foo", "string"}); !errors.Is(err, ErrInvalidOptionType) {
+		if _, _, err := c.Parse([]string{"my-cli", "--foo", "string"}); !errors.Is(err, ErrInvalidOptionType) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrInvalidOptionType, err)
 		}
 	})
@@ -344,7 +423,7 @@ options:
 
 		c := newCmd()
 
-		if _, err := c.Parse([]string{"main-cli", "--foo", "string"}); !errors.Is(err, ErrUnknownOption) {
+		if _, _, err := c.Parse([]string{"my-cli", "--foo", "string"}); !errors.Is(err, ErrUnknownOption) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrUnknownOption, err)
 		}
 	})
@@ -355,7 +434,7 @@ options:
 		c := newCmd()
 		c.SubCommands = append(c.SubCommands, c.SubCommands...)
 
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd"}); !errors.Is(err, ErrDuplicateSubCommand) {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd"}); !errors.Is(err, ErrDuplicateSubCommand) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrDuplicateSubCommand, err)
 		}
 	})
@@ -366,12 +445,12 @@ options:
 		c := newCmd()
 		c.Options = append(c.Options, c.Options...)
 
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd"}); !errors.Is(err, ErrDuplicateOptionName) {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd"}); !errors.Is(err, ErrDuplicateOptionName) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrDuplicateOptionName, err)
 		}
 	})
 
-	t.Run("failure,ErrInvalidOptionType", func(t *testing.T) {
+	t.Run("failure,ErrInvalidOptionType,Environment", func(t *testing.T) {
 		t.Parallel()
 
 		c := newCmd()
@@ -380,8 +459,52 @@ options:
 			Environment: "FOO",
 		})
 
-		if _, err := c.Parse([]string{"main-cli", "sub-cmd"}); !errors.Is(err, ErrInvalidOptionType) {
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd"}); !errors.Is(err, ErrInvalidOptionType) {
 			t.Errorf("❌: expect != actual: %v != %+v", ErrInvalidOptionType, err)
+		}
+	})
+
+	t.Run("failure,ErrInvalidOptionType,Default", func(t *testing.T) {
+		t.Parallel()
+
+		c := newCmd()
+		c.SubCommands[0].Options = append(c.SubCommands[0].Options, &testOption{
+			Name:    "test-option",
+			Default: Default("test-option"),
+		})
+
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host"}); !errors.Is(err, ErrInvalidOptionType) {
+			t.Errorf("❌: expect != actual: %v != %+v", ErrInvalidOptionType, err)
+		}
+	})
+
+	t.Run("failure,ErrOptionRequired", func(t *testing.T) {
+		t.Parallel()
+
+		c := newCmd()
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64=1.11"}); !errors.Is(err, ErrOptionRequired) {
+			t.Errorf("❌: expect != actual: %v != %+v", ErrOptionRequired, err)
+		}
+	})
+
+	t.Run("failure,ErrOptionRequired", func(t *testing.T) {
+		t.Parallel()
+
+		c := newCmd()
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=INVALID", "--bar-int=100", "--bar-float64=1.11"}); !errorz.Contains(err, "invalid syntax") {
+			t.Errorf("❌: expect != actual: err != \"invalid syntax\": %+v", err)
+		}
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int", "INVALID", "--bar-float64=1.11"}); !errorz.Contains(err, "invalid syntax") {
+			t.Errorf("❌: expect != actual: err != \"invalid syntax\": %+v", err)
+		}
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int=INVALID", "--bar-float64=1.11"}); !errorz.Contains(err, "invalid syntax") {
+			t.Errorf("❌: expect != actual: err != \"invalid syntax\": %+v", err)
+		}
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64", "INVALID"}); !errorz.Contains(err, "invalid syntax") {
+			t.Errorf("❌: expect != actual: err != \"invalid syntax\": %+v", err)
+		}
+		if _, _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64=INVALID"}); !errorz.Contains(err, "invalid syntax") {
+			t.Errorf("❌: expect != actual: err != \"invalid syntax\": %+v", err)
 		}
 	})
 }

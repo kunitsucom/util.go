@@ -5,6 +5,7 @@ import "errors"
 var (
 	ErrHelp                        = errors.New("help requested")
 	ErrMissingOptionValue          = errors.New("missing option value")
+	ErrOptionRequired              = errors.New("option required")
 	ErrNoOption                    = errors.New("no option")
 	ErrUnknownOption               = errors.New("unknown option")
 	ErrInvalidOptionType           = errors.New("invalid option type")
