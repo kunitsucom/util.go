@@ -184,6 +184,34 @@ func TestCommand(t *testing.T) {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
 
+		if (*Command)(nil).Next() != nil {
+			t.Errorf("❌: expect != actual: %v != %v", nil, (*Command)(nil).Next())
+		}
+		if (&Command{}).Next() != nil {
+			t.Errorf("❌: expect != actual: %v != %v", nil, (&Command{}).Next())
+		}
+		switch c.GetName() {
+		case "my-cli":
+			switch c := c.Next(); c.GetName() {
+			case "sub-cmd":
+				switch c := c.Next(); c.GetName() {
+				case "sub-sub-cmd":
+					switch c := c.Next(); c.GetName() {
+					case "":
+						// OK
+					default:
+						t.Errorf("❌: expect != actual: %v != %v", "", c.GetName())
+					}
+				default:
+					t.Errorf("❌: expect != actual: %v != %v", "sub-sub-cmd", c.GetName())
+				}
+			default:
+				t.Errorf("❌: expect != actual: %v != %v", "sub-cmd", c.GetName())
+			}
+		default:
+			t.Errorf("❌: expect != actual: %v != %v", "my-cli", c.GetName())
+		}
+
 		if expect, actual := []string{"my-cli", "sub-cmd", "sub-sub-cmd"}, calledCommands; !reflect.DeepEqual(expect, actual) {
 			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}

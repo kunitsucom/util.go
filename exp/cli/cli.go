@@ -109,8 +109,30 @@ func Default[T interface{}](v T) *T { return ptr[T](v) }
 
 func ptr[T interface{}](v T) *T { return &v }
 
-// GetSubcommand returns the subcommand if cmd contains the subcommand.
-func (cmd *Command) GetSubcommand(arg string) (subcmd *Command) {
+func (cmd *Command) GetName() string {
+	if cmd == nil {
+		return ""
+	}
+	return cmd.Name
+}
+
+func (cmd *Command) Next() *Command {
+	if cmd == nil {
+		return nil
+	}
+	if len(cmd.calledCommands) == 0 {
+		return nil
+	}
+	for _, subcmd := range cmd.SubCommands {
+		if len(subcmd.calledCommands) > 0 {
+			return subcmd
+		}
+	}
+	return nil
+}
+
+// getSubcommand returns the subcommand if cmd contains the subcommand.
+func (cmd *Command) getSubcommand(arg string) (subcmd *Command) {
 	for _, subcmd := range cmd.SubCommands {
 		if subcmd.Name == arg {
 			return subcmd
@@ -243,7 +265,7 @@ argsLoop:
 			}
 			return nil, nil, errorz.Errorf("%s: %w", arg, ErrUnknownOption)
 		default:
-			subcmd := cmd.GetSubcommand(arg)
+			subcmd := cmd.getSubcommand(arg)
 			// If subcmd is nil, it is not a subcommand.
 			if subcmd == nil {
 				cmd.remainingArgs = append(cmd.remainingArgs, arg)
