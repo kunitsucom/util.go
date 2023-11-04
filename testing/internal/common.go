@@ -10,7 +10,7 @@ import (
 	stringz "github.com/kunitsucom/util.go/strings"
 )
 
-func NoError(tb testing.TB, printf func(format string, args ...any), err error) bool {
+func NoError(tb testing.TB, printf func(format string, args ...any), err error) (success bool) {
 	tb.Helper()
 
 	if err != nil {
@@ -20,7 +20,7 @@ func NoError(tb testing.TB, printf func(format string, args ...any), err error) 
 	return true
 }
 
-func Error(tb testing.TB, printf func(format string, args ...any), err error) bool {
+func Error(tb testing.TB, printf func(format string, args ...any), err error) (success bool) {
 	tb.Helper()
 
 	if err == nil {
@@ -30,7 +30,7 @@ func Error(tb testing.TB, printf func(format string, args ...any), err error) bo
 	return true
 }
 
-func ErrorsIs(tb testing.TB, printf func(format string, args ...any), err, target error) bool {
+func ErrorsIs(tb testing.TB, printf func(format string, args ...any), err, target error) (success bool) {
 	tb.Helper()
 
 	if !errors.Is(err, target) {
@@ -43,7 +43,7 @@ func ErrorsIs(tb testing.TB, printf func(format string, args ...any), err, targe
 	return true
 }
 
-func True(tb testing.TB, printf func(format string, args ...any), value bool) bool {
+func True(tb testing.TB, printf func(format string, args ...any), value bool) (success bool) {
 	tb.Helper()
 
 	if !value {
@@ -53,7 +53,7 @@ func True(tb testing.TB, printf func(format string, args ...any), value bool) bo
 	return true
 }
 
-func False(tb testing.TB, printf func(format string, args ...any), value bool) bool {
+func False(tb testing.TB, printf func(format string, args ...any), value bool) (success bool) {
 	tb.Helper()
 
 	if value {
@@ -63,7 +63,7 @@ func False(tb testing.TB, printf func(format string, args ...any), value bool) b
 	return true
 }
 
-func Equal(tb testing.TB, printf func(format string, args ...any), expected, actual interface{}) bool {
+func Equal(tb testing.TB, printf func(format string, args ...any), expected, actual interface{}) (success bool) {
 	tb.Helper()
 
 	if !reflect.DeepEqual(expected, actual) {
@@ -73,7 +73,7 @@ func Equal(tb testing.TB, printf func(format string, args ...any), expected, act
 	return true
 }
 
-func NotEqual(tb testing.TB, printf func(format string, args ...any), expected, actual interface{}) bool {
+func NotEqual(tb testing.TB, printf func(format string, args ...any), expected, actual interface{}) (success bool) {
 	tb.Helper()
 
 	if reflect.DeepEqual(expected, actual) {
