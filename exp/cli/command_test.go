@@ -79,9 +79,9 @@ func TestCommand(t *testing.T) {
 						{
 							Name: "sub-sub-cmd",
 							Func: func(ctx context.Context, remainingArgs []string) error {
-								cmd, ok := FromContext(ctx)
-								if !ok {
-									return errorz.Errorf("failed to get command from context")
+								cmd, err := FromContext(ctx)
+								if err != nil {
+									return errorz.Errorf("FromContext: %w", err)
 								}
 								if cmd.Name != "sub-sub-cmd" {
 									return errorz.Errorf("unexpected command name: %s", cmd.Name)
