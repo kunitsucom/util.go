@@ -38,7 +38,7 @@ func (cmd *Command) getHelpOption() (helpOption *BoolOption, ok bool) {
 
 func (cmd *Command) checkHelp() error {
 	TraceLog.Printf("checkHelp: %s", cmd.Name)
-	v, err := cmd.getBoolOption(HelpOptionName)
+	v, err := cmd.getOptionBool(HelpOptionName)
 	if err == nil && v {
 		cmd.ShowUsage()
 		return ErrHelp

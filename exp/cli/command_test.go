@@ -78,7 +78,7 @@ func TestCommand(t *testing.T) {
 					SubCommands: []*Command{
 						{
 							Name: "sub-sub-cmd",
-							Func: func(ctx context.Context, remainingArgs []string) error {
+							RunFunc: func(ctx context.Context, remainingArgs []string) error {
 								cmd, err := FromContext(ctx)
 								if err != nil {
 									return errorz.Errorf("FromContext: %w", err)
@@ -238,7 +238,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: expect != actual: %v != %v", expect, actual)
 		}
 
-		version, err := c.GetBoolOption("version")
+		version, err := c.GetOptionBool("version")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
@@ -246,7 +246,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%t", "version", args, version)
 		}
 
-		annotation4main, err := c.GetStringOption("annotation")
+		annotation4main, err := c.GetOptionString("annotation")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
@@ -254,7 +254,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%s", "annotation", args, annotation4main)
 		}
 
-		ratio, err := c.GetFloat64Option("ratio")
+		ratio, err := c.GetOptionFloat64("ratio")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
@@ -262,7 +262,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%f", "ratio", args, ratio)
 		}
 
-		host, err := c.GetStringOption("host")
+		host, err := c.GetOptionString("host")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
@@ -270,7 +270,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%s", "host", args, host)
 		}
 
-		port, err := c.GetIntOption("port")
+		port, err := c.GetOptionInt("port")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
@@ -278,7 +278,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%d", "port", args, port)
 		}
 
-		priority, err := c.GetIntOption("priority")
+		priority, err := c.GetOptionInt("priority")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
@@ -286,7 +286,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%d", "priority", args, priority)
 		}
 
-		verbose, err := c.GetBoolOption("verbose")
+		verbose, err := c.GetOptionBool("verbose")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
@@ -294,7 +294,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%t", "verbose", args, verbose)
 		}
 
-		recursive, err := c.GetBoolOption("recursive")
+		recursive, err := c.GetOptionBool("recursive")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
@@ -302,7 +302,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%t", "recursive", args, recursive)
 		}
 
-		fs, err := c.GetStringOption("foo-string")
+		fs, err := c.GetOptionString("foo-string")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
@@ -310,7 +310,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%s", "foo", args, fs)
 		}
 
-		fb, err := c.GetBoolOption("foo-bool")
+		fb, err := c.GetOptionBool("foo-bool")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
@@ -318,7 +318,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%t", "bar", args, fb)
 		}
 
-		fi, err := c.GetIntOption("foo-int")
+		fi, err := c.GetOptionInt("foo-int")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
@@ -326,7 +326,7 @@ func TestCommand(t *testing.T) {
 			t.Errorf("❌: %v: unexpected value: %s=%d", "baz", args, fi)
 		}
 
-		ff, err := c.GetFloat64Option("foo-float64")
+		ff, err := c.GetOptionFloat64("foo-float64")
 		if err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
@@ -593,7 +593,7 @@ func TestCommand_Exec(t *testing.T) {
 		t.Parallel()
 		c := &Command{
 			Name: "my-cli",
-			Func: func(ctx context.Context, remainingArgs []string) error {
+			RunFunc: func(ctx context.Context, remainingArgs []string) error {
 				return nil
 			},
 			SubCommands: []*Command{
