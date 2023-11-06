@@ -44,8 +44,8 @@ type (
 		Description string
 		// Options is the options of the command.
 		Options []Option
-		// Func is the function to be executed when the command is executed.
-		Func func(ctx context.Context, remainingArgs []string) error
+		// RunFunc is the function to be executed when (*Command).Run is executed.
+		RunFunc func(ctx context.Context, remainingArgs []string) error
 		// SubCommands is the subcommands of the command.
 		SubCommands []*Command
 
@@ -281,9 +281,11 @@ func (cmd *Command) initCommand() {
 //
 // If the "--help" option is specified, it will be displayed and ErrHelp will be returned.
 //
-// If the option is not specified, the default value will be used.
+// If the option is not specified, the default value will be used if it is set.
 //
 // If the environment variable is specified, it will be used as the value of the option.
+//
+// This function is idempotent. If the conditions are the same, the same result will be returned no matter how many times it is called.
 //
 //nolint:cyclop
 func (cmd *Command) Parse(args []string) (remainingArgs []string, err error) {
@@ -315,7 +317,6 @@ func (cmd *Command) Parse(args []string) (remainingArgs []string, err error) {
 		return nil, errorz.Errorf("failed to parse commands and options: %w", err)
 	}
 
-	// NOTE: help
 	if err := cmd.checkHelp(); err != nil {
 		return nil, err //nolint:wrapcheck
 	}
@@ -327,10 +328,13 @@ func (cmd *Command) Parse(args []string) (remainingArgs []string, err error) {
 	return remaining, nil
 }
 
+// Run executes (*Command).RunFunc of the specified command or subcommand.
+//
+// If you only want to parse the options, use Parse instead of this.
 func (cmd *Command) Run(ctx context.Context, args []string) error {
 	remainingArgs, err := cmd.Parse(args)
 	if err != nil {
-		return errorz.Errorf("%s: %w", cmd.Name, err)
+		return errorz.Errorf("%s: %w", cmd.GetName(), err)
 	}
 
 	execCmd := cmd
@@ -338,9 +342,9 @@ func (cmd *Command) Run(ctx context.Context, args []string) error {
 		execCmd = execCmd.Next()
 	}
 
-	if execCmd.Func == nil {
+	if execCmd.RunFunc == nil {
 		return errorz.Errorf("%s: %w", strings.Join(execCmd.calledCommands, " "), ErrCommandFuncNotSet)
 	}
 
-	return execCmd.Func(WithContext(ctx, execCmd), remainingArgs)
+	return execCmd.RunFunc(WithContext(ctx, execCmd), remainingArgs)
 }

@@ -128,17 +128,17 @@ func (o *Float64Option) GetDescription() string {
 }
 func (*Float64Option) private() {}
 
-func (cmd *Command) GetStringOption(name string) (string, error) {
+func (cmd *Command) GetOptionString(name string) (string, error) {
 	// Search the contents of the subcommand in reverse order and prioritize the options of the descendant commands.
 	for i := range cmd.SubCommands {
 		subcmd := cmd.SubCommands[len(cmd.SubCommands)-1-i]
-		v, err := subcmd.GetStringOption(name)
+		v, err := subcmd.GetOptionString(name)
 		if err == nil {
 			return v, nil
 		}
 	}
 
-	v, err := cmd.getStringOption(name)
+	v, err := cmd.getOptionString(name)
 	if err == nil {
 		return v, nil
 	}
@@ -147,7 +147,7 @@ func (cmd *Command) GetStringOption(name string) (string, error) {
 }
 
 //nolint:cyclop
-func (cmd *Command) getStringOption(name string) (string, error) {
+func (cmd *Command) getOptionString(name string) (string, error) {
 	if len(cmd.calledCommands) > 0 { //nolint:nestif
 		for _, opt := range cmd.Options {
 			if o, ok := opt.(*StringOption); ok {
@@ -162,17 +162,17 @@ func (cmd *Command) getStringOption(name string) (string, error) {
 	return "", errorz.Errorf("%s: %s: %w", cmd.Name, name, ErrUnknownOption)
 }
 
-func (cmd *Command) GetBoolOption(name string) (bool, error) {
+func (cmd *Command) GetOptionBool(name string) (bool, error) {
 	// Search the contents of the subcommand in reverse order and prioritize the options of the descendant commands.
 	for i := range cmd.SubCommands {
 		subcmd := cmd.SubCommands[len(cmd.SubCommands)-1-i]
-		v, err := subcmd.GetBoolOption(name)
+		v, err := subcmd.GetOptionBool(name)
 		if err == nil {
 			return v, nil
 		}
 	}
 
-	v, err := cmd.getBoolOption(name)
+	v, err := cmd.getOptionBool(name)
 	if err == nil {
 		return v, nil
 	}
@@ -181,11 +181,11 @@ func (cmd *Command) GetBoolOption(name string) (bool, error) {
 }
 
 //nolint:cyclop
-func (cmd *Command) getBoolOption(name string) (bool, error) {
+func (cmd *Command) getOptionBool(name string) (bool, error) {
 	if len(cmd.calledCommands) > 0 { //nolint:nestif
 		for _, opt := range cmd.Options {
 			if o, ok := opt.(*BoolOption); ok {
-				TraceLog.Printf("getBoolOption: %s: option: %#v", cmd.Name, o)
+				TraceLog.Printf("getOptionBool: %s: option: %#v", cmd.Name, o)
 				// If Name, Short, or Environment is matched, return the value.
 				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
 					if o.value != nil {
@@ -198,17 +198,17 @@ func (cmd *Command) getBoolOption(name string) (bool, error) {
 	return false, errorz.Errorf("%s: %s: %w", cmd.Name, name, ErrUnknownOption)
 }
 
-func (cmd *Command) GetIntOption(name string) (int, error) {
+func (cmd *Command) GetOptionInt(name string) (int, error) {
 	// Search the contents of the subcommand in reverse order and prioritize the options of the descendant commands.
 	for i := range cmd.SubCommands {
 		subcmd := cmd.SubCommands[len(cmd.SubCommands)-1-i]
-		v, err := subcmd.GetIntOption(name)
+		v, err := subcmd.GetOptionInt(name)
 		if err == nil {
 			return v, nil
 		}
 	}
 
-	v, err := cmd.getIntOption(name)
+	v, err := cmd.getOptionInt(name)
 	if err == nil {
 		return v, nil
 	}
@@ -217,7 +217,7 @@ func (cmd *Command) GetIntOption(name string) (int, error) {
 }
 
 //nolint:cyclop
-func (cmd *Command) getIntOption(name string) (int, error) {
+func (cmd *Command) getOptionInt(name string) (int, error) {
 	if len(cmd.calledCommands) > 0 { //nolint:nestif
 		for _, opt := range cmd.Options {
 			if o, ok := opt.(*IntOption); ok {
@@ -232,17 +232,17 @@ func (cmd *Command) getIntOption(name string) (int, error) {
 	return 0, errorz.Errorf("%s: %s: %w", cmd.Name, name, ErrUnknownOption)
 }
 
-func (cmd *Command) GetFloat64Option(name string) (float64, error) {
+func (cmd *Command) GetOptionFloat64(name string) (float64, error) {
 	// Search the contents of the subcommand in reverse order and prioritize the options of the descendant commands.
 	for i := range cmd.SubCommands {
 		subcmd := cmd.SubCommands[len(cmd.SubCommands)-1-i]
-		v, err := subcmd.GetFloat64Option(name)
+		v, err := subcmd.GetOptionFloat64(name)
 		if err == nil {
 			return v, nil
 		}
 	}
 
-	v, err := cmd.getFloat64Option(name)
+	v, err := cmd.getOptionFloat64(name)
 	if err == nil {
 		return v, nil
 	}
@@ -251,7 +251,7 @@ func (cmd *Command) GetFloat64Option(name string) (float64, error) {
 }
 
 //nolint:cyclop
-func (cmd *Command) getFloat64Option(name string) (float64, error) {
+func (cmd *Command) getOptionFloat64(name string) (float64, error) {
 	if len(cmd.calledCommands) > 0 { //nolint:nestif
 		for _, opt := range cmd.Options {
 			if o, ok := opt.(*Float64Option); ok {
