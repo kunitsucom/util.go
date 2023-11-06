@@ -10,7 +10,7 @@ func IsHelp(err error) bool {
 	return errors.Is(err, ErrHelp)
 }
 
-func appendHelpOption(cmd *Command) {
+func (cmd *Command) initAppendHelpOption() {
 	if _, ok := cmd.getHelpOption(); !ok {
 		cmd.Options = append(cmd.Options, &BoolOption{
 			Name:        HelpOptionName,
@@ -20,7 +20,7 @@ func appendHelpOption(cmd *Command) {
 	}
 
 	for _, subcmd := range cmd.SubCommands {
-		appendHelpOption(subcmd)
+		subcmd.initAppendHelpOption()
 	}
 }
 
@@ -34,4 +34,19 @@ func (cmd *Command) getHelpOption() (helpOption *BoolOption, ok bool) {
 	}
 
 	return nil, false
+}
+
+func (cmd *Command) checkHelp() error {
+	TraceLog.Printf("checkHelp: %s", cmd.Name)
+	v, err := cmd.getBoolOption(HelpOptionName)
+	if err == nil && v {
+		cmd.ShowUsage()
+		return ErrHelp
+	}
+	for _, subcmd := range cmd.SubCommands {
+		if err := subcmd.checkHelp(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
