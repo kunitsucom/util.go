@@ -3,7 +3,7 @@ package cliz
 import errorz "github.com/kunitsucom/util.go/errors"
 
 func (cmd *Command) postCheckOptions() error {
-	// NOTE: required check
+	// NOTE: required options
 	if err := cmd.postCheckOptionRequired(); err != nil {
 		return errorz.Errorf("%s: %w", cmd.Name, err)
 	}

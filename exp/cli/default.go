@@ -4,6 +4,18 @@ import (
 	errorz "github.com/kunitsucom/util.go/errors"
 )
 
+// Default is the helper function to create a default value.
+func Default[T interface{}](v T) *T { return ptr[T](v) }
+
+func ptr[T interface{}](v T) *T { return &v }
+
+func (cmd *Command) GetName() string {
+	if cmd == nil {
+		return ""
+	}
+	return cmd.Name
+}
+
 //nolint:cyclop
 func (cmd *Command) loadDefaults() error {
 	for _, opt := range cmd.Options {

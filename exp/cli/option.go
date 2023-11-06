@@ -1,5 +1,7 @@
 package cliz
 
+import errorz "github.com/kunitsucom/util.go/errors"
+
 type (
 	// StringOption is the option for string value.
 	StringOption struct {
@@ -125,3 +127,141 @@ func (o *Float64Option) GetDescription() string {
 	return "float64 value"
 }
 func (*Float64Option) private() {}
+
+func (cmd *Command) GetStringOption(name string) (string, error) {
+	// Search the contents of the subcommand in reverse order and prioritize the options of the descendant commands.
+	for i := range cmd.SubCommands {
+		subcmd := cmd.SubCommands[len(cmd.SubCommands)-1-i]
+		v, err := subcmd.GetStringOption(name)
+		if err == nil {
+			return v, nil
+		}
+	}
+
+	v, err := cmd.getStringOption(name)
+	if err == nil {
+		return v, nil
+	}
+
+	return "", errorz.Errorf("%s: %w", name, ErrUnknownOption)
+}
+
+//nolint:cyclop
+func (cmd *Command) getStringOption(name string) (string, error) {
+	if len(cmd.calledCommands) > 0 { //nolint:nestif
+		for _, opt := range cmd.Options {
+			if o, ok := opt.(*StringOption); ok {
+				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
+					if o.value != nil {
+						return *o.value, nil
+					}
+				}
+			}
+		}
+	}
+	return "", errorz.Errorf("%s: %s: %w", cmd.Name, name, ErrUnknownOption)
+}
+
+func (cmd *Command) GetBoolOption(name string) (bool, error) {
+	// Search the contents of the subcommand in reverse order and prioritize the options of the descendant commands.
+	for i := range cmd.SubCommands {
+		subcmd := cmd.SubCommands[len(cmd.SubCommands)-1-i]
+		v, err := subcmd.GetBoolOption(name)
+		if err == nil {
+			return v, nil
+		}
+	}
+
+	v, err := cmd.getBoolOption(name)
+	if err == nil {
+		return v, nil
+	}
+
+	return false, errorz.Errorf("%s: %w", name, ErrUnknownOption)
+}
+
+//nolint:cyclop
+func (cmd *Command) getBoolOption(name string) (bool, error) {
+	if len(cmd.calledCommands) > 0 { //nolint:nestif
+		for _, opt := range cmd.Options {
+			if o, ok := opt.(*BoolOption); ok {
+				TraceLog.Printf("getBoolOption: %s: option: %#v", cmd.Name, o)
+				// If Name, Short, or Environment is matched, return the value.
+				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
+					if o.value != nil {
+						return *o.value, nil
+					}
+				}
+			}
+		}
+	}
+	return false, errorz.Errorf("%s: %s: %w", cmd.Name, name, ErrUnknownOption)
+}
+
+func (cmd *Command) GetIntOption(name string) (int, error) {
+	// Search the contents of the subcommand in reverse order and prioritize the options of the descendant commands.
+	for i := range cmd.SubCommands {
+		subcmd := cmd.SubCommands[len(cmd.SubCommands)-1-i]
+		v, err := subcmd.GetIntOption(name)
+		if err == nil {
+			return v, nil
+		}
+	}
+
+	v, err := cmd.getIntOption(name)
+	if err == nil {
+		return v, nil
+	}
+
+	return 0, errorz.Errorf("%s: %w", name, ErrUnknownOption)
+}
+
+//nolint:cyclop
+func (cmd *Command) getIntOption(name string) (int, error) {
+	if len(cmd.calledCommands) > 0 { //nolint:nestif
+		for _, opt := range cmd.Options {
+			if o, ok := opt.(*IntOption); ok {
+				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
+					if o.value != nil {
+						return *o.value, nil
+					}
+				}
+			}
+		}
+	}
+	return 0, errorz.Errorf("%s: %s: %w", cmd.Name, name, ErrUnknownOption)
+}
+
+func (cmd *Command) GetFloat64Option(name string) (float64, error) {
+	// Search the contents of the subcommand in reverse order and prioritize the options of the descendant commands.
+	for i := range cmd.SubCommands {
+		subcmd := cmd.SubCommands[len(cmd.SubCommands)-1-i]
+		v, err := subcmd.GetFloat64Option(name)
+		if err == nil {
+			return v, nil
+		}
+	}
+
+	v, err := cmd.getFloat64Option(name)
+	if err == nil {
+		return v, nil
+	}
+
+	return 0, errorz.Errorf("%s: %w", name, ErrUnknownOption)
+}
+
+//nolint:cyclop
+func (cmd *Command) getFloat64Option(name string) (float64, error) {
+	if len(cmd.calledCommands) > 0 { //nolint:nestif
+		for _, opt := range cmd.Options {
+			if o, ok := opt.(*Float64Option); ok {
+				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
+					if o.value != nil {
+						return *o.value, nil
+					}
+				}
+			}
+		}
+	}
+	return 0, errorz.Errorf("%s: %s: %w", cmd.Name, name, ErrUnknownOption)
+}
