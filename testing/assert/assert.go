@@ -20,18 +20,18 @@ func Error(tb testing.TB, err error) (success bool) {
 	return internal.Error(tb, tb.Errorf, err)
 }
 
-// ErrorsIs asserts that err is target.
-func ErrorsIs(tb testing.TB, err, target error) (success bool) {
+// ErrorIs asserts that err is target.
+func ErrorIs(tb testing.TB, err, target error) (success bool) {
 	tb.Helper()
 
-	return internal.ErrorsIs(tb, tb.Errorf, err, target)
+	return internal.ErrorIs(tb, tb.Errorf, err, target)
 }
 
-// ErrorsContains asserts that err contains substr.
-func ErrorsContains(tb testing.TB, err error, substr string) (success bool) {
+// ErrorContains asserts that err contains substr.
+func ErrorContains(tb testing.TB, err error, substr string) (success bool) {
 	tb.Helper()
 
-	return internal.ErrorsContains(tb, tb.Errorf, err, substr)
+	return internal.ErrorContains(tb, tb.Errorf, err, substr)
 }
 
 // True asserts that value is true.
