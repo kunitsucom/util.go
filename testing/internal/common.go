@@ -31,7 +31,7 @@ func Error(tb testing.TB, printf func(format string, args ...any), err error) (s
 	return true
 }
 
-func ErrorsIs(tb testing.TB, printf func(format string, args ...any), err, target error) (success bool) {
+func ErrorIs(tb testing.TB, printf func(format string, args ...any), err, target error) (success bool) {
 	tb.Helper()
 
 	if !errors.Is(err, target) {
@@ -44,7 +44,7 @@ func ErrorsIs(tb testing.TB, printf func(format string, args ...any), err, targe
 	return true
 }
 
-func ErrorsContains(tb testing.TB, printf func(format string, args ...any), err error, substr string) (success bool) {
+func ErrorContains(tb testing.TB, printf func(format string, args ...any), err error, substr string) (success bool) {
 	tb.Helper()
 
 	if !errorz.Contains(err, substr) {
