@@ -74,8 +74,8 @@ bench: ## Run benchmarks
 .PHONY: ci
 ci: lint test ## CI command set
 
-.PHONY: git-tag-go-mod
-git-tag-go-mod:  ## git tag per go modules
+.PHONY: release
+release:  ## git tag per go modules for release
 	${REPO_ROOT}/.bin/git-tag-go-mod.sh
 
 .PHONY: act-check
