@@ -1,3 +1,9 @@
+// version package provides build-time version information.
+// It is designed to be used via the -ldflags option of go build.
+//
+// e.g.
+//
+//	go build -ldflags "-X github.com/kunitsucom/util.go/version.version=${BUILD_VERSION} -X github.com/kunitsucom/util.go/version.revision=${BUILD_REVISION} -X github.com/kunitsucom/util.go/version.branch=${BUILD_BRANCH} -X github.com/kunitsucom/util.go/version.timestamp=${BUILD_TIMESTAMP}"
 package version
 
 import (
