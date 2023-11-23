@@ -6,7 +6,7 @@ import (
 	"github.com/kunitsucom/util.go/testing/require"
 )
 
-func Test_lookuplookupIdent(t *testing.T) {
+func Test_lookupIdent(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -14,6 +14,9 @@ func Test_lookuplookupIdent(t *testing.T) {
 		input string
 		want  TokenType
 	}{
+		{name: "success,EQUAL", input: "EQUAL", want: TOKEN_EQUAL},
+		{name: "success,GREATER", input: "GREATER", want: TOKEN_GREATER},
+		{name: "success,LESS", input: "LESS", want: TOKEN_LESS},
 		{name: "success,CREATE", input: "CREATE", want: TOKEN_CREATE},
 		{name: "success,ALTER", input: "ALTER", want: TOKEN_ALTER},
 		{name: "success,DROP", input: "DROP", want: TOKEN_DROP},
@@ -28,17 +31,28 @@ func Test_lookuplookupIdent(t *testing.T) {
 		{name: "success,VIEW", input: "VIEW", want: TOKEN_VIEW},
 		{name: "success,IF", input: "IF", want: TOKEN_IF},
 		{name: "success,EXISTS", input: "EXISTS", want: TOKEN_EXISTS},
-		{name: "success,INT", input: "INT", want: TOKEN_INTEGER},
+		{name: "success,BOOLEAN", input: "BOOLEAN", want: TOKEN_BOOLEAN},
+		{name: "success,SMALLINT", input: "SMALLINT", want: TOKEN_SMALLINT},
 		{name: "success,INTEGER", input: "INTEGER", want: TOKEN_INTEGER},
+		{name: "success,INT", input: "INT", want: TOKEN_INTEGER},
+		{name: "success,BIGINT", input: "BIGINT", want: TOKEN_BIGINT},
+		{name: "success,DECIMAL", input: "DECIMAL", want: TOKEN_DECIMAL},
+		{name: "success,NUMERIC", input: "NUMERIC", want: TOKEN_NUMERIC},
+		{name: "success,REAL", input: "REAL", want: TOKEN_REAL},
+		{name: "success,DOUBLE", input: "DOUBLE", want: TOKEN_DOUBLE},
+		{name: "success,PRECISION", input: "PRECISION", want: TOKEN_PRECISION},
 		{name: "success,UUID", input: "UUID", want: TOKEN_UUID},
 		{name: "success,VARCHAR", input: "VARCHAR", want: TOKEN_VARYING},
 		{name: "success,TEXT", input: "TEXT", want: TOKEN_TEXT},
 		{name: "success,TIMESTAMP", input: "TIMESTAMP", want: TOKEN_TIMESTAMP},
 		{name: "success,TIMESTAMPZ", input: "TIMESTAMPZ", want: TOKEN_TIMESTAMPZ},
+		{name: "success,CONSTRAINT", input: "CONSTRAINT", want: TOKEN_CONSTRAINT},
 		{name: "success,NOT", input: "NOT", want: TOKEN_NOT},
 		{name: "success,NULL", input: "NULL", want: TOKEN_NULL},
 		{name: "success,PRIMARY", input: "PRIMARY", want: TOKEN_PRIMARY},
 		{name: "success,KEY", input: "KEY", want: TOKEN_KEY},
+		{name: "success,FOREIGN", input: "FOREIGN", want: TOKEN_FOREIGN},
+		{name: "success,REFERENCES", input: "REFERENCES", want: TOKEN_REFERENCES},
 		{name: "success,UNIQUE", input: "UNIQUE", want: TOKEN_UNIQUE},
 		{name: "success,IDENT", input: "users", want: TOKEN_IDENT},
 	}

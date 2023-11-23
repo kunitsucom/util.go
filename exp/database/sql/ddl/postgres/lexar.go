@@ -70,16 +70,18 @@ const (
 	TOKEN_TIMESTAMP  TokenType = "TIMESTAMP"
 	TOKEN_TIMESTAMPZ TokenType = "TIMESTAMPZ"
 
+	// COLUMN.
+	TOKEN_DEFAULT TokenType = "DEFAULT"
+	TOKEN_NOT     TokenType = "NOT"
+	TOKEN_NULL    TokenType = "NULL"
+
 	// CONSTRAINT.
 	TOKEN_CONSTRAINT TokenType = "CONSTRAINT"
-	TOKEN_NOT        TokenType = "NOT"
-	TOKEN_NULL       TokenType = "NULL"
 	TOKEN_PRIMARY    TokenType = "PRIMARY"
 	TOKEN_KEY        TokenType = "KEY"
 	TOKEN_FOREIGN    TokenType = "FOREIGN"
 	TOKEN_REFERENCES TokenType = "REFERENCES"
 	TOKEN_UNIQUE     TokenType = "UNIQUE"
-	TOKEN_DEFAULT    TokenType = "DEFAULT"
 	TOKEN_CHECK      TokenType = "CHECK"
 
 	// IDENTIFIER.
@@ -146,12 +148,14 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_TIMESTAMP
 	case "TIMESTAMPZ":
 		return TOKEN_TIMESTAMPZ
-	case "CONSTRAINT":
-		return TOKEN_CONSTRAINT
+	case "DEFAULT":
+		return TOKEN_DEFAULT
 	case "NOT":
 		return TOKEN_NOT
 	case "NULL":
 		return TOKEN_NULL
+	case "CONSTRAINT":
+		return TOKEN_CONSTRAINT
 	case "PRIMARY":
 		return TOKEN_PRIMARY
 	case "KEY":
@@ -162,8 +166,6 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_REFERENCES
 	case "UNIQUE":
 		return TOKEN_UNIQUE
-	case "DEFAULT":
-		return TOKEN_DEFAULT
 	case "CHECK":
 		return TOKEN_CHECK
 	default:
