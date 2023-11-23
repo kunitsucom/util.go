@@ -1,0 +1,40 @@
+package postgres
+
+import (
+	"testing"
+
+	"github.com/kunitsucom/util.go/testing/assert"
+)
+
+func TestCreateTableStmt_String(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success,", func(t *testing.T) {
+		t.Parallel()
+
+		stmt := &CreateTableStmt{
+			Indent: "  ",
+			Name:   &Ident{Name: "test", Raw: "test"},
+			Columns: []*Column{
+				{Name: &Ident{Name: "id", Raw: "id"}, DataType: &DataType{Name: "INTEGER"}},
+				{Name: &Ident{Name: "name", Raw: "name"}, DataType: &DataType{Name: "VARYING", Size: "255"}},
+			},
+			Options: []*Option{
+				{Str: "TABLESPACE default_tablespace"},
+				{Str: "LIKE parent_test"},
+			},
+		}
+		expected := `CREATE TABLE test (
+    id INTEGER,
+    name VARYING(255)
+)
+TABLESPACE default_tablespace,
+LIKE parent_test;
+`
+
+		actual := stmt.String()
+		assert.Equal(t, expected, actual)
+
+		t.Logf("✅: stmt: %#v", stmt)
+	})
+}

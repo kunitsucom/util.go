@@ -247,7 +247,8 @@ CREATE TABLE "users" (
 				t.Fail()
 			}
 
-			t.Logf("✅:\n%s", stmt)
+			t.Logf("✅: stmt: %%#v: \n%#v", stmt)
+			t.Logf("✅: stmt: %%s: \n%s", stmt)
 		})
 	}
 }

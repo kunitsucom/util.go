@@ -111,7 +111,6 @@ func (*AlterConstraint) isAlterTableAction() {}
 var _ Stmt = (*AlterTableStmt)(nil)
 
 type AlterTableStmt struct {
-	Indent    string
 	TableName *Ident
 	Action    AlterTableAction
 }
@@ -150,6 +149,9 @@ func (s *AlterTableStmt) String() string {
 		}
 	case *AddConstraint:
 		str += "ADD " + a.Constraint.String()
+		if a.NotValid {
+			str += " NOT VALID"
+		}
 	case *DropConstraint:
 		str += "DROP CONSTRAINT " + a.Name.String()
 	case *AlterConstraint:

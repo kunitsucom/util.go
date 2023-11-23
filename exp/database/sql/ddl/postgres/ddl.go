@@ -52,10 +52,6 @@ type Ident struct {
 	Raw           string
 }
 
-func (i Ident) IsQuoted() bool {
-	return i.QuotationMark != ""
-}
-
 func (i Ident) String() string {
 	return i.Raw
 }

@@ -12,6 +12,7 @@ type Constraint interface {
 	GoString() string
 }
 
+// PrimaryKeyConstraint represents a PRIMARY KEY constraint.
 type PrimaryKeyConstraint struct {
 	Name    *Ident
 	Columns []*Ident
@@ -30,6 +31,7 @@ func (c *PrimaryKeyConstraint) String() string {
 	return str
 }
 
+// ForeignKeyConstraint represents a FOREIGN KEY constraint.
 type ForeignKeyConstraint struct {
 	Name       *Ident
 	Columns    []*Ident
@@ -52,6 +54,7 @@ func (c *ForeignKeyConstraint) String() string {
 	return str
 }
 
+// UniqueConstraint represents a UNIQUE constraint.
 type UniqueConstraint struct {
 	Name    *Ident
 	Columns []*Ident
@@ -70,6 +73,7 @@ func (c *UniqueConstraint) String() string {
 	return str
 }
 
+// CheckConstraint represents a CHECK constraint.
 type CheckConstraint struct {
 	Name *Ident
 	Expr []*Ident
@@ -108,7 +112,7 @@ func (d *Default) String() string {
 		return "DEFAULT " + d.Value.String()
 	}
 	if len(d.Expr) > 0 {
-		return "DEFAULT " + "(" + stringz.JoinStringers(", ", d.Expr...) + ")"
+		return "DEFAULT " + "(" + stringz.JoinStringers(" ", d.Expr...) + ")"
 	}
 	return ""
 }
@@ -130,3 +134,5 @@ func (c *Column) GoString() string { return internal.GoString(*c) }
 type Option struct {
 	Str string
 }
+
+func (o *Option) GoString() string { return internal.GoString(*o) }

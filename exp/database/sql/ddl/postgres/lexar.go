@@ -55,7 +55,15 @@ const (
 	TOKEN_EXISTS TokenType = "EXISTS"
 
 	// DATA TYPE.
+	TOKEN_BOOLEAN    TokenType = "BOOLEAN"
+	TOKEN_SMALLINT   TokenType = "SMALLINT"
 	TOKEN_INTEGER    TokenType = "INTEGER"
+	TOKEN_BIGINT     TokenType = "BIGINT"
+	TOKEN_DECIMAL    TokenType = "DECIMAL"
+	TOKEN_NUMERIC    TokenType = "NUMERIC"
+	TOKEN_REAL       TokenType = "REAL"
+	TOKEN_DOUBLE     TokenType = "DOUBLE"
+	TOKEN_PRECISION  TokenType = "PRECISION"
 	TOKEN_UUID       TokenType = "UUID"
 	TOKEN_VARYING    TokenType = "VARYING"
 	TOKEN_TEXT       TokenType = "TEXT"
@@ -78,7 +86,7 @@ const (
 	TOKEN_IDENT TokenType = "IDENT"
 )
 
-//nolint:funlen,cyclop
+//nolint:funlen,cyclop,gocognit,gocyclo
 func lookupIdent(ident string) TokenType {
 	token := strings.ToUpper(ident)
 	// MEMO: bash lexar-gen.sh lexar.go | pbcopy
@@ -110,8 +118,24 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_IF
 	case "EXISTS":
 		return TOKEN_EXISTS
+	case "BOOLEAN":
+		return TOKEN_BOOLEAN
+	case "SMALLINT":
+		return TOKEN_SMALLINT
 	case "INTEGER", "INT":
 		return TOKEN_INTEGER
+	case "BIGINT":
+		return TOKEN_BIGINT
+	case "DECIMAL":
+		return TOKEN_DECIMAL
+	case "NUMERIC":
+		return TOKEN_NUMERIC
+	case "REAL":
+		return TOKEN_REAL
+	case "DOUBLE":
+		return TOKEN_DOUBLE
+	case "PRECISION":
+		return TOKEN_PRECISION
 	case "UUID":
 		return TOKEN_UUID
 	case "VARYING", "VARCHAR":

@@ -39,7 +39,20 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 
 	ddls := &DDL{}
 
-	if reflect.DeepEqual(before, after) || before.String() == after.String() {
+	switch {
+	case before == nil && after != nil:
+		// CREATE TABLE table_name
+		ddls.Stmts = append(ddls.Stmts, after)
+		return ddls, nil
+	case before != nil && after == nil:
+		// DROP TABLE table_name;
+		ddls.Stmts = append(ddls.Stmts, &DropTableStmt{
+			Name: before.Name,
+		})
+		return ddls, nil
+	case before == nil && after == nil ||
+		reflect.DeepEqual(before, after) ||
+		before.String() == after.String():
 		return nil, ddl.ErrNoDifference
 	}
 
@@ -48,18 +61,11 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		return nil, errorz.Errorf("ALTER TABLE %s RENAME TO %s: %w", before.Name, after.Name, ddl.ErrNotSupported)
 	}
 
-	if before == nil {
-		// CREATE TABLE table_name
-		ddls.Stmts = append(ddls.Stmts, after)
-		return ddls, nil
-	}
-
 	for _, beforeConstraint := range before.Constraints {
 		afterConstraint := findConstraintByName(beforeConstraint.GetName().Name, after.Constraints)
 		if afterConstraint == nil {
 			// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Indent:    Indent,
 				TableName: before.Name,
 				Action: &DropConstraint{
 					Name: beforeConstraint.GetName(),
@@ -74,7 +80,6 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 	for _, afterConstraint := range onlyLeftConstraint(after.Constraints, before.Constraints) {
 		// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
 		ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-			Indent:    Indent,
 			TableName: after.Name,
 			Action: &AddConstraint{
 				Constraint: afterConstraint,
@@ -93,7 +98,6 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 		if afterColumn == nil {
 			// ALTER TABLE table_name DROP COLUMN column_name;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Indent:    Indent,
 				TableName: before.Name,
 				Action: &DropColumn{
 					Name: beforeColumn.Name,
@@ -105,7 +109,6 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 		if beforeColumn.DataType.String() != afterColumn.DataType.String() {
 			// ALTER TABLE table_name ALTER COLUMN column_name SET DATA TYPE data_type;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Indent:    Indent,
 				TableName: after.Name,
 				Action: &AlterColumn{
 					Name:   afterColumn.Name,
@@ -119,7 +122,6 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 			afterColumn.Default == nil:
 			// ALTER TABLE table_name ALTER COLUMN column_name DROP DEFAULT;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Indent:    Indent,
 				TableName: after.Name,
 				Action: &AlterColumn{
 					Name:   afterColumn.Name,
@@ -130,7 +132,6 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 			beforeColumn.Default.String() != afterColumn.Default.String():
 			// ALTER TABLE table_name ALTER COLUMN column_name SET DEFAULT default_value;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Indent:    Indent,
 				TableName: after.Name,
 				Action: &AlterColumn{
 					Name:   afterColumn.Name,
@@ -143,7 +144,6 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 		case beforeColumn.NotNull && !afterColumn.NotNull:
 			// ALTER TABLE table_name ALTER COLUMN column_name DROP NOT NULL;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Indent:    Indent,
 				TableName: after.Name,
 				Action: &AlterColumn{
 					Name:   afterColumn.Name,
@@ -153,7 +153,6 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 		case !beforeColumn.NotNull && afterColumn.NotNull:
 			// ALTER TABLE table_name ALTER COLUMN column_name SET NOT NULL;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Indent:    Indent,
 				TableName: after.Name,
 				Action: &AlterColumn{
 					Name:   afterColumn.Name,
@@ -166,7 +165,6 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 	for _, afterColumn := range onlyLeftColumn(after.Columns, before.Columns) {
 		// ALTER TABLE table_name ADD COLUMN column_name data_type;
 		ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-			Indent:    Indent,
 			TableName: after.Name,
 			Action: &AddColumn{
 				Column: afterColumn,
