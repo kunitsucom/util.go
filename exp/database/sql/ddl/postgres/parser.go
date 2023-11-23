@@ -5,16 +5,17 @@ package postgres
 
 import (
 	"fmt"
-	"log"
 	"runtime"
 	"strings"
 
 	errorz "github.com/kunitsucom/util.go/errors"
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 	filepathz "github.com/kunitsucom/util.go/path/filepath"
 )
 
-var quotationMarks = []string{`"`, `'`}
+//nolint:gochecknoglobals
+var quotationMarks = []string{`"`}
 
 func NewIdent(raw string) *Ident {
 	for _, q := range quotationMarks {
@@ -56,7 +57,7 @@ func (p *Parser) nextToken() {
 	p.peekToken = p.l.NextToken()
 
 	_, file, line, _ := runtime.Caller(1)
-	log.Printf("🪲: nextToken: caller=%s:%d currentToken: %#v, peekToken: %#v", filepathz.Short(file), line, p.currentToken, p.peekToken)
+	internal.TraceLog.Printf("🪲: nextToken: caller=%s:%d currentToken: %#v, peekToken: %#v", filepathz.Short(file), line, p.currentToken, p.peekToken)
 }
 
 // Parse はSQL文を解析します。
@@ -159,6 +160,7 @@ LabelColumns:
 	return createTableStmt, nil
 }
 
+//nolint:funlen,cyclop
 func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 	column := &Column{}
 	constraints := make([]Constraint, 0)
@@ -173,7 +175,7 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 
 	switch { //nolint:exhaustive
 	case isDataType(p.currentToken.Type):
-		column.DataType.Name = p.currentToken.Literal.Str
+		column.DataType = &DataType{Name: string(p.currentToken.Type)}
 		if p.peekToken.Type == TOKEN_OPEN_PAREN {
 			p.nextToken() // current = (
 			p.nextToken() // current = 128
@@ -223,6 +225,7 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 	return column, constraints, nil
 }
 
+//nolint:cyclop
 func (p *Parser) parseColumnDefault() (*Default, error) {
 	def := &Default{}
 
@@ -249,7 +252,11 @@ LabelDefault:
 
 				p.nextToken()
 			}
-		case isConstraint(p.peekToken.Type) || p.peekToken.Type == TOKEN_COMMA || p.peekToken.Type == TOKEN_CLOSE_PAREN:
+		case isConstraint(p.peekToken.Type) ||
+			p.peekToken.Type == TOKEN_NOT ||
+			p.peekToken.Type == TOKEN_NULL ||
+			p.peekToken.Type == TOKEN_COMMA ||
+			p.peekToken.Type == TOKEN_CLOSE_PAREN:
 			break LabelDefault
 		default:
 			return nil, errorz.Errorf("peekToken=%#v: %w", p.peekToken, ddl.ErrUnexpectedToken)
@@ -343,8 +350,8 @@ LabelConstraints:
 	return constraints, nil
 }
 
-//nolint:cyclop
-func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) {
+//nolint:funlen,cyclop,gocognit
+func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //nolint:ireturn
 	var constraintName *Ident
 	if p.currentToken.Type == TOKEN_CONSTRAINT {
 		p.nextToken() // current = constraint_name
@@ -470,9 +477,9 @@ LabelIdents:
 
 func isDataType(tokenType TokenType) bool {
 	switch tokenType { //nolint:exhaustive
-	case TOKEN_INT,
+	case TOKEN_INTEGER,
 		TOKEN_UUID,
-		TOKEN_VARCHAR, TOKEN_TEXT,
+		TOKEN_VARYING, TOKEN_TEXT,
 		TOKEN_TIMESTAMP, TOKEN_TIMESTAMPZ:
 		return true
 	default:

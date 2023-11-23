@@ -40,7 +40,7 @@ type DDL struct {
 	Stmts []Stmt
 }
 
-func (d DDL) String() string { return stringz.JoinStringers("", d.Stmts...) }
+func (d *DDL) String() string { return stringz.JoinStringers("", d.Stmts...) }
 
 type IdentBuilder struct {
 	QuotationMarks []string
@@ -58,4 +58,17 @@ func (i Ident) IsQuoted() bool {
 
 func (i Ident) String() string {
 	return i.Raw
+}
+
+type DataType struct {
+	Name string
+	Size string
+}
+
+func (s DataType) String() string {
+	str := s.Name
+	if s.Size != "" {
+		str += "(" + s.Size + ")"
+	}
+	return str
 }

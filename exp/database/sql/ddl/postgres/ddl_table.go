@@ -5,19 +5,6 @@ import (
 	stringz "github.com/kunitsucom/util.go/strings"
 )
 
-type DataType struct {
-	Name string
-	Size string
-}
-
-func (s DataType) String() string {
-	str := s.Name
-	if s.Size != "" {
-		str += "(" + s.Size + ")"
-	}
-	return str
-}
-
 type Constraint interface {
 	isConstraint()
 	GetName() *Ident
@@ -36,7 +23,7 @@ func (c PrimaryKeyConstraint) GoString() string { return internal.GoString(c) }
 func (c *PrimaryKeyConstraint) String() string {
 	var str string
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.String() + " "
+		str += "CONSTRAINT " + c.Name.String() + " " //nolint:goconst
 	}
 	str += "PRIMARY KEY"
 	str += " (" + stringz.JoinStringers(", ", c.Columns...) + ")"
@@ -103,9 +90,9 @@ func (c *CheckConstraint) String() string {
 
 type Column struct {
 	Name     *Ident
-	DataType DataType
-	NotNull  bool
+	DataType *DataType
 	Default  *Default
+	NotNull  bool
 }
 
 type Default struct {
@@ -114,6 +101,9 @@ type Default struct {
 }
 
 func (d *Default) String() string {
+	if d == nil {
+		return ""
+	}
 	if d.Value != nil {
 		return "DEFAULT " + d.Value.String()
 	}

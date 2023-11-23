@@ -3,8 +3,11 @@ package postgres
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"testing"
 
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 	"github.com/kunitsucom/util.go/exp/diff/simplediff"
 	"github.com/kunitsucom/util.go/testing/assert"
 	"github.com/kunitsucom/util.go/testing/require"
@@ -12,7 +15,11 @@ import (
 
 //nolint:paralleltest
 func TestParser_Parse(t *testing.T) {
-	// t.Parallel()
+	backup := internal.TraceLog
+	t.Cleanup(func() {
+		internal.TraceLog = backup
+	})
+	internal.TraceLog = log.New(os.Stderr, "TRACE: ", log.LstdFlags|log.Lshortfile)
 
 	tests := []struct {
 		name    string
@@ -40,7 +47,7 @@ func TestParser_Parse(t *testing.T) {
 									QuotationMark: `"`,
 									Raw:           `"id"`,
 								},
-								DataType: DataType{
+								DataType: &DataType{
 									Name: "UUID",
 									Size: "",
 								},
@@ -52,7 +59,7 @@ func TestParser_Parse(t *testing.T) {
 									QuotationMark: "",
 									Raw:           "description",
 								},
-								DataType: DataType{
+								DataType: &DataType{
 									Name: "TEXT",
 									Size: "",
 								},
@@ -85,7 +92,7 @@ func TestParser_Parse(t *testing.T) {
 									QuotationMark: "",
 									Raw:           "id",
 								},
-								DataType: DataType{
+								DataType: &DataType{
 									Name: "UUID",
 									Size: "",
 								},
@@ -97,7 +104,7 @@ func TestParser_Parse(t *testing.T) {
 									QuotationMark: "",
 									Raw:           "group_id",
 								},
-								DataType: DataType{
+								DataType: &DataType{
 									Name: "UUID",
 									Size: "",
 								},
@@ -109,8 +116,8 @@ func TestParser_Parse(t *testing.T) {
 									QuotationMark: `"`,
 									Raw:           `"name"`,
 								},
-								DataType: DataType{
-									Name: "VARCHAR",
+								DataType: &DataType{
+									Name: "VARYING",
 									Size: "255",
 								},
 								NotNull: true,
@@ -121,8 +128,8 @@ func TestParser_Parse(t *testing.T) {
 									QuotationMark: `"`,
 									Raw:           `"age"`,
 								},
-								DataType: DataType{
-									Name: "INT",
+								DataType: &DataType{
+									Name: "INTEGER",
 									Size: "",
 								},
 								Default: &Default{
@@ -139,7 +146,7 @@ func TestParser_Parse(t *testing.T) {
 									QuotationMark: "",
 									Raw:           "description",
 								},
-								DataType: DataType{
+								DataType: &DataType{
 									Name: "TEXT",
 									Size: "",
 								},
@@ -209,8 +216,8 @@ func TestParser_Parse(t *testing.T) {
 CREATE TABLE "users" (
     id UUID NOT NULL,
     group_id UUID NOT NULL,
-    "name" VARCHAR(255) NOT NULL,
-    "age" INT DEFAULT 0,
+    "name" VARYING(255) NOT NULL,
+    "age" INTEGER DEFAULT 0,
     description TEXT,
     CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id"),
     CONSTRAINT users_unique_name UNIQUE ("name"),

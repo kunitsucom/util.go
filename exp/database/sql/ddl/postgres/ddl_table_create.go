@@ -4,6 +4,8 @@ import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 
 // MEMO: https://www.postgresql.jp/docs/11/sql-createtable.html
 
+var _ Stmt = (*CreateTableStmt)(nil)
+
 type CreateTableStmt struct {
 	Indent      string
 	Name        *Ident
@@ -39,7 +41,7 @@ func (s *CreateTableStmt) String() string {
 	}
 	str += ")"
 	if len(s.Options) > 0 {
-		str += " "
+		str += "\n"
 		lastIndex := len(s.Options) - 1
 		for i, v := range s.Options {
 			str += v.Str

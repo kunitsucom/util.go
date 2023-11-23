@@ -55,9 +55,9 @@ const (
 	TOKEN_EXISTS TokenType = "EXISTS"
 
 	// DATA TYPE.
-	TOKEN_INT        TokenType = "INT"
+	TOKEN_INTEGER    TokenType = "INTEGER"
 	TOKEN_UUID       TokenType = "UUID"
-	TOKEN_VARCHAR    TokenType = "VARCHAR"
+	TOKEN_VARYING    TokenType = "VARYING"
 	TOKEN_TEXT       TokenType = "TEXT"
 	TOKEN_TIMESTAMP  TokenType = "TIMESTAMP"
 	TOKEN_TIMESTAMPZ TokenType = "TIMESTAMPZ"
@@ -110,12 +110,12 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_IF
 	case "EXISTS":
 		return TOKEN_EXISTS
-	case "INT", "INTEGER":
-		return TOKEN_INT
+	case "INTEGER", "INT":
+		return TOKEN_INTEGER
 	case "UUID":
 		return TOKEN_UUID
-	case "VARCHAR":
-		return TOKEN_VARCHAR
+	case "VARYING", "VARCHAR":
+		return TOKEN_VARYING
 	case "TEXT":
 		return TOKEN_TEXT
 	case "TIMESTAMP":
