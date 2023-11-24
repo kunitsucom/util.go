@@ -18,25 +18,29 @@ func Test_isConstraint(t *testing.T) {
 func TestDefault_String(t *testing.T) {
 	t.Parallel()
 
-	t.Run("success,nil", func(t *testing.T) {
+	t.Run("success,String,nil", func(t *testing.T) {
 		t.Parallel()
 
 		d := (*Default)(nil)
 		expected := ""
 		actual := d.String()
 		require.Equal(t, expected, actual)
-
-		t.Logf("✅: d: %#v", d)
 	})
-	t.Run("success,nilnil", func(t *testing.T) {
+	t.Run("success,String,nilnil", func(t *testing.T) {
 		t.Parallel()
 
 		d := &Default{}
 		expected := ""
 		actual := d.String()
 		require.Equal(t, expected, actual)
+	})
+	t.Run("success,StringForDiff,nilnil", func(t *testing.T) {
+		t.Parallel()
 
-		t.Logf("✅: d: %#v", d)
+		d := &Default{}
+		expected := ""
+		actual := d.StringForDiff()
+		require.Equal(t, expected, actual)
 	})
 	t.Run("success,DEFAULT_VALUE", func(t *testing.T) {
 		t.Parallel()
@@ -47,6 +51,14 @@ func TestDefault_String(t *testing.T) {
 		require.Equal(t, expected, actual)
 
 		t.Logf("✅: d: %#v", d)
+	})
+	t.Run("success,DEFAULT_VALUE,empty", func(t *testing.T) {
+		t.Parallel()
+
+		d := (*DefaultValue)(nil)
+		expected := ""
+		actual := d.String()
+		require.Equal(t, expected, actual)
 	})
 	t.Run("success,DEFAULT_EXPR", func(t *testing.T) {
 		t.Parallel()

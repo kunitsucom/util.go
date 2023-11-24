@@ -43,19 +43,29 @@ func Test_lookupIdent(t *testing.T) {
 		{name: "success,PRECISION", input: "PRECISION", want: TOKEN_PRECISION},
 		{name: "success,SMALLSERIAL", input: "SMALLSERIAL", want: TOKEN_SMALLSERIAL},
 		{name: "success,SERIAL", input: "SERIAL", want: TOKEN_SERIAL},
+		{name: "success,TOKEN_BIGSERIAL", input: "BIGSERIAL", want: TOKEN_BIGSERIAL},
 		{name: "success,UUID", input: "UUID", want: TOKEN_UUID},
+		{name: "success,JSONB", input: "JSONB", want: TOKEN_JSONB},
+		{name: "success,CHARACTER", input: "CHARACTER", want: TOKEN_CHARACTER},
+		{name: "success,VARYING", input: "VARYING", want: TOKEN_VARYING},
 		{name: "success,VARCHAR", input: "VARCHAR", want: TOKEN_VARYING},
 		{name: "success,TEXT", input: "TEXT", want: TOKEN_TEXT},
 		{name: "success,TIMESTAMP", input: "TIMESTAMP", want: TOKEN_TIMESTAMP},
 		{name: "success,TIMESTAMPZ", input: "TIMESTAMPZ", want: TOKEN_TIMESTAMPZ},
-		{name: "success,CONSTRAINT", input: "CONSTRAINT", want: TOKEN_CONSTRAINT},
+		{name: "success,WITH", input: "WITH", want: TOKEN_WITH},
+		{name: "success,TIME", input: "TIME", want: TOKEN_TIME},
+		{name: "success,ZONE", input: "ZONE", want: TOKEN_ZONE},
+		{name: "success,DEFAULT", input: "DEFAULT", want: TOKEN_DEFAULT},
 		{name: "success,NOT", input: "NOT", want: TOKEN_NOT},
 		{name: "success,NULL", input: "NULL", want: TOKEN_NULL},
+		{name: "success,CONSTRAINT", input: "CONSTRAINT", want: TOKEN_CONSTRAINT},
 		{name: "success,PRIMARY", input: "PRIMARY", want: TOKEN_PRIMARY},
 		{name: "success,KEY", input: "KEY", want: TOKEN_KEY},
 		{name: "success,FOREIGN", input: "FOREIGN", want: TOKEN_FOREIGN},
 		{name: "success,REFERENCES", input: "REFERENCES", want: TOKEN_REFERENCES},
 		{name: "success,UNIQUE", input: "UNIQUE", want: TOKEN_UNIQUE},
+		{name: "success,CHECK", input: "CHECK", want: TOKEN_CHECK},
+		{name: "success,NULLIF", input: "NULLIF", want: TOKEN_NULLIF},
 		{name: "success,IDENT", input: "users", want: TOKEN_IDENT},
 	}
 
@@ -203,6 +213,22 @@ func TestLexer_NextToken(t *testing.T) {
 			want: Token{
 				Type:    TOKEN_ILLEGAL,
 				Literal: Literal{Str: "|"},
+			},
+		},
+		{
+			name:  "failure,:",
+			input: `:`,
+			want: Token{
+				Type:    TOKEN_ILLEGAL,
+				Literal: Literal{Str: ":"},
+			},
+		},
+		{
+			name:  "failure,!",
+			input: `!`,
+			want: Token{
+				Type:    TOKEN_ILLEGAL,
+				Literal: Literal{Str: "!"},
 			},
 		},
 	}

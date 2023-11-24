@@ -256,7 +256,7 @@ func (l *Lexer) NextToken() Token {
 	switch l.ch {
 	case '"', '\'':
 		tok.Type = TOKEN_IDENT
-		tok.Literal = Literal{Str: l.readLiteral(l.ch)}
+		tok.Literal = Literal{Str: l.readQuotedLiteral(l.ch)}
 	case '|':
 		if l.peekChar() == '|' {
 			ch := l.ch
@@ -300,8 +300,9 @@ func (l *Lexer) NextToken() Token {
 		tok.Type = TOKEN_EOF
 	default:
 		if isLiteral(l.ch) {
-			tok.Literal = l.readIdentifier()
-			tok.Type = lookupIdent(tok.Literal.Str)
+			lit := l.readIdentifier()
+			tok.Type = lookupIdent(lit)
+			tok.Literal = Literal{Str: lit}
 			return tok
 		}
 		tok = newToken(TOKEN_ILLEGAL, l.ch)
@@ -311,8 +312,8 @@ func (l *Lexer) NextToken() Token {
 	return tok
 }
 
-// readLiteral はクォーテーションで囲まれた文字列を読み込みます。
-func (l *Lexer) readLiteral(quote byte) string {
+// readQuotedLiteral はクォーテーションで囲まれた文字列を読み込みます。
+func (l *Lexer) readQuotedLiteral(quote byte) string {
 	// position := l.position + 1 // クォーテーションの次の文字から開始
 	position := l.position // クォーテーションの文字から開始
 	for {
@@ -336,24 +337,21 @@ func newToken(tokenType TokenType, ch byte) Token {
 	return Token{Type: tokenType, Literal: Literal{Str: string(ch)}}
 }
 
-func (l *Lexer) readIdentifier() Literal {
+func (l *Lexer) readIdentifier() string {
 	position := l.position
 	for isLiteral(l.ch) {
 		l.readChar()
 	}
 	str := l.input[position:l.position]
 
-	return Literal{Str: str}
+	return str
 }
 
 func isLiteral(ch byte) bool {
 	return 'A' <= ch && ch <= 'Z' ||
 		'a' <= ch && ch <= 'z' ||
 		'0' <= ch && ch <= '9' ||
-		ch == '_' ||
-		ch == '"' || // TODO: 一考の余地
-		ch == '\'' // TODO: 一考の余地
-	// return !(ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')
+		ch == '_'
 }
 
 func (l *Lexer) skipWhitespace() (skipped bool) {

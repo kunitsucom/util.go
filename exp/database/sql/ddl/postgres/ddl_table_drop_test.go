@@ -20,5 +20,7 @@ func TestDropTableStmt_String(t *testing.T) {
 		actual := stmt.String()
 
 		require.Equal(t, expected, actual)
+
+		t.Logf("✅: stmt: %#v", stmt)
 	})
 }

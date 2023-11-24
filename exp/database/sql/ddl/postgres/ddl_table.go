@@ -206,8 +206,9 @@ type DefaultValue struct {
 	Idents []*Ident
 }
 
+//nolint:cyclop
 func (d *DefaultValue) String() string {
-	if len(d.Idents) == 0 {
+	if d == nil || len(d.Idents) == 0 {
 		return ""
 	}
 
@@ -248,14 +249,13 @@ func (d *Default) StringForDiff() string {
 		return ""
 	}
 	if e := d.Value; e != nil {
-		str := "DEFAULT " + "("
+		str := "DEFAULT "
 		for i, v := range d.Value.Idents {
-			if i != 0 && e.Idents[i-1].String() != "(" && e.Idents[i].String() != ")" {
+			if i != 0 {
 				str += " "
 			}
 			str += v.Name
 		}
-		str += ")"
 		return str
 	}
 	return ""
