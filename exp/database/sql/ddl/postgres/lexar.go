@@ -45,7 +45,7 @@ const (
 	TOKEN_MINUS         TokenType = "MINUS"         // -
 	TOKEN_ASTERISK      TokenType = "ASTERISK"      // *
 	TOKEN_SLASH         TokenType = "SLASH"         // /
-	TOKEN_STRING_CONCAT TokenType = "STRING_CONCAT" // ||
+	TOKEN_STRING_CONCAT TokenType = "STRING_CONCAT" //nolint:gosec // ||
 	TOKEN_TYPECAST      TokenType = "TYPECAST"      // ::
 
 	// VERB.
@@ -247,7 +247,7 @@ func (l *Lexer) readChar() {
 
 // NextToken は次のトークンを返します。
 //
-//nolint:cyclop
+//nolint:funlen,cyclop
 func (l *Lexer) NextToken() Token {
 	var tok Token
 

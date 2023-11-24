@@ -14,7 +14,7 @@ import (
 	"github.com/kunitsucom/util.go/testing/require"
 )
 
-//nolint:paralleltest
+//nolint:paralleltest,tparallel
 func TestParser_Parse(t *testing.T) {
 	backup := internal.TraceLog
 	t.Cleanup(func() {

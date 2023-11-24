@@ -487,6 +487,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 	}
 }
 
+//nolint:cyclop
 func (p *Parser) parseDataType() (*DataType, error) {
 	dataType := &DataType{}
 	switch p.currentToken.Type { //nolint:exhaustive
