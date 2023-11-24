@@ -29,7 +29,12 @@ func TestJoinStringers(t *testing.T) {
 		t.Parallel()
 
 		const expect = "a_ _b_ _c"
-		actual := stringz.JoinStringers("_ _", &testingz.Stringer{func() string { return "a" }}, &testingz.Stringer{func() string { return "b" }}, &testingz.Stringer{func() string { return "c" }})
+		actual := stringz.JoinStringers(
+			"_ _",
+			&testingz.Stringer{StringFunc: func() string { return "a" }},
+			&testingz.Stringer{StringFunc: func() string { return "b" }},
+			&testingz.Stringer{StringFunc: func() string { return "c" }},
+		)
 
 		if expect != actual {
 			t.Errorf("❌: expect(%s) != actual(%s)", expect, actual)
