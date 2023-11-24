@@ -51,7 +51,7 @@ type Ident struct {
 	Raw           string
 }
 
-func (i Ident) GoString() string { return internal.GoString(i) }
+func (i *Ident) GoString() string { return internal.GoString(i) }
 
 func (i Ident) String() string {
 	return i.Raw

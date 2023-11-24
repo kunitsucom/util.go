@@ -20,5 +20,5 @@ func (s *DropTableStmt) String() string {
 	return str
 }
 
-func (*DropTableStmt) isStmt()           {}
-func (s DropTableStmt) GoString() string { return internal.GoString(s) }
+func (*DropTableStmt) isStmt()            {}
+func (s *DropTableStmt) GoString() string { return internal.GoString(s) }

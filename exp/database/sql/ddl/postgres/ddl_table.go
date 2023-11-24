@@ -31,9 +31,9 @@ type PrimaryKeyConstraint struct {
 	Columns []*Ident
 }
 
-func (*PrimaryKeyConstraint) isConstraint()     {}
-func (c *PrimaryKeyConstraint) GetName() *Ident { return c.Name }
-func (c PrimaryKeyConstraint) GoString() string { return internal.GoString(c) }
+func (*PrimaryKeyConstraint) isConstraint()      {}
+func (c *PrimaryKeyConstraint) GetName() *Ident  { return c.Name }
+func (c *PrimaryKeyConstraint) GoString() string { return internal.GoString(c) }
 func (c *PrimaryKeyConstraint) String() string {
 	var str string
 	if c.Name != nil {
@@ -69,9 +69,9 @@ type ForeignKeyConstraint struct {
 	RefColumns []*Ident
 }
 
-func (*ForeignKeyConstraint) isConstraint()     {}
-func (c *ForeignKeyConstraint) GetName() *Ident { return c.Name }
-func (c ForeignKeyConstraint) GoString() string { return internal.GoString(c) }
+func (*ForeignKeyConstraint) isConstraint()      {}
+func (c *ForeignKeyConstraint) GetName() *Ident  { return c.Name }
+func (c *ForeignKeyConstraint) GoString() string { return internal.GoString(c) }
 func (c *ForeignKeyConstraint) String() string {
 	var str string
 	if c.Name != nil {
@@ -116,9 +116,9 @@ type UniqueConstraint struct {
 	Columns []*Ident
 }
 
-func (*UniqueConstraint) isConstraint()     {}
-func (c *UniqueConstraint) GetName() *Ident { return c.Name }
-func (c UniqueConstraint) GoString() string { return internal.GoString(c) }
+func (*UniqueConstraint) isConstraint()      {}
+func (c *UniqueConstraint) GetName() *Ident  { return c.Name }
+func (c *UniqueConstraint) GoString() string { return internal.GoString(c) }
 func (c *UniqueConstraint) String() string {
 	var str string
 	if c.Name != nil {
@@ -152,9 +152,9 @@ type CheckConstraint struct {
 	Expr []*Ident
 }
 
-func (*CheckConstraint) isConstraint()     {}
-func (c *CheckConstraint) GetName() *Ident { return c.Name }
-func (c CheckConstraint) GoString() string { return internal.GoString(c) }
+func (*CheckConstraint) isConstraint()      {}
+func (c *CheckConstraint) GetName() *Ident  { return c.Name }
+func (c *CheckConstraint) GoString() string { return internal.GoString(c) }
 func (c *CheckConstraint) String() string {
 	var str string
 	if c.Name != nil {
@@ -232,7 +232,7 @@ func (d *DefaultValue) String() string {
 	return str
 }
 
-func (d *Default) GoString() string { return internal.GoString(*d) }
+func (d *Default) GoString() string { return internal.GoString(d) }
 
 func (d *Default) String() string {
 	if d == nil {
@@ -273,10 +273,10 @@ func (c *Column) String() string {
 	return str
 }
 
-func (c *Column) GoString() string { return internal.GoString(*c) }
+func (c *Column) GoString() string { return internal.GoString(c) }
 
 type Option struct {
 	Str string
 }
 
-func (o *Option) GoString() string { return internal.GoString(*o) }
+func (o *Option) GoString() string { return internal.GoString(o) }

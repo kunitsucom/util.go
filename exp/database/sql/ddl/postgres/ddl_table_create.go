@@ -55,5 +55,5 @@ func (s *CreateTableStmt) String() string {
 	return str
 }
 
-func (*CreateTableStmt) isStmt()           {}
-func (s CreateTableStmt) GoString() string { return internal.GoString(s) }
+func (*CreateTableStmt) isStmt()            {}
+func (s *CreateTableStmt) GoString() string { return internal.GoString(s) }
