@@ -41,7 +41,7 @@ func TestDefault_String(t *testing.T) {
 	t.Run("success,DEFAULT_VALUE", func(t *testing.T) {
 		t.Parallel()
 
-		d := &Default{Value: &Ident{Name: "now()", Raw: "now()"}}
+		d := &Default{Value: &DefaultValue{[]*Ident{{Name: "now()", Raw: "now()"}}}}
 		expected := "DEFAULT now()"
 		actual := d.String()
 		require.Equal(t, expected, actual)
@@ -51,7 +51,7 @@ func TestDefault_String(t *testing.T) {
 	t.Run("success,DEFAULT_EXPR", func(t *testing.T) {
 		t.Parallel()
 
-		d := &Default{Expr: []*Ident{{Name: "age", Raw: "age"}, {Name: ">=", Raw: ">="}, {Name: "0", Raw: "0"}}}
+		d := &Default{Value: &DefaultValue{[]*Ident{{Name: "(", Raw: "("}, {Name: "age", Raw: "age"}, {Name: ">=", Raw: ">="}, {Name: "0", Raw: "0"}, {Name: ")", Raw: ")"}}}}
 		expected := "DEFAULT (age >= 0)"
 		actual := d.String()
 		require.Equal(t, expected, actual)

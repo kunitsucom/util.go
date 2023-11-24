@@ -47,9 +47,14 @@ func TestDiff(t *testing.T) {
 									Name: "INTEGER",
 								},
 								Default: &Default{
-									Value: &Ident{
-										Name: "0",
-										Raw:  "0",
+									Value: &DefaultValue{
+										[]*Ident{
+											{
+												Name:          "0",
+												QuotationMark: "",
+												Raw:           "0",
+											},
+										},
 									},
 								},
 								NotNull: true,
@@ -203,7 +208,7 @@ func TestDiff(t *testing.T) {
 		{
 			name:   "success,ALTER_COLUMN_SET_DEFAULT",
 			before: `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
-			after:  `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
+			after:  `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" <> 0), description TEXT, PRIMARY KEY (id));`,
 			want: &DDL{
 				Stmts: []Stmt{
 					&AlterTableStmt{
@@ -220,7 +225,57 @@ func TestDiff(t *testing.T) {
 							},
 							Action: &AlterColumnSetDefault{
 								Default: &Default{
-									Value: &Ident{
+									Value: &DefaultValue{
+										[]*Ident{
+											{
+												Name:          "0",
+												QuotationMark: "",
+												Raw:           "0",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					&AlterTableStmt{
+						TableName: &Ident{
+							Name:          "users",
+							QuotationMark: `"`,
+							Raw:           `"users"`,
+						},
+						Action: &DropConstraint{
+							Name: &Ident{
+								Name:          "users_age_check",
+								QuotationMark: ``,
+								Raw:           "users_age_check",
+							},
+						},
+					},
+					&AlterTableStmt{
+						TableName: &Ident{
+							Name:          "users",
+							QuotationMark: `"`,
+							Raw:           `"users"`,
+						},
+						Action: &AddConstraint{
+							Constraint: &CheckConstraint{
+								Name: &Ident{
+									Name:          "users_age_check",
+									QuotationMark: ``,
+									Raw:           "users_age_check",
+								},
+								Expr: []*Ident{
+									{
+										Name:          "age",
+										QuotationMark: `"`,
+										Raw:           `"age"`,
+									},
+									{
+										Name: "<>",
+										Raw:  "<>",
+									},
+									{
 										Name: "0",
 										Raw:  "0",
 									},
@@ -288,6 +343,267 @@ func TestDiff(t *testing.T) {
 			},
 			wantErr: nil,
 		},
+		{
+			name:   "success,DROP_ADD_PRIMARY_KEY",
+			before: `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 NOT NULL CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
+			after:  `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 NOT NULL CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id", name));`,
+			want: &DDL{
+				Stmts: []Stmt{
+					&AlterTableStmt{
+						TableName: &Ident{
+							Name:          "users",
+							QuotationMark: `"`,
+							Raw:           `"users"`,
+						},
+						Action: &DropConstraint{
+							Name: &Ident{
+								Name:          "users_pkey",
+								QuotationMark: ``,
+								Raw:           "users_pkey",
+							},
+						},
+					},
+					&AlterTableStmt{
+						TableName: &Ident{
+							Name:          "users",
+							QuotationMark: `"`,
+							Raw:           `"users"`,
+						},
+						Action: &AddConstraint{
+							Constraint: &PrimaryKeyConstraint{
+								Name: &Ident{
+									Name:          "users_pkey",
+									QuotationMark: ``,
+									Raw:           "users_pkey",
+								},
+								Columns: []*Ident{
+									{
+										Name:          "id",
+										QuotationMark: `"`,
+										Raw:           `"id"`,
+									},
+									{
+										Name: "name",
+										Raw:  `name`,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name:   "success,DROP_ADD_FOREIGN_KEY",
+			before: `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL, "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 NOT NULL CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"), CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id"));`,
+			after:  `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL, "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 NOT NULL CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"), CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id, name) REFERENCES "groups" ("id", name));`,
+			want: &DDL{
+				Stmts: []Stmt{
+					&AlterTableStmt{
+						TableName: &Ident{
+							Name:          "users",
+							QuotationMark: `"`,
+							Raw:           `"users"`,
+						},
+						Action: &DropConstraint{
+							Name: &Ident{
+								Name:          "users_group_id_fkey",
+								QuotationMark: ``,
+								Raw:           "users_group_id_fkey",
+							},
+						},
+					},
+					&AlterTableStmt{
+						TableName: &Ident{
+							Name:          "users",
+							QuotationMark: `"`,
+							Raw:           `"users"`,
+						},
+						Action: &AddConstraint{
+							Constraint: &ForeignKeyConstraint{
+								Name: &Ident{
+									Name:          "users_group_id_fkey",
+									QuotationMark: ``,
+									Raw:           "users_group_id_fkey",
+								},
+								Columns: []*Ident{
+									{
+										Name: "group_id",
+										Raw:  `group_id`,
+									},
+									{
+										Name: "name",
+										Raw:  `name`,
+									},
+								},
+								Ref: &Ident{
+									Name:          "groups",
+									QuotationMark: `"`,
+									Raw:           `"groups"`,
+								},
+								RefColumns: []*Ident{
+									{
+										Name:          "id",
+										QuotationMark: `"`,
+										Raw:           `"id"`,
+									},
+									{
+										Name: "name",
+										Raw:  `name`,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name:   "success,DROP_ADD_UNIQUE",
+			before: `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL, "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 NOT NULL CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
+			after:  `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL, "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 NOT NULL CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"), CONSTRAINT users_unique_name UNIQUE ("id", name));`,
+			want: &DDL{
+				Stmts: []Stmt{
+					&AlterTableStmt{
+						TableName: &Ident{
+							Name:          "users",
+							QuotationMark: `"`,
+							Raw:           `"users"`,
+						},
+						Action: &DropConstraint{
+							Name: &Ident{
+								Name:          "users_unique_name",
+								QuotationMark: ``,
+								Raw:           "users_unique_name",
+							},
+						},
+					},
+					&AlterTableStmt{
+						TableName: &Ident{
+							Name:          "users",
+							QuotationMark: `"`,
+							Raw:           `"users"`,
+						},
+						Action: &AddConstraint{
+							Constraint: &UniqueConstraint{
+								Name: &Ident{
+									Name:          "users_unique_name",
+									QuotationMark: ``,
+									Raw:           "users_unique_name",
+								},
+								Columns: []*Ident{
+									{
+										Name:          "id",
+										QuotationMark: `"`,
+										Raw:           `"id"`,
+									},
+									{
+										Name: "name",
+										Raw:  `name`,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name:   "success,ALTER_COLUMN_SET_DEFAULT_OVERWRITE",
+			before: `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL, "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 NOT NULL CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
+			after:  `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL, "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT ( (0 + 3) - 1 * 4 / 2 ) NOT NULL CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
+			want: &DDL{
+				Stmts: []Stmt{
+					&AlterTableStmt{
+						TableName: &Ident{
+							Name:          "users",
+							QuotationMark: `"`,
+							Raw:           `"users"`,
+						},
+						Action: &AlterColumn{
+							Name: &Ident{
+								Name:          "age",
+								QuotationMark: `"`,
+								Raw:           `"age"`,
+							},
+							Action: &AlterColumnSetDefault{
+								Default: &Default{
+									Value: &DefaultValue{
+										[]*Ident{
+											{Name: "(", Raw: "("},
+											{Name: "(", Raw: "("},
+											{Name: "0", Raw: "0"},
+											{Name: "+", Raw: "+"},
+											{Name: "3", Raw: "3"},
+											{Name: ")", Raw: ")"},
+											{Name: "-", Raw: "-"},
+											{Name: "1", Raw: "1"},
+											{Name: "*", Raw: "*"},
+											{Name: "4", Raw: "4"},
+											{Name: "/", Raw: "/"},
+											{Name: "2", Raw: "2"},
+											{Name: ")", Raw: ")"},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "success,ALTER_COLUMN_SET_DEFAULT_complex",
+			before: `CREATE TABLE complex_defaults (
+    id SERIAL PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    unique_code TEXT,
+    status TEXT DEFAULT 'pending',
+    random_number INTEGER DEFAULT FLOOR(RANDOM() * 100)::INTEGER,
+    json_data JSONB DEFAULT '{}',
+    calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table)
+);
+`,
+			after: `CREATE TABLE complex_defaults (
+    id SERIAL PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
+    status TEXT DEFAULT 'pending',
+    random_number INTEGER DEFAULT FLOOR(RANDOM() * 100)::INTEGER,
+    json_data JSONB DEFAULT '{}',
+    calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table)
+);
+`,
+			want: &DDL{
+				Stmts: []Stmt{
+					&AlterTableStmt{
+						TableName: &Ident{
+							Name: "complex_defaults",
+							Raw:  "complex_defaults",
+						},
+						Action: &AlterColumn{
+							Name: &Ident{
+								Name: "unique_code",
+								Raw:  "unique_code",
+							},
+							Action: &AlterColumnSetDefault{
+								Default: &Default{
+									Value: &DefaultValue{
+										[]*Ident{{Name: "'CODE-'", Raw: "'CODE-'"}, {Name: "||", Raw: "||"}, {Name: "TO_CHAR", Raw: "TO_CHAR"}, {Name: "(", Raw: "("}, {Name: "NOW", Raw: "NOW"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: ",", Raw: ","}, {Name: "'YYYYMMDDHH24MISS'", Raw: "'YYYYMMDDHH24MISS'"}, {Name: ")", Raw: ")"}, {Name: "||", Raw: "||"}, {Name: "'-'", Raw: "'-'"}, {Name: "||", Raw: "||"}, {Name: "LPAD", Raw: "LPAD"}, {Name: "(", Raw: "("}, {Name: "TO_CHAR", Raw: "TO_CHAR"}, {Name: "(", Raw: "("}, {Name: "NEXTVAL", Raw: "NEXTVAL"}, {Name: "(", Raw: "("}, {Name: "'seq_complex_default'", Raw: "'seq_complex_default'"}, {Name: ")", Raw: ")"}, {Name: ")", Raw: ")"}, {Name: ",", Raw: ","}, {Name: "5", Raw: "5"}, {Name: ",", Raw: ","}, {Name: "'0'", Raw: "'0'"}, {Name: ")", Raw: ")"}},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -300,6 +616,8 @@ func TestDiff(t *testing.T) {
 			after, err := NewParser(NewLexer(tt.after)).Parse()
 			require.NoError(t, err)
 
+			t.Logf("🚧: %s:\n%s", t.Name(), after)
+
 			ddls, err := DiffCreateTable(
 				before.Stmts[0].(*CreateTableStmt),
 				after.Stmts[0].(*CreateTableStmt),
@@ -309,7 +627,7 @@ func TestDiff(t *testing.T) {
 			assert.ErrorIs(t, err, tt.wantErr)
 			assert.Equal(t, tt.want, ddls)
 
-			t.Logf("✅:\n%s", ddls)
+			t.Logf("✅: %s:\n%s", t.Name(), ddls)
 		})
 	}
 
@@ -444,10 +762,14 @@ func TestDiff(t *testing.T) {
 								Size: "",
 							},
 							Default: &Default{
-								Value: &Ident{
-									Name:          "0",
-									QuotationMark: "",
-									Raw:           "0",
+								Value: &DefaultValue{
+									[]*Ident{
+										{
+											Name:          "0",
+											QuotationMark: "",
+											Raw:           "0",
+										},
+									},
 								},
 							},
 						},

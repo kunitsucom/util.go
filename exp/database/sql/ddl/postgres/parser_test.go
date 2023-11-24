@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 	"github.com/kunitsucom/util.go/exp/diff/simplediff"
 	"github.com/kunitsucom/util.go/testing/assert"
@@ -21,7 +22,7 @@ func TestParser_Parse(t *testing.T) {
 	})
 	internal.TraceLog = log.New(os.Stderr, "TRACE: ", log.LstdFlags|log.Lshortfile)
 
-	tests := []struct {
+	successTests := []struct {
 		name    string
 		input   string
 		want    *DDL
@@ -133,10 +134,14 @@ func TestParser_Parse(t *testing.T) {
 									Size: "",
 								},
 								Default: &Default{
-									Value: &Ident{
-										Name:          "0",
-										QuotationMark: "",
-										Raw:           "0",
+									Value: &DefaultValue{
+										[]*Ident{
+											{
+												Name:          "0",
+												QuotationMark: "",
+												Raw:           "0",
+											},
+										},
 									},
 								},
 							},
@@ -226,9 +231,95 @@ CREATE TABLE "users" (
 );
 `,
 		},
+		{
+			name: "success,XXXXXXXXXXXX",
+			input: `CREATE TABLE complex_defaults (
+    id SERIAL PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
+    status TEXT DEFAULT 'pending',
+    random_number INTEGER DEFAULT FLOOR(RANDOM() * 100)::INTEGER,
+    json_data JSONB DEFAULT '{}',
+    calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table)
+);
+`,
+			want: &DDL{
+				Stmts: []Stmt{
+					&CreateTableStmt{
+						Indent: Indent,
+						Name: &Ident{
+							Name:          "complex_defaults",
+							QuotationMark: "",
+							Raw:           "complex_defaults",
+						},
+						Columns: []*Column{
+							{
+								Name:     &Ident{Name: "id", Raw: "id"},
+								DataType: &DataType{Name: "SERIAL", Size: ""},
+							},
+							{
+								Name:     &Ident{Name: "created_at", Raw: "created_at"},
+								DataType: &DataType{Name: "TIMESTAMP WITH TIME ZONE", Size: ""},
+								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "CURRENT_TIMESTAMP", Raw: "CURRENT_TIMESTAMP"}}}},
+							},
+							{
+								Name:     &Ident{Name: "updated_at", Raw: "updated_at"},
+								DataType: &DataType{Name: "TIMESTAMP WITH TIME ZONE", Size: ""},
+								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "CURRENT_TIMESTAMP", Raw: "CURRENT_TIMESTAMP"}}}},
+							},
+							{
+								Name:     &Ident{Name: "unique_code", Raw: "unique_code"},
+								DataType: &DataType{Name: "TEXT", Size: ""},
+								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "'CODE-'", Raw: "'CODE-'"}, {Name: "||", Raw: "||"}, {Name: "TO_CHAR", Raw: "TO_CHAR"}, {Name: "(", Raw: "("}, {Name: "NOW", Raw: "NOW"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: ",", Raw: ","}, {Name: "'YYYYMMDDHH24MISS'", Raw: "'YYYYMMDDHH24MISS'"}, {Name: ")", Raw: ")"}, {Name: "||", Raw: "||"}, {Name: "'-'", Raw: "'-'"}, {Name: "||", Raw: "||"}, {Name: "LPAD", Raw: "LPAD"}, {Name: "(", Raw: "("}, {Name: "TO_CHAR", Raw: "TO_CHAR"}, {Name: "(", Raw: "("}, {Name: "NEXTVAL", Raw: "NEXTVAL"}, {Name: "(", Raw: "("}, {Name: "'seq_complex_default'", Raw: "'seq_complex_default'"}, {Name: ")", Raw: ")"}, {Name: ")", Raw: ")"}, {Name: ",", Raw: ","}, {Name: "5", Raw: "5"}, {Name: ",", Raw: ","}, {Name: "'0'", Raw: "'0'"}, {Name: ")", Raw: ")"}}}},
+							},
+							{
+								Name:     &Ident{Name: "status", Raw: "status"},
+								DataType: &DataType{Name: "TEXT", Size: ""},
+								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "'pending'", Raw: "'pending'"}}}},
+							},
+							{
+								Name:     &Ident{Name: "random_number", Raw: "random_number"},
+								DataType: &DataType{Name: "INTEGER", Size: ""},
+								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "FLOOR", Raw: "FLOOR"}, {Name: "(", Raw: "("}, {Name: "RANDOM", Raw: "RANDOM"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: "*", Raw: "*"}, {Name: "100", Raw: "100"}, {Name: ")", Raw: ")"}, {Name: "::", Raw: "::"}, {Name: "INTEGER", Raw: "INTEGER"}}}},
+							},
+							{
+								Name:     &Ident{Name: "json_data", Raw: "json_data"},
+								DataType: &DataType{Name: "JSONB", Size: ""},
+								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "'{}'", Raw: "'{}'"}}}},
+							},
+							{
+								Name:     &Ident{Name: "calculated_value", Raw: "calculated_value"},
+								DataType: &DataType{Name: "INTEGER", Size: ""},
+								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "(", Raw: "("}, {Name: "SELECT", Raw: "SELECT"}, {Name: "COUNT", Raw: "COUNT"}, {Name: "(", Raw: "("}, {Name: "*", Raw: "*"}, {Name: ")", Raw: ")"}, {Name: "FROM", Raw: "FROM"}, {Name: "another_table", Raw: "another_table"}, {Name: ")", Raw: ")"}}}},
+							},
+						},
+						Constraints: []Constraint{
+							&PrimaryKeyConstraint{
+								Name:    &Ident{Name: "complex_defaults_pkey", Raw: "complex_defaults_pkey"},
+								Columns: []*Ident{{Name: "id", Raw: "id"}},
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+			wantStr: `CREATE TABLE complex_defaults (
+    id SERIAL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
+    status TEXT DEFAULT 'pending',
+    random_number INTEGER DEFAULT FLOOR(RANDOM() * 100)::INTEGER,
+    json_data JSONB DEFAULT '{}',
+    calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table),
+    CONSTRAINT complex_defaults_pkey PRIMARY KEY (id)
+);
+`,
+		},
 	}
 
-	for _, tt := range tests {
+	for _, tt := range successTests {
 		tt := tt
 
 		t.Run(tt.name, func(t *testing.T) {
@@ -251,4 +342,281 @@ CREATE TABLE "users" (
 			t.Logf("✅: stmt: %%s: \n%s", stmt)
 		})
 	}
+
+	failureTests := []struct {
+		name    string
+		input   string
+		wantErr error
+	}{
+		{
+			name:    "failure,invalid",
+			input:   `)invalid`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE",
+			input:   `CREATE INVALID;`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE",
+			input:   `CREATE TABLE;`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name",
+			input:   `CREATE TABLE "users";`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name",
+			input:   `CREATE TABLE "users" ("id";`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_data_type",
+			input:   `CREATE TABLE "users" ("id" UUID;`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT",
+			input:   `CREATE TABLE "users" ("id" UUID, CONSTRAINT "invalid" NOT;`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_INVALID",
+			input:   `CREATE TABLE "users" ("id" UUID)(;`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_COMMA_INVALID",
+			input:   `CREATE TABLE "users" ("id" UUID,(;`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_DATA_TYPE_INVALID",
+			input:   `CREATE TABLE "users" ("id" VARYING();`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_INVALID_NOT",
+			input:   `CREATE TABLE "users" ("id" UUID NULL NOT;`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_INVALID_DEFAULT",
+			input:   `CREATE TABLE "users" ("id" UUID DEFAULT ("id")`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_INVALID_DEFAULT_OPEN_PAREN",
+			input:   `CREATE TABLE "users" ("id" UUID DEFAULT ("id",`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_INVALID_PRIMARY_KEY",
+			input:   `CREATE TABLE "users" ("id" UUID PRIMARY NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_INVALID_REFERENCES",
+			input:   `CREATE TABLE "users" ("id" UUID REFERENCES NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_INVALID_REFERENCES_IDENTS",
+			input:   `CREATE TABLE "users" ("id" UUID REFERENCES "groups" (NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_INVALID_CHECK",
+			input:   `CREATE TABLE "users" ("id" UUID CHECK NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CHECK_INVALID_IDENTS",
+			input:   `CREATE TABLE "users" ("id" UUID CHECK (NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_INVALID_IDENT",
+			input:   `CREATE TABLE "users" ("id" UUID, CONSTRAINT NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_INVALID_PRIMARY",
+			input:   `CREATE TABLE "users" ("id" UUID, PRIMARY NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_INVALID_PRIMARY_KEY",
+			input:   `CREATE TABLE "users" ("id" UUID, PRIMARY KEY NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_INVALID_PRIMARY_KEY_OPEN_PAREN",
+			input:   `CREATE TABLE "users" ("id" UUID, PRIMARY KEY (NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_INVALID_FOREIGN",
+			input:   `CREATE TABLE "users" ("id" UUID, FOREIGN NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_INVALID_FOREIGN_KEY",
+			input:   `CREATE TABLE "users" ("id" UUID, FOREIGN KEY NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_INVALID_FOREIGN_KEY_OPEN_PAREN",
+			input:   `CREATE TABLE "users" ("id" UUID, FOREIGN KEY (NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_FOREIGN_KEY_IDENTS_INVALID",
+			input:   `CREATE TABLE "users" ("id" UUID, FOREIGN KEY ("group_id") NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_FOREIGN_KEY_IDENTS_REFERENCES_INVALID",
+			input:   `CREATE TABLE "users" ("id" UUID, FOREIGN KEY ("group_id") REFERENCES `,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_FOREIGN_KEY_IDENTS_REFERENCES_INVALID_IDENTS",
+			input:   `CREATE TABLE "users" ("id" UUID, FOREIGN KEY ("group_id") REFERENCES "groups" NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_FOREIGN_KEY_IDENTS_REFERENCES_INVALID_CLOSE_PAREN",
+			input:   `CREATE TABLE "users" ("id" UUID, FOREIGN KEY ("group_id") REFERENCES "groups" ("id")`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_INVALID",
+			input:   `CREATE TABLE "users" ("id" UUID, UNIQUE NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_IDENTS_INVALID",
+			input:   `CREATE TABLE "users" ("id" UUID, UNIQUE (NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_IDENTS_INVALID",
+			input:   `CREATE TABLE "users" ("id" UUID, name TEXT, UNIQUE ("id", name)`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+	}
+
+	for _, tt := range failureTests {
+		tt := tt
+
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := NewParser(NewLexer(tt.input)).Parse()
+			require.ErrorIs(t, err, tt.wantErr)
+		})
+	}
+}
+
+func TestParser_parseColumn(t *testing.T) {
+	t.Parallel()
+
+	t.Run("failure,invalid", func(t *testing.T) {
+		t.Parallel()
+
+		_, _, err := NewParser(NewLexer(`NOT`)).parseColumn(&Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`})
+		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
+	})
+}
+
+func TestParser_parseExpr(t *testing.T) {
+	t.Parallel()
+
+	t.Run("failure,invalid", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer(`NOT`))
+		p.nextToken()
+		p.nextToken()
+		_, err := p.parseExpr()
+		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
+	})
+
+	t.Run("failure,invalid2", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer(`((NOT`))
+		p.nextToken()
+		p.nextToken()
+		_, err := p.parseExpr()
+		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
+	})
+}
+
+func TestParser_parseDataType(t *testing.T) {
+	t.Parallel()
+
+	t.Run("failure,TIMESTAMP_WITH_NOT", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer(`TIMESTAMP WITH NOT`))
+		p.nextToken()
+		p.nextToken()
+		_, err := p.parseDataType()
+		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
+	})
+
+	t.Run("failure,TIMESTAMP_WITH_TIME_NOT", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer(`TIMESTAMP WITH TIME NOT`))
+		p.nextToken()
+		p.nextToken()
+		_, err := p.parseDataType()
+		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
+	})
+
+	t.Run("failure,DOUBLE_NOT", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer(`DOUBLE NOT`))
+		p.nextToken()
+		p.nextToken()
+		_, err := p.parseDataType()
+		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
+	})
+
+	t.Run("failure,DOUBLE_PRECISION", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer(`DOUBLE PRECISION(NOT`))
+		p.nextToken()
+		p.nextToken()
+		_, err := p.parseDataType()
+		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
+	})
+
+	t.Run("failure,CHARACTER_NOT", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer(`CHARACTER NOT`))
+		p.nextToken()
+		p.nextToken()
+		_, err := p.parseDataType()
+		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
+	})
+
+	t.Run("failure,CHARACTER_VARYING_NOT", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer(`CHARACTER VARYING(NOT`))
+		p.nextToken()
+		p.nextToken()
+		_, err := p.parseDataType()
+		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
+	})
 }

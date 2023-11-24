@@ -8,8 +8,21 @@ import (
 type Constraint interface {
 	isConstraint()
 	GetName() *Ident
-	String() string
 	GoString() string
+	String() string
+	StringForDiff() string
+}
+
+type Constraints []Constraint
+
+func (constraints Constraints) Append(constraint Constraint) Constraints {
+	for i := range constraints {
+		if constraints[i].GetName().Name == constraint.GetName().Name {
+			constraints[i] = constraint
+			return constraints
+		}
+	}
+	return append(constraints, constraint)
 }
 
 // PrimaryKeyConstraint represents a PRIMARY KEY constraint.
@@ -28,6 +41,23 @@ func (c *PrimaryKeyConstraint) String() string {
 	}
 	str += "PRIMARY KEY"
 	str += " (" + stringz.JoinStringers(", ", c.Columns...) + ")"
+	return str
+}
+
+func (c *PrimaryKeyConstraint) StringForDiff() string {
+	var str string
+	if c.Name != nil {
+		str += "CONSTRAINT " + c.Name.Name + " " //nolint:goconst
+	}
+	str += "PRIMARY KEY"
+	str += " ("
+	for i, v := range c.Columns {
+		if i != 0 {
+			str += ", "
+		}
+		str += v.Name
+	}
+	str += ")"
 	return str
 }
 
@@ -54,6 +84,32 @@ func (c *ForeignKeyConstraint) String() string {
 	return str
 }
 
+func (c *ForeignKeyConstraint) StringForDiff() string {
+	var str string
+	if c.Name != nil {
+		str += "CONSTRAINT " + c.Name.Name + " "
+	}
+	str += "FOREIGN KEY"
+	str += " ("
+	for i, v := range c.Columns {
+		if i != 0 {
+			str += ", "
+		}
+		str += v.Name
+	}
+	str += ")"
+	str += " REFERENCES " + c.Ref.Name
+	str += " ("
+	for i, v := range c.RefColumns {
+		if i != 0 {
+			str += ", "
+		}
+		str += v.Name
+	}
+	str += ")"
+	return str
+}
+
 // UniqueConstraint represents a UNIQUE constraint.
 type UniqueConstraint struct {
 	Name    *Ident
@@ -68,8 +124,25 @@ func (c *UniqueConstraint) String() string {
 	if c.Name != nil {
 		str += "CONSTRAINT " + c.Name.String() + " "
 	}
-	str += "UNIQUE"
+	str += "UNIQUE" //nolint:goconst
 	str += " (" + stringz.JoinStringers(", ", c.Columns...) + ")"
+	return str
+}
+
+func (c *UniqueConstraint) StringForDiff() string {
+	var str string
+	if c.Name != nil {
+		str += "CONSTRAINT " + c.Name.Name + " "
+	}
+	str += "UNIQUE"
+	str += " ("
+	for i, v := range c.Columns {
+		if i != 0 {
+			str += ", "
+		}
+		str += v.Name
+	}
+	str += ")"
 	return str
 }
 
@@ -87,8 +160,25 @@ func (c *CheckConstraint) String() string {
 	if c.Name != nil {
 		str += "CONSTRAINT " + c.Name.String() + " "
 	}
-	str += "CHECK"
+	str += "CHECK" //nolint:goconst
 	str += " (" + stringz.JoinStringers(" ", c.Expr...) + ")"
+	return str
+}
+
+func (c *CheckConstraint) StringForDiff() string {
+	var str string
+	if c.Name != nil {
+		str += "CONSTRAINT " + c.Name.Name + " "
+	}
+	str += "CHECK"
+	str += " ("
+	for i, v := range c.Expr {
+		if i != 0 {
+			str += " "
+		}
+		str += v.Name
+	}
+	str += ")"
 	return str
 }
 
@@ -100,19 +190,73 @@ type Column struct {
 }
 
 type Default struct {
-	Value *Ident
-	Expr  []*Ident
+	Value *DefaultValue
 }
+
+func (d *DefaultValue) Append(idents ...*Ident) *DefaultValue {
+	if d == nil {
+		d = &DefaultValue{Idents: idents}
+		return d
+	}
+	d.Idents = append(d.Idents, idents...)
+	return d
+}
+
+type DefaultValue struct {
+	Idents []*Ident
+}
+
+func (d *DefaultValue) String() string {
+	if len(d.Idents) == 0 {
+		return ""
+	}
+
+	var str string
+	for i := range d.Idents {
+		switch {
+		case i != 0 && (d.Idents[i-1].String() == "||" || d.Idents[i].String() == "||"):
+			str += " "
+		case i == 0 ||
+			d.Idents[i-1].String() == "(" || d.Idents[i].String() == "(" ||
+			d.Idents[i].String() == ")" ||
+			d.Idents[i-1].String() == "::" || d.Idents[i].String() == "::" ||
+			d.Idents[i].String() == ",":
+			// noop
+		default:
+			str += " "
+		}
+		str += d.Idents[i].String()
+	}
+
+	return str
+}
+
+func (d *Default) GoString() string { return internal.GoString(*d) }
 
 func (d *Default) String() string {
 	if d == nil {
 		return ""
 	}
 	if d.Value != nil {
-		return "DEFAULT " + d.Value.String()
+		return "DEFAULT " + d.Value.String() //nolint:goconst
 	}
-	if len(d.Expr) > 0 {
-		return "DEFAULT " + "(" + stringz.JoinStringers(" ", d.Expr...) + ")"
+	return ""
+}
+
+func (d *Default) StringForDiff() string {
+	if d == nil {
+		return ""
+	}
+	if e := d.Value; e != nil {
+		str := "DEFAULT " + "("
+		for i, v := range d.Value.Idents {
+			if i != 0 && e.Idents[i-1].String() != "(" && e.Idents[i].String() != ")" {
+				str += " "
+			}
+			str += v.Name
+		}
+		str += ")"
+		return str
 	}
 	return ""
 }

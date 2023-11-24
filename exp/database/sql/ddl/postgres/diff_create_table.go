@@ -50,9 +50,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 			Name: before.Name,
 		})
 		return ddls, nil
-	case before == nil && after == nil ||
-		reflect.DeepEqual(before, after) ||
-		before.String() == after.String():
+	case before == nil && after == nil || reflect.DeepEqual(before, after) || before.String() == after.String():
 		return nil, ddl.ErrNoDifference
 	}
 
@@ -76,6 +74,33 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 	}
 
 	config.diffCreateTableColumn(ddls, before, after)
+
+	for _, beforeConstraint := range before.Constraints {
+		afterConstraint := findConstraintByName(beforeConstraint.GetName().Name, after.Constraints)
+		if afterConstraint != nil {
+			if beforeConstraint.StringForDiff() != afterConstraint.StringForDiff() {
+				// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
+				// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
+				ddls.Stmts = append(
+					ddls.Stmts,
+					&AlterTableStmt{
+						TableName: before.Name,
+						Action: &DropConstraint{
+							Name: beforeConstraint.GetName(),
+						},
+					},
+					&AlterTableStmt{
+						TableName: after.Name,
+						Action: &AddConstraint{
+							Constraint: afterConstraint,
+							NotValid:   config.UseAlterTableAddConstraintNotValid,
+						},
+					},
+				)
+			}
+			continue
+		}
+	}
 
 	for _, afterConstraint := range onlyLeftConstraint(after.Constraints, before.Constraints) {
 		// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
@@ -118,8 +143,7 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 		}
 
 		switch {
-		case beforeColumn.Default != nil &&
-			afterColumn.Default == nil:
+		case beforeColumn.Default != nil && afterColumn.Default == nil:
 			// ALTER TABLE table_name ALTER COLUMN column_name DROP DEFAULT;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
 				TableName: after.Name,
@@ -128,8 +152,7 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 					Action: &AlterColumnDropDefault{},
 				},
 			})
-		case afterColumn.Default != nil &&
-			beforeColumn.Default.String() != afterColumn.Default.String():
+		case afterColumn.Default != nil && beforeColumn.Default.StringForDiff() != afterColumn.Default.StringForDiff():
 			// ALTER TABLE table_name ALTER COLUMN column_name SET DEFAULT default_value;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
 				TableName: after.Name,
@@ -193,12 +216,12 @@ func findColumnByName(name string, columns []*Column) *Column {
 	return nil
 }
 
-func onlyLeftConstraint(left, right []Constraint) []Constraint {
-	onlyLeftConstraints := make([]Constraint, 0)
+func onlyLeftConstraint(left, right Constraints) []Constraint {
+	onlyLeftConstraints := make(Constraints, 0)
 	for _, leftConstraint := range left {
 		foundConstraintByRight := findConstraintByName(leftConstraint.GetName().Name, right)
 		if foundConstraintByRight == nil {
-			onlyLeftConstraints = append(onlyLeftConstraints, leftConstraint)
+			onlyLeftConstraints = onlyLeftConstraints.Append(leftConstraint)
 		}
 	}
 	return onlyLeftConstraints

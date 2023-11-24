@@ -1,6 +1,9 @@
 package postgres
 
-import stringz "github.com/kunitsucom/util.go/strings"
+import (
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+	stringz "github.com/kunitsucom/util.go/strings"
+)
 
 const Indent = "    "
 
@@ -42,15 +45,13 @@ type DDL struct {
 
 func (d *DDL) String() string { return stringz.JoinStringers("", d.Stmts...) }
 
-type IdentBuilder struct {
-	QuotationMarks []string
-}
-
 type Ident struct {
 	Name          string
 	QuotationMark string
 	Raw           string
 }
+
+func (i Ident) GoString() string { return internal.GoString(i) }
 
 func (i Ident) String() string {
 	return i.Raw

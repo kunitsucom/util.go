@@ -4,6 +4,8 @@ import (
 	"strings"
 )
 
+// MEMO: https://www.postgresql.jp/docs/11/datatype.html
+
 const (
 	QuotationChar = '"'
 	QuotationStr  = string(QuotationChar)
@@ -32,13 +34,19 @@ const (
 	TOKEN_EOF     TokenType = "EOF"
 
 	// SPECIAL CHARACTERS.
-	TOKEN_OPEN_PAREN  TokenType = "OPEN_PAREN"  // (
-	TOKEN_CLOSE_PAREN TokenType = "CLOSE_PAREN" // )
-	TOKEN_COMMA       TokenType = "COMMA"       // ,
-	TOKEN_SEMICOLON   TokenType = "SEMICOLON"   // ;
-	TOKEN_EQUAL       TokenType = "EQUAL"       // =
-	TOKEN_GREATER     TokenType = "GREATER"     // >
-	TOKEN_LESS        TokenType = "LESS"        // <
+	TOKEN_OPEN_PAREN    TokenType = "OPEN_PAREN"    // (
+	TOKEN_CLOSE_PAREN   TokenType = "CLOSE_PAREN"   // )
+	TOKEN_COMMA         TokenType = "COMMA"         // ,
+	TOKEN_SEMICOLON     TokenType = "SEMICOLON"     // ;
+	TOKEN_EQUAL         TokenType = "EQUAL"         // =
+	TOKEN_GREATER       TokenType = "GREATER"       // >
+	TOKEN_LESS          TokenType = "LESS"          // <
+	TOKEN_PLUS          TokenType = "PLUS"          // +
+	TOKEN_MINUS         TokenType = "MINUS"         // -
+	TOKEN_ASTERISK      TokenType = "ASTERISK"      // *
+	TOKEN_SLASH         TokenType = "SLASH"         // /
+	TOKEN_STRING_CONCAT TokenType = "STRING_CONCAT" // ||
+	TOKEN_TYPECAST      TokenType = "TYPECAST"      // ::
 
 	// VERB.
 	TOKEN_CREATE   TokenType = "CREATE"
@@ -55,20 +63,28 @@ const (
 	TOKEN_EXISTS TokenType = "EXISTS"
 
 	// DATA TYPE.
-	TOKEN_BOOLEAN    TokenType = "BOOLEAN"
-	TOKEN_SMALLINT   TokenType = "SMALLINT"
-	TOKEN_INTEGER    TokenType = "INTEGER"
-	TOKEN_BIGINT     TokenType = "BIGINT"
-	TOKEN_DECIMAL    TokenType = "DECIMAL"
-	TOKEN_NUMERIC    TokenType = "NUMERIC"
-	TOKEN_REAL       TokenType = "REAL"
-	TOKEN_DOUBLE     TokenType = "DOUBLE"
-	TOKEN_PRECISION  TokenType = "PRECISION"
-	TOKEN_UUID       TokenType = "UUID"
-	TOKEN_VARYING    TokenType = "VARYING"
-	TOKEN_TEXT       TokenType = "TEXT"
-	TOKEN_TIMESTAMP  TokenType = "TIMESTAMP"
-	TOKEN_TIMESTAMPZ TokenType = "TIMESTAMPZ"
+	TOKEN_BOOLEAN     TokenType = "BOOLEAN"
+	TOKEN_SMALLINT    TokenType = "SMALLINT"
+	TOKEN_INTEGER     TokenType = "INTEGER"
+	TOKEN_BIGINT      TokenType = "BIGINT"
+	TOKEN_DECIMAL     TokenType = "DECIMAL"
+	TOKEN_NUMERIC     TokenType = "NUMERIC"
+	TOKEN_REAL        TokenType = "REAL"
+	TOKEN_DOUBLE      TokenType = "DOUBLE"
+	TOKEN_PRECISION   TokenType = "PRECISION"
+	TOKEN_SMALLSERIAL TokenType = "SMALLSERIAL"
+	TOKEN_SERIAL      TokenType = "SERIAL"
+	TOKEN_BIGSERIAL   TokenType = "BIGSERIAL"
+	TOKEN_UUID        TokenType = "UUID"
+	TOKEN_JSONB       TokenType = "JSONB"
+	TOKEN_CHARACTER   TokenType = "CHARACTER"
+	TOKEN_VARYING     TokenType = "VARYING"
+	TOKEN_TEXT        TokenType = "TEXT"
+	TOKEN_TIMESTAMP   TokenType = "TIMESTAMP"
+	TOKEN_TIMESTAMPZ  TokenType = "TIMESTAMPZ"
+	TOKEN_WITH        TokenType = "WITH"
+	TOKEN_TIME        TokenType = "TIME"
+	TOKEN_ZONE        TokenType = "ZONE"
 
 	// COLUMN.
 	TOKEN_DEFAULT TokenType = "DEFAULT"
@@ -83,6 +99,12 @@ const (
 	TOKEN_REFERENCES TokenType = "REFERENCES"
 	TOKEN_UNIQUE     TokenType = "UNIQUE"
 	TOKEN_CHECK      TokenType = "CHECK"
+
+	// FUNCTION.
+	TOKEN_NULLIF TokenType = "NULLIF"
+
+	// LITERAL.
+	TOKEN_LITERAL TokenType = "LITERAL"
 
 	// IDENTIFIER.
 	TOKEN_IDENT TokenType = "IDENT"
@@ -138,8 +160,18 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_DOUBLE
 	case "PRECISION":
 		return TOKEN_PRECISION
+	case "SMALLSERIAL":
+		return TOKEN_SMALLSERIAL
+	case "SERIAL":
+		return TOKEN_SERIAL
+	case "BIGSERIAL":
+		return TOKEN_BIGSERIAL
 	case "UUID":
 		return TOKEN_UUID
+	case "JSONB":
+		return TOKEN_JSONB
+	case "CHARACTER":
+		return TOKEN_CHARACTER
 	case "VARYING", "VARCHAR":
 		return TOKEN_VARYING
 	case "TEXT":
@@ -148,6 +180,12 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_TIMESTAMP
 	case "TIMESTAMPZ":
 		return TOKEN_TIMESTAMPZ
+	case "WITH":
+		return TOKEN_WITH
+	case "TIME":
+		return TOKEN_TIME
+	case "ZONE":
+		return TOKEN_ZONE
 	case "DEFAULT":
 		return TOKEN_DEFAULT
 	case "NOT":
@@ -168,6 +206,8 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_UNIQUE
 	case "CHECK":
 		return TOKEN_CHECK
+	case "NULLIF":
+		return TOKEN_NULLIF
 	default:
 		return TOKEN_IDENT
 	}
@@ -214,6 +254,25 @@ func (l *Lexer) NextToken() Token {
 	l.skipWhitespace()
 
 	switch l.ch {
+	case '"', '\'':
+		tok.Type = TOKEN_IDENT
+		tok.Literal = Literal{Str: l.readLiteral(l.ch)}
+	case '|':
+		if l.peekChar() == '|' {
+			ch := l.ch
+			l.readChar()
+			literal := string(ch) + string(l.ch)
+			tok = Token{Type: TOKEN_STRING_CONCAT, Literal: Literal{Str: literal}}
+		} else {
+			tok = newToken(TOKEN_ILLEGAL, l.ch)
+		}
+	case ':':
+		if l.peekChar() == ':' {
+			l.readChar() // 現在の ':' を読み込みます
+			tok = Token{Type: TOKEN_TYPECAST, Literal: Literal{Str: "::"}}
+		} else {
+			tok = newToken(TOKEN_ILLEGAL, l.ch)
+		}
 	case '(':
 		tok = newToken(TOKEN_OPEN_PAREN, l.ch)
 	case ')':
@@ -228,6 +287,14 @@ func (l *Lexer) NextToken() Token {
 		tok = newToken(TOKEN_GREATER, l.ch)
 	case '<':
 		tok = newToken(TOKEN_LESS, l.ch)
+	case '+':
+		tok = newToken(TOKEN_PLUS, l.ch)
+	case '-':
+		tok = newToken(TOKEN_MINUS, l.ch)
+	case '*':
+		tok = newToken(TOKEN_ASTERISK, l.ch)
+	case '/':
+		tok = newToken(TOKEN_SLASH, l.ch)
 	case 0:
 		tok.Literal = Literal{}
 		tok.Type = TOKEN_EOF
@@ -242,6 +309,27 @@ func (l *Lexer) NextToken() Token {
 
 	l.readChar()
 	return tok
+}
+
+// readLiteral はクォーテーションで囲まれた文字列を読み込みます。
+func (l *Lexer) readLiteral(quote byte) string {
+	// position := l.position + 1 // クォーテーションの次の文字から開始
+	position := l.position // クォーテーションの文字から開始
+	for {
+		l.readChar()
+		if l.ch == quote || l.ch == 0 {
+			break
+		}
+	}
+	return l.input[position : l.position+1]
+}
+
+// peekChar は次の文字を覗き見ますが、現在の位置は進めません。
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	}
+	return l.input[l.readPosition]
 }
 
 func newToken(tokenType TokenType, ch byte) Token {
@@ -263,11 +351,15 @@ func isLiteral(ch byte) bool {
 		'a' <= ch && ch <= 'z' ||
 		'0' <= ch && ch <= '9' ||
 		ch == '_' ||
-		ch == QuotationChar // TODO: 一考の余地
+		ch == '"' || // TODO: 一考の余地
+		ch == '\'' // TODO: 一考の余地
+	// return !(ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')
 }
 
-func (l *Lexer) skipWhitespace() {
+func (l *Lexer) skipWhitespace() (skipped bool) {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+		skipped = true || skipped
 		l.readChar()
 	}
+	return skipped
 }

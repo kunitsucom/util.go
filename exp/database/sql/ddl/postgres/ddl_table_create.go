@@ -10,7 +10,7 @@ type CreateTableStmt struct {
 	Indent      string
 	Name        *Ident
 	Columns     []*Column
-	Constraints []Constraint
+	Constraints Constraints
 	Options     []*Option
 }
 
