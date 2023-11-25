@@ -35,7 +35,7 @@ LIKE parent_test;
 		actual := stmt.String()
 		assert.Equal(t, expected, actual)
 
-		t.Logf("✅: stmt: %#v", stmt)
+		t.Logf("✅: %s: stmt: %#v", t.Name(), stmt)
 	})
 }
 
@@ -51,6 +51,6 @@ func TestCreateTableStmt_GetPlainName(t *testing.T) {
 
 		assert.Equal(t, expected, actual)
 
-		t.Logf("✅: stmt: %#v", stmt)
+		t.Logf("✅: %s: stmt: %#v", t.Name(), stmt)
 	})
 }

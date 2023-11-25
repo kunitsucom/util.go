@@ -12,6 +12,8 @@ func Test_isStmt(t *testing.T) {
 	(&CreateTableStmt{}).isStmt()
 	(&DropTableStmt{}).isStmt()
 	(&AlterTableStmt{}).isStmt()
+	(&CreateIndexStmt{}).isStmt()
+	(&DropIndexStmt{}).isStmt()
 }
 
 func TestIdent_String(t *testing.T) {
@@ -23,5 +25,5 @@ func TestIdent_String(t *testing.T) {
 
 	require.Equal(t, expected, actual)
 
-	t.Logf("✅: ident: %#v", ident)
+	t.Logf("✅: %s: ident: %#v", t.Name(), ident)
 }

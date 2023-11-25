@@ -86,7 +86,7 @@ const (
 	TOKEN_JSONB       TokenType = "JSONB"
 	TOKEN_CHARACTER   TokenType = "CHARACTER"
 	TOKEN_VARCHAR     TokenType = "VARCHAR"
-	TOKEN_TEXT        TokenType = "TEXT"
+	TOKEN_STRING      TokenType = "STRING"
 	TOKEN_TIMESTAMP   TokenType = "TIMESTAMP"
 	TOKEN_TIMESTAMPTZ TokenType = "TIMESTAMPTZ"
 	TOKEN_WITH        TokenType = "WITH"
@@ -187,8 +187,8 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_CHARACTER
 	case "VARYING", "VARCHAR":
 		return TOKEN_VARCHAR
-	case "TEXT":
-		return TOKEN_TEXT
+	case "STRING", "TEXT":
+		return TOKEN_STRING
 	case "TIMESTAMP":
 		return TOKEN_TIMESTAMP
 	case "TIMESTAMPTZ":

@@ -26,7 +26,7 @@ func TestPrimaryKeyConstraint(t *testing.T) {
 		actual := primaryKeyConstraint.String()
 		require.Equal(t, expected, actual)
 
-		t.Logf("✅: primaryKeyConstraint: %#v", primaryKeyConstraint)
+		t.Logf("✅: %s: primaryKeyConstraint: %#v", t.Name(), primaryKeyConstraint)
 	})
 	t.Run("success,PrimaryKeyConstraint,empty", func(t *testing.T) {
 		t.Parallel()
@@ -36,7 +36,7 @@ func TestPrimaryKeyConstraint(t *testing.T) {
 		actual := primaryKeyConstraint.String()
 		require.Equal(t, expected, actual)
 
-		t.Logf("✅: primaryKeyConstraint: %#v", primaryKeyConstraint)
+		t.Logf("✅: %s: primaryKeyConstraint: %#v", t.Name(), primaryKeyConstraint)
 	})
 }
 
@@ -56,7 +56,7 @@ func TestForeignKeyConstraint(t *testing.T) {
 		actual := foreignKeyConstraint.String()
 		require.Equal(t, expected, actual)
 
-		t.Logf("✅: foreignKeyConstraint: %#v", foreignKeyConstraint)
+		t.Logf("✅: %s: foreignKeyConstraint: %#v", t.Name(), foreignKeyConstraint)
 	})
 }
 
@@ -74,7 +74,7 @@ func TestUniqueConstraint(t *testing.T) {
 		actual := uniqueConstraint.String()
 		require.Equal(t, expected, actual)
 
-		t.Logf("✅: uniqueConstraint: %#v", uniqueConstraint)
+		t.Logf("✅: %s: uniqueConstraint: %#v", t.Name(), uniqueConstraint)
 	})
 }
 
@@ -92,7 +92,7 @@ func TestCheckConstraint(t *testing.T) {
 		actual := checkConstraint.String()
 		require.Equal(t, expected, actual)
 
-		t.Logf("✅: checkConstraint: %#v", checkConstraint)
+		t.Logf("✅: %s: checkConstraint: %#v", t.Name(), checkConstraint)
 	})
 }
 
@@ -131,7 +131,7 @@ func TestDefault_String(t *testing.T) {
 		actual := d.String()
 		require.Equal(t, expected, actual)
 
-		t.Logf("✅: d: %#v", d)
+		t.Logf("✅: %s: d: %#v", t.Name(), d)
 	})
 	t.Run("success,DEFAULT_VALUE,empty", func(t *testing.T) {
 		t.Parallel()
@@ -149,7 +149,7 @@ func TestDefault_String(t *testing.T) {
 		actual := d.String()
 		require.Equal(t, expected, actual)
 
-		t.Logf("✅: d: %#v", d)
+		t.Logf("✅: %s: d: %#v", t.Name(), d)
 	})
 }
 
@@ -168,7 +168,7 @@ func TestColumn(t *testing.T) {
 		actual := column.String()
 		require.Equal(t, expected, actual)
 
-		t.Logf("✅: column: %#v", column)
+		t.Logf("✅: %s: column: %#v", t.Name(), column)
 	})
 }
 
@@ -184,7 +184,7 @@ func TestOption(t *testing.T) {
 		actual := option.String()
 		require.Equal(t, expected, actual)
 
-		t.Logf("✅: option: %#v", option)
+		t.Logf("✅: %s: option: %#v", t.Name(), option)
 	})
 
 	t.Run("success,Option,empty", func(t *testing.T) {
@@ -195,6 +195,6 @@ func TestOption(t *testing.T) {
 		actual := option.String()
 		require.Equal(t, expected, actual)
 
-		t.Logf("✅: option: %#v", option)
+		t.Logf("✅: %s: option: %#v", t.Name(), option)
 	})
 }

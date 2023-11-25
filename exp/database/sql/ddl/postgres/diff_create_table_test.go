@@ -99,9 +99,23 @@ func TestDiff(t *testing.T) {
 		{
 			name:   "success,DROP_COLUMN",
 			before: `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INTEGER DEFAULT 0 NOT NULL CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
-			after:  `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, description TEXT, PRIMARY KEY ("id"));`,
+			after:  `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL, description TEXT, PRIMARY KEY ("id"));`,
 			want: &DDL{
 				Stmts: []Stmt{
+					&AlterTableStmt{
+						Name: &Ident{
+							Name:          "users",
+							QuotationMark: `"`,
+							Raw:           `"users"`,
+						},
+						Action: &DropConstraint{
+							Name: &Ident{
+								Name:          "users_unique_name",
+								QuotationMark: ``,
+								Raw:           "users_unique_name",
+							},
+						},
+					},
 					&AlterTableStmt{
 						Name: &Ident{
 							Name:          "users",
@@ -136,7 +150,7 @@ func TestDiff(t *testing.T) {
 		},
 		{
 			name:   "success,ALTER_COLUMN_SET_DATA_TYPE",
-			before: `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
+			before: `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
 			after:  `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" TEXT NOT NULL UNIQUE, "age" BIGINT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
 			want: &DDL{
 				Stmts: []Stmt{
@@ -174,6 +188,25 @@ func TestDiff(t *testing.T) {
 							Action: &AlterColumnSetDataType{
 								DataType: &DataType{
 									Name: "BIGINT",
+								},
+							},
+						},
+					},
+					&AlterTableStmt{
+						Name: &Ident{
+							Name:          "users",
+							QuotationMark: `"`,
+							Raw:           `"users"`,
+						},
+						Action: &AddConstraint{
+							Constraint: &UniqueConstraint{
+								Name: &Ident{
+									Name:          "users_unique_name",
+									QuotationMark: ``,
+									Raw:           "users_unique_name",
+								},
+								Columns: []*ColumnIdent{
+									{Ident: &Ident{Name: "name", QuotationMark: `"`, Raw: `"name"`}},
 								},
 							},
 						},

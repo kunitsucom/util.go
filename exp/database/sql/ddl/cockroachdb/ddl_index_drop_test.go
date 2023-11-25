@@ -1,4 +1,4 @@
-package postgres
+package cockroachdb
 
 import (
 	"testing"
@@ -6,35 +6,33 @@ import (
 	"github.com/kunitsucom/util.go/testing/require"
 )
 
-func TestDropTableStmt_GetPlainName(t *testing.T) {
+func TestDropIndexStmt_GetPlainName(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success,", func(t *testing.T) {
 		t.Parallel()
 
-		stmt := &DropTableStmt{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}}
+		stmt := &DropIndexStmt{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}}
 		expected := "test"
 		actual := stmt.GetPlainName()
 
 		require.Equal(t, expected, actual)
-
-		t.Logf("✅: %s: stmt: %#v", t.Name(), stmt)
 	})
 }
 
-func TestDropTableStmt_String(t *testing.T) {
+func TestDropIndexStmt_String(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success,", func(t *testing.T) {
 		t.Parallel()
 
-		stmt := &DropTableStmt{
+		stmt := &DropIndexStmt{
 			IfExists: true,
 			Name:     &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`},
 		}
-
-		expected := `DROP TABLE IF EXISTS "test";` + "\n"
+		expected := `DROP INDEX IF EXISTS "test";` + "\n"
 		actual := stmt.String()
+
 		require.Equal(t, expected, actual)
 
 		t.Logf("✅: %s: stmt: %#v", t.Name(), stmt)

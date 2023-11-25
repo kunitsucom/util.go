@@ -61,7 +61,7 @@ func TestParser_Parse(t *testing.T) {
 									Raw:           "description",
 								},
 								DataType: &DataType{
-									Name: "TEXT",
+									Name: "STRING",
 									Size: "",
 								},
 							},
@@ -150,7 +150,7 @@ func TestParser_Parse(t *testing.T) {
 									Raw:           "description",
 								},
 								DataType: &DataType{
-									Name: "TEXT",
+									Name: "STRING",
 									Size: "",
 								},
 							},
@@ -206,7 +206,7 @@ func TestParser_Parse(t *testing.T) {
 			wantErr: nil,
 			wantStr: `CREATE TABLE "groups" (
     "id" UUID NOT NULL,
-    description TEXT,
+    description STRING,
     CONSTRAINT groups_pkey PRIMARY KEY ("id")
 );
 CREATE TABLE "users" (
@@ -214,7 +214,7 @@ CREATE TABLE "users" (
     group_id UUID NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "age" INTEGER DEFAULT 0,
-    description TEXT,
+    description STRING,
     CONSTRAINT users_pkey PRIMARY KEY ("id"),
     CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id"),
     UNIQUE INDEX users_unique_name ("name"),
@@ -261,12 +261,12 @@ CREATE TABLE "users" (
 							},
 							{
 								Name:     &Ident{Name: "unique_code", Raw: "unique_code"},
-								DataType: &DataType{Name: "TEXT", Size: ""},
+								DataType: &DataType{Name: "STRING", Size: ""},
 								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "'CODE-'", Raw: "'CODE-'"}, {Name: "||", Raw: "||"}, {Name: "TO_CHAR", Raw: "TO_CHAR"}, {Name: "(", Raw: "("}, {Name: "NOW", Raw: "NOW"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: ",", Raw: ","}, {Name: "'YYYYMMDDHH24MISS'", Raw: "'YYYYMMDDHH24MISS'"}, {Name: ")", Raw: ")"}, {Name: "||", Raw: "||"}, {Name: "'-'", Raw: "'-'"}, {Name: "||", Raw: "||"}, {Name: "LPAD", Raw: "LPAD"}, {Name: "(", Raw: "("}, {Name: "TO_CHAR", Raw: "TO_CHAR"}, {Name: "(", Raw: "("}, {Name: "NEXTVAL", Raw: "NEXTVAL"}, {Name: "(", Raw: "("}, {Name: "'seq_complex_default'", Raw: "'seq_complex_default'"}, {Name: ")", Raw: ")"}, {Name: ")", Raw: ")"}, {Name: ",", Raw: ","}, {Name: "5", Raw: "5"}, {Name: ",", Raw: ","}, {Name: "'0'", Raw: "'0'"}, {Name: ")", Raw: ")"}}}},
 							},
 							{
 								Name:     &Ident{Name: "status", Raw: "status"},
-								DataType: &DataType{Name: "TEXT", Size: ""},
+								DataType: &DataType{Name: "STRING", Size: ""},
 								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "'pending'", Raw: "'pending'"}}}},
 							},
 							{
@@ -299,8 +299,8 @@ CREATE TABLE "users" (
     id SERIAL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
-    status TEXT DEFAULT 'pending',
+    unique_code STRING DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
+    status STRING DEFAULT 'pending',
     random_number INTEGER DEFAULT FLOOR(RANDOM() * 100::INTEGER)::INTEGER,
     json_data JSONB DEFAULT '{}',
     calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table),
@@ -317,7 +317,7 @@ CREATE TABLE "users" (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
     CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
-    INDEX users_idx_by_username (username ASC)
+    INDEX users_idx_by_username (username DESC)
 );
 `,
 			want: &DDL{
@@ -340,7 +340,7 @@ CREATE TABLE "users" (
 							},
 							&IndexConstraint{
 								Name:    &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "username", Raw: "username"}, Order: &Order{Desc: false}}},
+								Columns: []*ColumnIdent{{Ident: &Ident{Name: "username", Raw: "username"}, Order: &Order{Desc: true}}},
 							},
 						},
 					},
@@ -354,7 +354,7 @@ CREATE TABLE "users" (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
     CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
-    INDEX users_idx_by_username (username ASC)
+    INDEX users_idx_by_username (username DESC)
 );
 `,
 		},
@@ -540,8 +540,23 @@ CREATE TABLE "users" (
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 		{
-			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_IDENTS_INVALID",
-			input:   `CREATE TABLE "users" ("id" UUID, UNIQUE (NOT`,
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_INVALID",
+			input:   `CREATE TABLE "users" ("id" UUID, UNIQUE NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_INDEX_INVALID",
+			input:   `CREATE TABLE "users" ("id" UUID, UNIQUE INDEX users_idx_name NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_INDEX_COLUMN_INVALID",
+			input:   `CREATE TABLE "users" ("id" UUID, UNIQUE INDEX users_idx_name (NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_INVALID",
+			input:   `CREATE TABLE "users" ("id" UUID, UNIQUE INDEX NOT`,
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 		{

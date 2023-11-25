@@ -23,5 +23,5 @@ func TestIdent_String(t *testing.T) {
 
 	require.Equal(t, expected, actual)
 
-	t.Logf("✅: ident: %#v", ident)
+	t.Logf("✅: %s: ident: %#v", t.Name(), ident)
 }
