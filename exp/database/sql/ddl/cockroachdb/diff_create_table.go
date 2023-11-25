@@ -73,7 +73,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 				ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
 					Name: before.Name,
 					Action: &DropConstraint{
-						Name: bc.GetName(),
+						Name: beforeConstraint.GetName(),
 					},
 				})
 			}

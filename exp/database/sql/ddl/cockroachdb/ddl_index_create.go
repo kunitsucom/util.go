@@ -5,7 +5,7 @@ import (
 	stringz "github.com/kunitsucom/util.go/strings"
 )
 
-// MEMO: https://www.postgresql.jp/docs/11/sql-createtable.html
+// MEMO: https://www.cockroachlabs.com/docs/stable/create-index
 
 var _ Stmt = (*CreateIndexStmt)(nil)
 

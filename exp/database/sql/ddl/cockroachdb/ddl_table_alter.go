@@ -1,6 +1,6 @@
 package cockroachdb
 
-// MEMO: https://www.postgresql.jp/docs/11/sql-altertable.html
+// MEMO: https://www.cockroachlabs.com/docs/stable/alter-table
 
 type AlterTableAction interface {
 	isAlterTableAction()

@@ -22,7 +22,8 @@ func (constraints Constraints) Append(constraint Constraint) Constraints {
 			return constraints
 		}
 	}
-	return append(constraints, constraint)
+	constraints = append(constraints, constraint)
+	return constraints
 }
 
 // PrimaryKeyConstraint represents a PRIMARY KEY constraint.

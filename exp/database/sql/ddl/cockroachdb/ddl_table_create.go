@@ -2,7 +2,7 @@ package cockroachdb
 
 import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 
-// MEMO: https://www.postgresql.jp/docs/11/sql-createtable.html
+// MEMO: https://www.cockroachlabs.com/docs/stable/create-table
 
 var _ Stmt = (*CreateTableStmt)(nil)
 

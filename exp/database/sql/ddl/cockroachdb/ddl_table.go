@@ -28,18 +28,9 @@ func (constraints Constraints) Append(constraint Constraint) Constraints {
 
 	sort.Slice(constraints, func(left, right int) bool {
 		_, leftIsPrimaryKeyConstraint := constraints[left].(*PrimaryKeyConstraint)
-		_, rightIsPrimaryKeyConstraint := constraints[right].(*PrimaryKeyConstraint)
-		// _, leftIsForeignKeyConstraint := constraints[left].(*ForeignKeyConstraint)
-		// _, rightIsForeignKeyConstraint := constraints[right].(*ForeignKeyConstraint)
-		// _, leftIsIndexConstraint := constraints[left].(*IndexConstraint)
-		// _, rightIsIndexConstraint := constraints[right].(*IndexConstraint)
-		// _, leftIsCheckConstraint := constraints[left].(*CheckConstraint)
-		// _, rightIsCheckConstraint := constraints[right].(*CheckConstraint)
 		switch {
 		case leftIsPrimaryKeyConstraint:
 			return true
-		case rightIsPrimaryKeyConstraint:
-			return false
 		default:
 			return false
 		}
