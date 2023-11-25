@@ -69,7 +69,8 @@ type ColumnIdent struct {
 func (i *ColumnIdent) GoString() string { return internal.GoString(*i) }
 
 func (i *ColumnIdent) String() string {
-	return i.Ident.String()
+	str := i.Ident.String()
+	return str
 }
 
 func (i *ColumnIdent) PlainString() string {

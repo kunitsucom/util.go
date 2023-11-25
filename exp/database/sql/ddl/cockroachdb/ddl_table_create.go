@@ -8,10 +8,10 @@ var _ Stmt = (*CreateTableStmt)(nil)
 
 type CreateTableStmt struct {
 	Indent      string
+	Schema      *Ident
 	Name        *Ident
 	Columns     []*Column
 	Constraints Constraints
-	Indexes     []*Index
 	Options     []*Option
 }
 
@@ -19,8 +19,13 @@ func (s *CreateTableStmt) GetPlainName() string {
 	return s.Name.PlainString()
 }
 
+//nolint:cyclop
 func (s *CreateTableStmt) String() string {
-	str := "CREATE TABLE " + s.Name.String() + " (\n"
+	str := "CREATE TABLE "
+	if s.Schema != nil {
+		str += s.Schema.String() + "."
+	}
+	str += s.Name.String() + " (\n"
 	lastIndex := len(s.Columns) - 1
 	hasConstraint := len(s.Constraints) > 0
 	for i, v := range s.Columns {
@@ -33,11 +38,11 @@ func (s *CreateTableStmt) String() string {
 		}
 	}
 	if len(s.Constraints) > 0 {
-		lastIndex := len(s.Constraints) - 1
+		lastConstraint := len(s.Constraints) - 1
 		for i, v := range s.Constraints {
 			str += Indent
 			str += v.String()
-			if i != lastIndex {
+			if i != lastConstraint {
 				str += ",\n"
 			} else {
 				str += "\n"

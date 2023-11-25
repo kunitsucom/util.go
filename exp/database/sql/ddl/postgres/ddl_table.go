@@ -130,8 +130,8 @@ func (c *UniqueConstraint) String() string {
 	if c.Name != nil {
 		str += "CONSTRAINT " + c.Name.String() + " "
 	}
-	str += "UNIQUE" //nolint:goconst
-	str += " (" + stringz.JoinStringers(", ", c.Columns...) + ")"
+	str += "UNIQUE " //nolint:goconst
+	str += "(" + stringz.JoinStringers(", ", c.Columns...) + ")"
 	return str
 }
 

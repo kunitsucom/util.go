@@ -102,7 +102,7 @@ func (p *Parser) parseCreateStatement() (Stmt, error) { //nolint:ireturn
 	}
 }
 
-//nolint:cyclop
+//nolint:cyclop,funlen
 func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) { //nolint:ireturn
 	createTableStmt := &CreateTableStmt{
 		Indent: Indent,
@@ -114,7 +114,13 @@ func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) { //nolint:ire
 		return nil, errorz.Errorf("checkCurrentToken: %w", err)
 	}
 
-	createTableStmt.Name = NewIdent(p.currentToken.Literal.Str)
+	switch name := strings.Split(p.currentToken.Literal.Str, "."); len(name) { //nolint:exhaustive
+	case 2:
+		createTableStmt.Schema = NewIdent(name[0])
+		createTableStmt.Name = NewIdent(name[1])
+	default:
+		createTableStmt.Name = NewIdent(p.currentToken.Literal.Str)
+	}
 
 	p.nextToken() // current = (
 
@@ -402,7 +408,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
 		}
 		constraintName = NewIdent(p.currentToken.Literal.Str)
-		p.nextToken() // current = PRIMARY or UNIQUE or CHECK
+		p.nextToken() // current = PRIMARY or CHECK or UNIQUE
 	}
 
 	switch p.currentToken.Type { //nolint:exhaustive
@@ -469,6 +475,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 		}, nil
 
 	case TOKEN_UNIQUE:
+		c := &UniqueConstraint{}
 		if err := p.checkPeekToken(TOKEN_OPEN_PAREN); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
 		}
@@ -484,10 +491,9 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			}
 			constraintName = NewIdent(name)
 		}
-		return &UniqueConstraint{
-			Name:    constraintName,
-			Columns: idents,
-		}, nil
+		c.Name = constraintName
+		c.Columns = idents
+		return c, nil
 	default:
 		return nil, errorz.Errorf("currentToken=%s: %w", p.currentToken.Type, ddl.ErrUnexpectedToken)
 	}

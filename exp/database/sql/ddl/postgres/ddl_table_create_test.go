@@ -14,7 +14,7 @@ func TestCreateTableStmt_String(t *testing.T) {
 
 		stmt := &CreateTableStmt{
 			Indent: "  ",
-			Name:   &Ident{Name: "test", Raw: "test"},
+			Name:   &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`},
 			Columns: []*Column{
 				{Name: &Ident{Name: "id", Raw: "id"}, DataType: &DataType{Name: "INTEGER"}},
 				{Name: &Ident{Name: "name", Raw: "name"}, DataType: &DataType{Name: "VARYING", Size: "255"}},
@@ -24,15 +24,31 @@ func TestCreateTableStmt_String(t *testing.T) {
 				{Name: "LIKE", Value: &Ident{Name: "parent_test", Raw: "parent_test"}},
 			},
 		}
-		expected := `CREATE TABLE test (
+
+		expected := `CREATE TABLE "test" (
     id INTEGER,
     name VARYING(255)
 )
 TABLESPACE default_tablespace,
 LIKE parent_test;
 `
-
 		actual := stmt.String()
+		assert.Equal(t, expected, actual)
+
+		t.Logf("✅: stmt: %#v", stmt)
+	})
+}
+
+func TestCreateTableStmt_GetPlainName(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success,", func(t *testing.T) {
+		t.Parallel()
+
+		stmt := &CreateTableStmt{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}}
+		expected := "test"
+		actual := stmt.GetPlainName()
+
 		assert.Equal(t, expected, actual)
 
 		t.Logf("✅: stmt: %#v", stmt)

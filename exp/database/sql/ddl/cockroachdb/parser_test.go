@@ -30,7 +30,7 @@ func TestParser_Parse(t *testing.T) {
 		wantStr string
 	}{
 		{
-			name:  "success,CREATE TABLE",
+			name:  "success,CREATE_TABLE",
 			input: `CREATE TABLE "groups" ("id" UUID NOT NULL PRIMARY KEY, description TEXT); CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
 			want: &DDL{
 				Stmts: []Stmt{
@@ -116,7 +116,7 @@ func TestParser_Parse(t *testing.T) {
 									Raw:           `"name"`,
 								},
 								DataType: &DataType{
-									Name: "VARYING",
+									Name: "VARCHAR",
 									Size: "255",
 								},
 								NotNull: true,
@@ -156,6 +156,14 @@ func TestParser_Parse(t *testing.T) {
 							},
 						},
 						Constraints: []Constraint{
+							&PrimaryKeyConstraint{
+								Name: &Ident{
+									Name:          "users_pkey",
+									QuotationMark: ``,
+									Raw:           "users_pkey",
+								},
+								Columns: []*ColumnIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
+							},
 							&ForeignKeyConstraint{
 								Name: &Ident{
 									Name:          "users_group_id_fkey",
@@ -170,7 +178,8 @@ func TestParser_Parse(t *testing.T) {
 								},
 								RefColumns: []*ColumnIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
 							},
-							&UniqueConstraint{
+							&IndexConstraint{
+								Unique: true,
 								Name: &Ident{
 									Name:          "users_unique_name",
 									QuotationMark: ``,
@@ -190,14 +199,6 @@ func TestParser_Parse(t *testing.T) {
 									{Name: "0", Raw: "0"},
 								},
 							},
-							&PrimaryKeyConstraint{
-								Name: &Ident{
-									Name:          "users_pkey",
-									QuotationMark: ``,
-									Raw:           "users_pkey",
-								},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
-							},
 						},
 					},
 				},
@@ -211,13 +212,13 @@ func TestParser_Parse(t *testing.T) {
 CREATE TABLE "users" (
     id UUID NOT NULL,
     group_id UUID NOT NULL,
-    "name" VARYING(255) NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
     "age" INTEGER DEFAULT 0,
     description TEXT,
+    CONSTRAINT users_pkey PRIMARY KEY ("id"),
     CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id"),
-    CONSTRAINT users_unique_name UNIQUE ("name"),
-    CONSTRAINT users_age_check CHECK ("age" >= 0),
-    CONSTRAINT users_pkey PRIMARY KEY ("id")
+    UNIQUE INDEX users_unique_name ("name"),
+    CONSTRAINT users_age_check CHECK ("age" >= 0)
 );
 `,
 		},
@@ -310,25 +311,52 @@ CREATE TABLE "users" (
 		{
 			name: "success,CREATE_TABLE_TYPE_ANNOTATION",
 			input: `CREATE TABLE public.users (
-        user_id UUID NOT NULL,
-        username VARCHAR(256) NOT NULL,
-        is_verified BOOL NOT NULL DEFAULT false,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
-        CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
-        INDEX users_idx_by_username (username ASC)
-);`,
-			want:    &DDL{},
+    user_id UUID NOT NULL,
+    username VARCHAR(256) NOT NULL,
+    is_verified BOOL NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
+    CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
+    INDEX users_idx_by_username (username ASC)
+);
+`,
+			want: &DDL{
+				Stmts: []Stmt{
+					&CreateTableStmt{
+						Indent: Indent,
+						Schema: &Ident{Name: "public", Raw: "public"},
+						Name:   &Ident{Name: "users", Raw: "users"},
+						Columns: []*Column{
+							{Name: &Ident{Name: "user_id", Raw: "user_id"}, DataType: &DataType{Name: "UUID", Size: ""}, NotNull: true},
+							{Name: &Ident{Name: "username", Raw: "username"}, DataType: &DataType{Name: "VARCHAR", Size: "256"}, NotNull: true},
+							{Name: &Ident{Name: "is_verified", Raw: "is_verified"}, DataType: &DataType{Name: "BOOL", Size: ""}, NotNull: true, Default: &Default{Value: &DefaultValue{[]*Ident{{Name: "false", Raw: "false"}}}}},
+							{Name: &Ident{Name: "created_at", Raw: "created_at"}, DataType: &DataType{Name: "TIMESTAMPTZ", Size: ""}, NotNull: true, Default: &Default{Value: &DefaultValue{[]*Ident{{Name: "timezone", Raw: "timezone"}, {Name: "(", Raw: "("}, {Name: "'UTC'", Raw: "'UTC'"}, {Name: ":::", Raw: ":::"}, {Name: "STRING", Raw: "STRING"}, {Name: ",", Raw: ","}, {Name: "current_timestamp", Raw: "current_timestamp"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: ":::", Raw: ":::"}, {Name: "TIMESTAMPTZ", Raw: "TIMESTAMPTZ"}, {Name: ")", Raw: ")"}}}}},
+							{Name: &Ident{Name: "updated_at", Raw: "updated_at"}, DataType: &DataType{Name: "TIMESTAMPTZ", Size: ""}, NotNull: true, Default: &Default{Value: &DefaultValue{[]*Ident{{Name: "timezone", Raw: "timezone"}, {Name: "(", Raw: "("}, {Name: "'UTC'", Raw: "'UTC'"}, {Name: ":::", Raw: ":::"}, {Name: "STRING", Raw: "STRING"}, {Name: ",", Raw: ","}, {Name: "current_timestamp", Raw: "current_timestamp"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: ":::", Raw: ":::"}, {Name: "TIMESTAMPTZ", Raw: "TIMESTAMPTZ"}, {Name: ")", Raw: ")"}}}}},
+						},
+						Constraints: []Constraint{
+							&PrimaryKeyConstraint{
+								Name:    &Ident{Name: "users_pkey", Raw: "users_pkey"},
+								Columns: []*ColumnIdent{{Ident: &Ident{Name: "user_id", Raw: "user_id"}, Order: &Order{Desc: false}}},
+							},
+							&IndexConstraint{
+								Name:    &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"},
+								Columns: []*ColumnIdent{{Ident: &Ident{Name: "username", Raw: "username"}, Order: &Order{Desc: false}}},
+							},
+						},
+					},
+				},
+			},
 			wantErr: nil,
 			wantStr: `CREATE TABLE public.users (
-        user_id UUID NOT NULL,
-        username VARCHAR(256) NOT NULL,
-        is_verified BOOL NOT NULL DEFAULT false,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
-        CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
-        INDEX users_idx_by_username (username ASC)
-);`,
+    user_id UUID NOT NULL,
+    username VARCHAR(256) NOT NULL,
+    is_verified BOOL NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
+    CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
+    INDEX users_idx_by_username (username ASC)
+);
+`,
 		},
 	}
 

@@ -65,6 +65,8 @@ const (
 	TOKEN_VIEW   TokenType = "VIEW"
 	TOKEN_IF     TokenType = "IF"
 	TOKEN_EXISTS TokenType = "EXISTS"
+	TOKEN_ON     TokenType = "ON"
+	TOKEN_TO     TokenType = "TO"
 
 	// DATA TYPE.
 	TOKEN_BOOLEAN     TokenType = "BOOLEAN"
@@ -148,6 +150,10 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_IF
 	case "EXISTS":
 		return TOKEN_EXISTS
+	case "ON":
+		return TOKEN_ON
+	case "TO":
+		return TOKEN_TO
 	case "BOOLEAN":
 		return TOKEN_BOOLEAN
 	case "SMALLINT":

@@ -264,3 +264,14 @@ func TestAlterTableStmt_String(t *testing.T) {
 		require.Equal(t, expected, actual)
 	})
 }
+
+func TestAlterTableStmt_GetPlainName(t *testing.T) {
+	t.Parallel()
+
+	stmt := &AlterTableStmt{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}}
+
+	expected := `users`
+	actual := stmt.GetPlainName()
+
+	require.Equal(t, expected, actual)
+}

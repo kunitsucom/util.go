@@ -11,7 +11,7 @@ func Test_isConstraint(t *testing.T) {
 
 	(&PrimaryKeyConstraint{}).isConstraint()
 	(&ForeignKeyConstraint{}).isConstraint()
-	(&UniqueConstraint{}).isConstraint()
+	(&IndexConstraint{}).isConstraint()
 	(&CheckConstraint{}).isConstraint()
 }
 
@@ -65,16 +65,17 @@ func TestUniqueConstraint(t *testing.T) {
 	t.Run("success,UniqueConstraint", func(t *testing.T) {
 		t.Parallel()
 
-		uniqueConstraint := &UniqueConstraint{
+		indexConstraint := &IndexConstraint{
+			Unique:  true,
 			Name:    &Ident{Name: "uq_users_email", QuotationMark: `"`, Raw: `"uq_users_email"`},
 			Columns: []*ColumnIdent{{Ident: &Ident{Name: "email", QuotationMark: `"`, Raw: `"email"`}}},
 		}
 
-		expected := `CONSTRAINT "uq_users_email" UNIQUE ("email")`
-		actual := uniqueConstraint.String()
+		expected := `UNIQUE INDEX "uq_users_email" ("email")`
+		actual := indexConstraint.String()
 		require.Equal(t, expected, actual)
 
-		t.Logf("✅: uniqueConstraint: %#v", uniqueConstraint)
+		t.Logf("✅: uniqueConstraint: %#v", indexConstraint)
 	})
 }
 

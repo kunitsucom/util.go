@@ -50,7 +50,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 			Name: before.Name,
 		})
 		return ddls, nil
-	case before == nil && after == nil || reflect.DeepEqual(before, after) || before.String() == after.String():
+	case (before == nil && after == nil) || reflect.DeepEqual(before, after) || before.String() == after.String():
 		return nil, ddl.ErrNoDifference
 	}
 

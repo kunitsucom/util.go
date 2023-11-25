@@ -50,7 +50,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 			Name: before.Name,
 		})
 		return ddls, nil
-	case before == nil && after == nil || reflect.DeepEqual(before, after) || before.String() == after.String():
+	case (before == nil && after == nil) || reflect.DeepEqual(before, after) || before.String() == after.String():
 		return nil, ddl.ErrNoDifference
 	}
 
@@ -62,13 +62,21 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 	for _, beforeConstraint := range before.Constraints {
 		afterConstraint := findConstraintByName(beforeConstraint.GetName().Name, after.Constraints)
 		if afterConstraint == nil {
-			// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
-			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Name: before.Name,
-				Action: &DropConstraint{
-					Name: beforeConstraint.GetName(),
-				},
-			})
+			switch bc := beforeConstraint.(type) {
+			case *IndexConstraint:
+				// DROP INDEX index_name;
+				ddls.Stmts = append(ddls.Stmts, &DropIndexStmt{
+					Name: bc.GetName(),
+				})
+			default:
+				// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
+				ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
+					Name: before.Name,
+					Action: &DropConstraint{
+						Name: bc.GetName(),
+					},
+				})
+			}
 			continue
 		}
 	}
@@ -79,38 +87,67 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		afterConstraint := findConstraintByName(beforeConstraint.GetName().Name, after.Constraints)
 		if afterConstraint != nil {
 			if beforeConstraint.PlainString() != afterConstraint.PlainString() {
-				// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
-				// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
-				ddls.Stmts = append(
-					ddls.Stmts,
-					&AlterTableStmt{
-						Name: before.Name,
-						Action: &DropConstraint{
+				switch ac := afterConstraint.(type) {
+				case *IndexConstraint:
+					// DROP INDEX index_name;
+					// CREATE INDEX index_name ON table_name (column_name);
+					ddls.Stmts = append(
+						ddls.Stmts,
+						&DropIndexStmt{
 							Name: beforeConstraint.GetName(),
 						},
-					},
-					&AlterTableStmt{
-						Name: after.Name,
-						Action: &AddConstraint{
-							Constraint: afterConstraint,
-							NotValid:   config.UseAlterTableAddConstraintNotValid,
+						&CreateIndexStmt{
+							Unique:    ac.Unique,
+							Name:      ac.GetName(),
+							TableName: after.Name,
+							Columns:   ac.Columns,
 						},
-					},
-				)
+					)
+				default:
+					// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
+					// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
+					ddls.Stmts = append(
+						ddls.Stmts,
+						&AlterTableStmt{
+							Name: before.Name,
+							Action: &DropConstraint{
+								Name: beforeConstraint.GetName(),
+							},
+						},
+						&AlterTableStmt{
+							Name: after.Name,
+							Action: &AddConstraint{
+								Constraint: afterConstraint,
+								NotValid:   config.UseAlterTableAddConstraintNotValid,
+							},
+						},
+					)
+				}
 			}
 			continue
 		}
 	}
 
 	for _, afterConstraint := range onlyLeftConstraint(after.Constraints, before.Constraints) {
-		// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
-		ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-			Name: after.Name,
-			Action: &AddConstraint{
-				Constraint: afterConstraint,
-				NotValid:   config.UseAlterTableAddConstraintNotValid,
-			},
-		})
+		switch ac := afterConstraint.(type) {
+		case *IndexConstraint:
+			// CREATE INDEX index_name ON table_name (column_name);
+			ddls.Stmts = append(ddls.Stmts, &CreateIndexStmt{
+				Unique:    ac.Unique,
+				Name:      ac.GetName(),
+				TableName: after.Name,
+				Columns:   ac.Columns,
+			})
+		default:
+			// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
+			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
+				Name: after.Name,
+				Action: &AddConstraint{
+					Constraint: afterConstraint,
+					NotValid:   config.UseAlterTableAddConstraintNotValid,
+				},
+			})
+		}
 	}
 
 	return ddls, nil

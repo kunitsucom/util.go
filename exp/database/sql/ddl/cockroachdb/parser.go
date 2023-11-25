@@ -102,7 +102,7 @@ func (p *Parser) parseCreateStatement() (Stmt, error) { //nolint:ireturn
 	}
 }
 
-//nolint:cyclop
+//nolint:cyclop,funlen
 func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) { //nolint:ireturn
 	createTableStmt := &CreateTableStmt{
 		Indent: Indent,
@@ -114,7 +114,13 @@ func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) { //nolint:ire
 		return nil, errorz.Errorf("checkCurrentToken: %w", err)
 	}
 
-	createTableStmt.Name = NewIdent(p.currentToken.Literal.Str)
+	switch name := strings.Split(p.currentToken.Literal.Str, "."); len(name) { //nolint:exhaustive
+	case 2:
+		createTableStmt.Schema = NewIdent(name[0])
+		createTableStmt.Name = NewIdent(name[1])
+	default:
+		createTableStmt.Name = NewIdent(p.currentToken.Literal.Str)
+	}
 
 	p.nextToken() // current = (
 
@@ -345,7 +351,8 @@ LabelConstraints:
 			constraint.RefColumns = idents
 			constraints = constraints.Append(constraint)
 		case TOKEN_UNIQUE:
-			constraints = constraints.Append(&UniqueConstraint{
+			constraints = constraints.Append(&IndexConstraint{
+				Unique:  true,
 				Name:    NewIdent(fmt.Sprintf("%s_unique_%s", tableName.Name, column.Name.Name)),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			})
@@ -402,7 +409,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
 		}
 		constraintName = NewIdent(p.currentToken.Literal.Str)
-		p.nextToken() // current = PRIMARY or UNIQUE or CHECK
+		p.nextToken() // current = PRIMARY or CHECK
 	}
 
 	switch p.currentToken.Type { //nolint:exhaustive
@@ -468,7 +475,20 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			RefColumns: identsRef,
 		}, nil
 
-	case TOKEN_UNIQUE:
+	case TOKEN_UNIQUE, TOKEN_INDEX:
+		c := &IndexConstraint{}
+		if p.currentToken.Type == TOKEN_UNIQUE {
+			c.Unique = true
+			if err := p.checkPeekToken(TOKEN_INDEX); err != nil {
+				return nil, errorz.Errorf("checkPeekToken: %w", err)
+			}
+			p.nextToken() // current = INDEX
+		}
+		p.nextToken() // current = index_name
+		if err := p.checkCurrentToken(TOKEN_IDENT); err != nil {
+			return nil, errorz.Errorf("checkCurrentToken: %w", err)
+		}
+		constraintName := NewIdent(p.currentToken.Literal.Str)
 		if err := p.checkPeekToken(TOKEN_OPEN_PAREN); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
 		}
@@ -477,17 +497,9 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 		if err != nil {
 			return nil, errorz.Errorf("parseColumnIdents: %w", err)
 		}
-		if constraintName == nil {
-			name := fmt.Sprintf("%s_unique", tableName.Name)
-			for _, ident := range idents {
-				name += fmt.Sprintf("_%s", ident.PlainString())
-			}
-			constraintName = NewIdent(name)
-		}
-		return &UniqueConstraint{
-			Name:    constraintName,
-			Columns: idents,
-		}, nil
+		c.Name = constraintName
+		c.Columns = idents
+		return c, nil
 	default:
 		return nil, errorz.Errorf("currentToken=%s: %w", p.currentToken.Type, ddl.ErrUnexpectedToken)
 	}
@@ -522,7 +534,7 @@ func (p *Parser) parseDataType() (*DataType, error) {
 		dataType.Name += " " + string(p.currentToken.Type)
 	case TOKEN_CHARACTER:
 		dataType.Name = string(p.currentToken.Type)
-		if err := p.checkPeekToken(TOKEN_VARYING); err != nil {
+		if err := p.checkPeekToken(TOKEN_VARCHAR); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
 		}
 		p.nextToken() // current = VARYING
@@ -585,7 +597,7 @@ func isDataType(tokenType TokenType) bool {
 		TOKEN_REAL, TOKEN_DOUBLE, /* TOKEN_PRECISION, */
 		TOKEN_SMALLSERIAL, TOKEN_SERIAL, TOKEN_BIGSERIAL,
 		TOKEN_UUID, TOKEN_JSONB,
-		TOKEN_CHARACTER, TOKEN_VARYING, TOKEN_TEXT,
+		TOKEN_CHARACTER, TOKEN_VARCHAR, TOKEN_TEXT,
 		TOKEN_TIMESTAMP, TOKEN_TIMESTAMPTZ:
 		return true
 	default:
@@ -595,7 +607,7 @@ func isDataType(tokenType TokenType) bool {
 
 func isConstraint(tokenType TokenType) bool {
 	switch tokenType { //nolint:exhaustive
-	case TOKEN_CONSTRAINT,
+	case TOKEN_CONSTRAINT, TOKEN_INDEX,
 		TOKEN_PRIMARY, TOKEN_KEY,
 		TOKEN_FOREIGN, TOKEN_REFERENCES,
 		TOKEN_UNIQUE,

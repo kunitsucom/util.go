@@ -443,7 +443,7 @@ func TestDiff(t *testing.T) {
 		{
 			name:   "success,DROP_ADD_UNIQUE",
 			before: `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL, "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 NOT NULL CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
-			after:  `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL, "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 NOT NULL CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"), CONSTRAINT users_unique_name UNIQUE ("id", name));`,
+			after:  `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL, "name" VARCHAR(255) NOT NULL, "age" INT DEFAULT 0 NOT NULL CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"), UNIQUE INDEX users_unique_name ("id", name));`,
 			want: &DDL{
 				Stmts: []Stmt{
 					&AlterTableStmt{
@@ -467,7 +467,8 @@ func TestDiff(t *testing.T) {
 							Raw:           `"users"`,
 						},
 						Action: &AddConstraint{
-							Constraint: &UniqueConstraint{
+							Constraint: &IndexConstraint{
+								Unique: true,
 								Name: &Ident{
 									Name:          "users_unique_name",
 									QuotationMark: ``,
@@ -719,7 +720,7 @@ func TestDiff(t *testing.T) {
 								Raw:           `"name"`,
 							},
 							DataType: &DataType{
-								Name: "VARYING",
+								Name: "VARCHAR",
 								Size: "255",
 							},
 							NotNull: true,
@@ -759,6 +760,16 @@ func TestDiff(t *testing.T) {
 						},
 					},
 					Constraints: []Constraint{
+						&PrimaryKeyConstraint{
+							Name: &Ident{
+								Name:          "users_pkey",
+								QuotationMark: ``,
+								Raw:           "users_pkey",
+							},
+							Columns: []*ColumnIdent{
+								{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
+							},
+						},
 						&ForeignKeyConstraint{
 							Name: &Ident{
 								Name:          "users_group_id_fkey",
@@ -777,7 +788,8 @@ func TestDiff(t *testing.T) {
 								{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
 							},
 						},
-						&UniqueConstraint{
+						&IndexConstraint{
+							Unique: true,
 							Name: &Ident{
 								Name:          "users_unique_name",
 								QuotationMark: ``,
@@ -797,16 +809,6 @@ func TestDiff(t *testing.T) {
 								{Name: "age", QuotationMark: `"`, Raw: `"age"`},
 								{Name: ">=", Raw: ">="},
 								{Name: "0", Raw: "0"},
-							},
-						},
-						&PrimaryKeyConstraint{
-							Name: &Ident{
-								Name:          "users_pkey",
-								QuotationMark: ``,
-								Raw:           "users_pkey",
-							},
-							Columns: []*ColumnIdent{
-								{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
 							},
 						},
 					},

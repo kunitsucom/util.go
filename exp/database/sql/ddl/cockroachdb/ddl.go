@@ -74,7 +74,15 @@ type Order struct {
 func (i *ColumnIdent) GoString() string { return internal.GoString(*i) }
 
 func (i *ColumnIdent) String() string {
-	return i.Ident.String()
+	str := i.Ident.String()
+	if i.Order != nil {
+		if i.Order.Desc {
+			str += " DESC"
+		} else {
+			str += " ASC"
+		}
+	}
+	return str
 }
 
 func (i *ColumnIdent) PlainString() string {

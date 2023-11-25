@@ -38,3 +38,19 @@ LIKE parent_test;
 		t.Logf("✅: stmt: %#v", stmt)
 	})
 }
+
+func TestCreateTableStmt_GetPlainName(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success,", func(t *testing.T) {
+		t.Parallel()
+
+		stmt := &CreateTableStmt{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}}
+		expected := "test"
+		actual := stmt.GetPlainName()
+
+		assert.Equal(t, expected, actual)
+
+		t.Logf("✅: stmt: %#v", stmt)
+	})
+}

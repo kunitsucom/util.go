@@ -30,17 +30,14 @@ func TestParser_Parse(t *testing.T) {
 		wantStr string
 	}{
 		{
-			name:  "success,CREATE TABLE",
-			input: `CREATE TABLE "groups" ("id" UUID NOT NULL PRIMARY KEY, description TEXT); CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
+			name:  "success,CREATE_TABLE",
+			input: `CREATE TABLE public.groups ("id" UUID NOT NULL PRIMARY KEY, description TEXT); CREATE TABLE public.users (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
 			want: &DDL{
 				Stmts: []Stmt{
 					&CreateTableStmt{
 						Indent: Indent,
-						Name: &Ident{
-							Name:          "groups",
-							QuotationMark: `"`,
-							Raw:           `"groups"`,
-						},
+						Schema: &Ident{Name: "public", Raw: "public"},
+						Name:   &Ident{Name: "groups", Raw: "groups"},
 						Columns: []*Column{
 							{
 								Name: &Ident{
@@ -79,11 +76,8 @@ func TestParser_Parse(t *testing.T) {
 					},
 					&CreateTableStmt{
 						Indent: Indent,
-						Name: &Ident{
-							Name:          "users",
-							QuotationMark: `"`,
-							Raw:           `"users"`,
-						},
+						Schema: &Ident{Name: "public", Raw: "public"},
+						Name:   &Ident{Name: "users", Raw: "users"},
 						Columns: []*Column{
 							{
 								Name: &Ident{
@@ -203,12 +197,12 @@ func TestParser_Parse(t *testing.T) {
 				},
 			},
 			wantErr: nil,
-			wantStr: `CREATE TABLE "groups" (
+			wantStr: `CREATE TABLE public.groups (
     "id" UUID NOT NULL,
     description TEXT,
     CONSTRAINT groups_pkey PRIMARY KEY ("id")
 );
-CREATE TABLE "users" (
+CREATE TABLE public.users (
     id UUID NOT NULL,
     group_id UUID NOT NULL,
     "name" VARYING(255) NOT NULL,

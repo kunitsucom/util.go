@@ -31,6 +31,8 @@ func Test_lookupIdent(t *testing.T) {
 		{name: "success,VIEW", input: "VIEW", want: TOKEN_VIEW},
 		{name: "success,IF", input: "IF", want: TOKEN_IF},
 		{name: "success,EXISTS", input: "EXISTS", want: TOKEN_EXISTS},
+		{name: "success,ON", input: "ON", want: TOKEN_ON},
+		{name: "success,TO", input: "TO", want: TOKEN_TO},
 		{name: "success,BOOLEAN", input: "BOOLEAN", want: TOKEN_BOOLEAN},
 		{name: "success,SMALLINT", input: "SMALLINT", want: TOKEN_SMALLINT},
 		{name: "success,INTEGER", input: "INTEGER", want: TOKEN_INTEGER},

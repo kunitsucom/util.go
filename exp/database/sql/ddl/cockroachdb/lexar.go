@@ -66,6 +66,8 @@ const (
 	TOKEN_VIEW   TokenType = "VIEW"
 	TOKEN_IF     TokenType = "IF"
 	TOKEN_EXISTS TokenType = "EXISTS"
+	TOKEN_ON     TokenType = "ON"
+	TOKEN_TO     TokenType = "TO"
 
 	// DATA TYPE.
 	TOKEN_BOOL        TokenType = "BOOL"
@@ -83,7 +85,7 @@ const (
 	TOKEN_UUID        TokenType = "UUID"
 	TOKEN_JSONB       TokenType = "JSONB"
 	TOKEN_CHARACTER   TokenType = "CHARACTER"
-	TOKEN_VARYING     TokenType = "VARYING"
+	TOKEN_VARCHAR     TokenType = "VARCHAR"
 	TOKEN_TEXT        TokenType = "TEXT"
 	TOKEN_TIMESTAMP   TokenType = "TIMESTAMP"
 	TOKEN_TIMESTAMPTZ TokenType = "TIMESTAMPTZ"
@@ -149,6 +151,10 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_IF
 	case "EXISTS":
 		return TOKEN_EXISTS
+	case "ON":
+		return TOKEN_ON
+	case "TO":
+		return TOKEN_TO
 	case "BOOL", "BOOLEAN":
 		return TOKEN_BOOL
 	case "SMALLINT":
@@ -180,7 +186,7 @@ func lookupIdent(ident string) TokenType {
 	case "CHARACTER":
 		return TOKEN_CHARACTER
 	case "VARYING", "VARCHAR":
-		return TOKEN_VARYING
+		return TOKEN_VARCHAR
 	case "TEXT":
 		return TOKEN_TEXT
 	case "TIMESTAMP":

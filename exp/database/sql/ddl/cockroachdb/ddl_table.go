@@ -1,6 +1,8 @@
 package cockroachdb
 
 import (
+	"sort"
+
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 	stringz "github.com/kunitsucom/util.go/strings"
 )
@@ -22,7 +24,28 @@ func (constraints Constraints) Append(constraint Constraint) Constraints {
 			return constraints
 		}
 	}
-	return append(constraints, constraint)
+	constraints = append(constraints, constraint)
+
+	sort.Slice(constraints, func(left, right int) bool {
+		_, leftIsPrimaryKeyConstraint := constraints[left].(*PrimaryKeyConstraint)
+		_, rightIsPrimaryKeyConstraint := constraints[right].(*PrimaryKeyConstraint)
+		// _, leftIsForeignKeyConstraint := constraints[left].(*ForeignKeyConstraint)
+		// _, rightIsForeignKeyConstraint := constraints[right].(*ForeignKeyConstraint)
+		// _, leftIsIndexConstraint := constraints[left].(*IndexConstraint)
+		// _, rightIsIndexConstraint := constraints[right].(*IndexConstraint)
+		// _, leftIsCheckConstraint := constraints[left].(*CheckConstraint)
+		// _, rightIsCheckConstraint := constraints[right].(*CheckConstraint)
+		switch {
+		case leftIsPrimaryKeyConstraint:
+			return true
+		case rightIsPrimaryKeyConstraint:
+			return false
+		default:
+			return false
+		}
+	})
+
+	return constraints
 }
 
 // PrimaryKeyConstraint represents a PRIMARY KEY constraint.
@@ -114,31 +137,37 @@ func (c *ForeignKeyConstraint) PlainString() string {
 	return str
 }
 
-// UniqueConstraint represents a UNIQUE constraint.
-type UniqueConstraint struct {
+// IndexConstraint represents a UNIQUE constraint.
+type IndexConstraint struct {
 	Name    *Ident
+	Unique  bool
 	Columns []*ColumnIdent
 }
 
-var _ Constraint = (*UniqueConstraint)(nil)
+var _ Constraint = (*IndexConstraint)(nil)
 
-func (*UniqueConstraint) isConstraint()      {}
-func (c *UniqueConstraint) GetName() *Ident  { return c.Name }
-func (c *UniqueConstraint) GoString() string { return internal.GoString(*c) }
-func (c *UniqueConstraint) String() string {
+func (*IndexConstraint) isConstraint()      {}
+func (c *IndexConstraint) GetName() *Ident  { return c.Name }
+func (c *IndexConstraint) GoString() string { return internal.GoString(*c) }
+func (c *IndexConstraint) String() string {
 	var str string
-	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.String() + " "
+	if c.Unique {
+		str += "UNIQUE "
 	}
-	str += "UNIQUE" //nolint:goconst
-	str += " (" + stringz.JoinStringers(", ", c.Columns...) + ")"
+	if c.Name != nil {
+		str += "INDEX " + c.Name.String() + " "
+	}
+	str += "(" + stringz.JoinStringers(", ", c.Columns...) + ")"
 	return str
 }
 
-func (c *UniqueConstraint) PlainString() string {
+func (c *IndexConstraint) PlainString() string {
 	var str string
+	if c.Unique {
+		str += "UNIQUE "
+	}
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.PlainString() + " "
+		str += "INDEX " + c.Name.PlainString() + " "
 	}
 	str += "UNIQUE"
 	str += " ("
@@ -229,6 +258,7 @@ func (d *DefaultValue) String() string {
 			d.Idents[i-1].String() == "(" || d.Idents[i].String() == "(" ||
 			d.Idents[i].String() == ")" ||
 			d.Idents[i-1].String() == "::" || d.Idents[i].String() == "::" ||
+			d.Idents[i-1].String() == ":::" || d.Idents[i].String() == ":::" ||
 			d.Idents[i].String() == ",":
 			// noop
 		default:
@@ -272,11 +302,11 @@ func (d *Default) PlainString() string {
 func (c *Column) String() string {
 	str := c.Name.String() + " " +
 		c.DataType.String()
-	if c.Default != nil {
-		str += " " + c.Default.String()
-	}
 	if c.NotNull {
 		str += " NOT NULL"
+	}
+	if c.Default != nil {
+		str += " " + c.Default.String()
 	}
 	return str
 }
