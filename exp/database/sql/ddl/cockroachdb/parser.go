@@ -1,4 +1,4 @@
-package postgres
+package cockroachdb
 
 // MEMO: https://www.postgresql.org/docs/current/ddl-constraints.html
 // MEMO: https://www.postgresql.jp/docs/11/ddl-constraints.html
@@ -237,7 +237,7 @@ LabelDefault:
 			def.Value = def.Value.Append(NewIdent(p.currentToken.Literal.Str))
 		case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS,
 			TOKEN_PLUS, TOKEN_MINUS, TOKEN_ASTERISK, TOKEN_SLASH,
-			TOKEN_STRING_CONCAT, TOKEN_TYPECAST:
+			TOKEN_STRING_CONCAT, TOKEN_TYPECAST, TOKEN_TYPE_ANNOTATION:
 			def.Value = def.Value.Append(NewIdent(p.currentToken.Literal.Str))
 		case TOKEN_OPEN_PAREN:
 			ids, err := p.parseExpr()
@@ -289,7 +289,7 @@ LabelExpr:
 			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
 		case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS,
 			TOKEN_PLUS, TOKEN_MINUS, TOKEN_ASTERISK, TOKEN_SLASH,
-			TOKEN_STRING_CONCAT, TOKEN_TYPECAST,
+			TOKEN_STRING_CONCAT, TOKEN_TYPECAST, TOKEN_TYPE_ANNOTATION,
 			TOKEN_COMMA:
 			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
 		case TOKEN_CLOSE_PAREN:
@@ -554,6 +554,14 @@ LabelIdents:
 			// do nothing
 		case TOKEN_IDENT:
 			ident := &ColumnIdent{Ident: NewIdent(p.currentToken.Literal.Str)}
+			switch p.peekToken.Type { //nolint:exhaustive
+			case TOKEN_ASC:
+				ident.Order = &Order{Desc: false}
+				p.nextToken() // current = ASC
+			case TOKEN_DESC:
+				ident.Order = &Order{Desc: true}
+				p.nextToken() // current = DESC
+			}
 			idents = append(idents, ident)
 		case TOKEN_COMMA:
 			// do nothing
@@ -571,7 +579,7 @@ LabelIdents:
 
 func isDataType(tokenType TokenType) bool {
 	switch tokenType { //nolint:exhaustive
-	case TOKEN_BOOLEAN,
+	case TOKEN_BOOL,
 		TOKEN_SMALLINT, TOKEN_INTEGER, TOKEN_BIGINT,
 		TOKEN_DECIMAL, TOKEN_NUMERIC,
 		TOKEN_REAL, TOKEN_DOUBLE, /* TOKEN_PRECISION, */

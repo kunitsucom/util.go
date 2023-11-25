@@ -1,5 +1,5 @@
 //nolint:testpackage
-package postgres
+package cockroachdb
 
 import (
 	"fmt"
@@ -306,6 +306,29 @@ CREATE TABLE "users" (
     CONSTRAINT complex_defaults_pkey PRIMARY KEY (id)
 );
 `,
+		},
+		{
+			name: "success,CREATE_TABLE_TYPE_ANNOTATION",
+			input: `CREATE TABLE public.users (
+        user_id UUID NOT NULL,
+        username VARCHAR(256) NOT NULL,
+        is_verified BOOL NOT NULL DEFAULT false,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
+        CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
+        INDEX users_idx_by_username (username ASC)
+);`,
+			want:    &DDL{},
+			wantErr: nil,
+			wantStr: `CREATE TABLE public.users (
+        user_id UUID NOT NULL,
+        username VARCHAR(256) NOT NULL,
+        is_verified BOOL NOT NULL DEFAULT false,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
+        CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
+        INDEX users_idx_by_username (username ASC)
+);`,
 		},
 	}
 

@@ -1,4 +1,4 @@
-package postgres
+package cockroachdb
 
 import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 
@@ -11,6 +11,7 @@ type CreateTableStmt struct {
 	Name        *Ident
 	Columns     []*Column
 	Constraints Constraints
+	Indexes     []*Index
 	Options     []*Option
 }
 

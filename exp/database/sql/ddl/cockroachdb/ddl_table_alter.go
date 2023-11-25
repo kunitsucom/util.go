@@ -1,4 +1,4 @@
-package postgres
+package cockroachdb
 
 // MEMO: https://www.postgresql.jp/docs/11/sql-altertable.html
 

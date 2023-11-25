@@ -1,4 +1,4 @@
-package postgres
+package cockroachdb
 
 import (
 	"strings"
@@ -38,19 +38,20 @@ const (
 	TOKEN_EOF     TokenType = "EOF"
 
 	// SPECIAL CHARACTERS.
-	TOKEN_OPEN_PAREN    TokenType = "OPEN_PAREN"    // (
-	TOKEN_CLOSE_PAREN   TokenType = "CLOSE_PAREN"   // )
-	TOKEN_COMMA         TokenType = "COMMA"         // ,
-	TOKEN_SEMICOLON     TokenType = "SEMICOLON"     // ;
-	TOKEN_EQUAL         TokenType = "EQUAL"         // =
-	TOKEN_GREATER       TokenType = "GREATER"       // >
-	TOKEN_LESS          TokenType = "LESS"          // <
-	TOKEN_PLUS          TokenType = "PLUS"          // +
-	TOKEN_MINUS         TokenType = "MINUS"         // -
-	TOKEN_ASTERISK      TokenType = "ASTERISK"      // *
-	TOKEN_SLASH         TokenType = "SLASH"         // /
-	TOKEN_STRING_CONCAT TokenType = "STRING_CONCAT" //nolint:gosec // ||
-	TOKEN_TYPECAST      TokenType = "TYPECAST"      // ::
+	TOKEN_OPEN_PAREN      TokenType = "OPEN_PAREN"      // (
+	TOKEN_CLOSE_PAREN     TokenType = "CLOSE_PAREN"     // )
+	TOKEN_COMMA           TokenType = "COMMA"           // ,
+	TOKEN_SEMICOLON       TokenType = "SEMICOLON"       // ;
+	TOKEN_EQUAL           TokenType = "EQUAL"           // =
+	TOKEN_GREATER         TokenType = "GREATER"         // >
+	TOKEN_LESS            TokenType = "LESS"            // <
+	TOKEN_PLUS            TokenType = "PLUS"            // +
+	TOKEN_MINUS           TokenType = "MINUS"           // -
+	TOKEN_ASTERISK        TokenType = "ASTERISK"        // *
+	TOKEN_SLASH           TokenType = "SLASH"           // /
+	TOKEN_STRING_CONCAT   TokenType = "STRING_CONCAT"   //nolint:gosec // ||
+	TOKEN_TYPECAST        TokenType = "TYPECAST"        // ::
+	TOKEN_TYPE_ANNOTATION TokenType = "TYPE_ANNOTATION" // :::
 
 	// VERB.
 	TOKEN_CREATE   TokenType = "CREATE"
@@ -67,7 +68,7 @@ const (
 	TOKEN_EXISTS TokenType = "EXISTS"
 
 	// DATA TYPE.
-	TOKEN_BOOLEAN     TokenType = "BOOLEAN"
+	TOKEN_BOOL        TokenType = "BOOL"
 	TOKEN_SMALLINT    TokenType = "SMALLINT"
 	TOKEN_INTEGER     TokenType = "INTEGER"
 	TOKEN_BIGINT      TokenType = "BIGINT"
@@ -148,8 +149,8 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_IF
 	case "EXISTS":
 		return TOKEN_EXISTS
-	case "BOOLEAN":
-		return TOKEN_BOOLEAN
+	case "BOOL", "BOOLEAN":
+		return TOKEN_BOOL
 	case "SMALLINT":
 		return TOKEN_SMALLINT
 	case "INTEGER", "INT":
@@ -279,7 +280,12 @@ func (l *Lexer) NextToken() Token {
 	case ':':
 		if l.peekChar() == ':' {
 			l.readChar()
-			tok = Token{Type: TOKEN_TYPECAST, Literal: Literal{Str: "::"}}
+			if l.peekChar() == ':' {
+				l.readChar()
+				tok = Token{Type: TOKEN_TYPE_ANNOTATION, Literal: Literal{Str: ":::"}}
+			} else {
+				tok = Token{Type: TOKEN_TYPECAST, Literal: Literal{Str: "::"}}
+			}
 		} else {
 			tok = newToken(TOKEN_ILLEGAL, l.ch)
 		}

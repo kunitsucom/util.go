@@ -1,4 +1,4 @@
-package postgres
+package cockroachdb
 
 import (
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
@@ -64,6 +64,11 @@ func (i *Ident) PlainString() string {
 
 type ColumnIdent struct {
 	Ident *Ident
+	Order *Order
+}
+
+type Order struct {
+	Desc bool
 }
 
 func (i *ColumnIdent) GoString() string { return internal.GoString(*i) }
