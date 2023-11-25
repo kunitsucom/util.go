@@ -103,7 +103,7 @@ func (p *Parser) parseCreateStatement() (Stmt, error) { //nolint:ireturn
 }
 
 //nolint:cyclop,funlen
-func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) { //nolint:ireturn
+func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) {
 	createTableStmt := &CreateTableStmt{
 		Indent: Indent,
 	}
