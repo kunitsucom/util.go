@@ -37,21 +37,21 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		opt.apply(config)
 	}
 
-	ddls := &DDL{}
+	result := &DDL{}
 
 	switch {
 	case before == nil && after != nil:
 		// CREATE TABLE table_name
-		ddls.Stmts = append(ddls.Stmts, after)
-		return ddls, nil
+		result.Stmts = append(result.Stmts, after)
+		return result, nil
 	case before != nil && after == nil:
 		// DROP TABLE table_name;
-		ddls.Stmts = append(ddls.Stmts, &DropTableStmt{
+		result.Stmts = append(result.Stmts, &DropTableStmt{
 			Name: before.Name,
 		})
-		return ddls, nil
+		return result, nil
 	case (before == nil && after == nil) || reflect.DeepEqual(before, after) || before.String() == after.String():
-		return nil, ddl.ErrNoDifference
+		return nil, errorz.Errorf("before: %s, after: %s: %w", before.GetPlainName(), after.GetPlainName(), ddl.ErrNoDifference)
 	}
 
 	if before.Name.Name != after.Name.Name {
@@ -65,12 +65,12 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 			switch bc := beforeConstraint.(type) {
 			case *IndexConstraint:
 				// DROP INDEX index_name;
-				ddls.Stmts = append(ddls.Stmts, &DropIndexStmt{
+				result.Stmts = append(result.Stmts, &DropIndexStmt{
 					Name: bc.GetName(),
 				})
 			default:
 				// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
-				ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
+				result.Stmts = append(result.Stmts, &AlterTableStmt{
 					Name: before.Name,
 					Action: &DropConstraint{
 						Name: beforeConstraint.GetName(),
@@ -81,7 +81,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		}
 	}
 
-	config.diffCreateTableColumn(ddls, before, after)
+	config.diffCreateTableColumn(result, before, after)
 
 	for _, beforeConstraint := range before.Constraints {
 		afterConstraint := findConstraintByName(beforeConstraint.GetName().Name, after.Constraints)
@@ -91,8 +91,8 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 				case *IndexConstraint:
 					// DROP INDEX index_name;
 					// CREATE INDEX index_name ON table_name (column_name);
-					ddls.Stmts = append(
-						ddls.Stmts,
+					result.Stmts = append(
+						result.Stmts,
 						&DropIndexStmt{
 							Name: beforeConstraint.GetName(),
 						},
@@ -106,8 +106,8 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 				default:
 					// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
 					// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
-					ddls.Stmts = append(
-						ddls.Stmts,
+					result.Stmts = append(
+						result.Stmts,
 						&AlterTableStmt{
 							Name: before.Name,
 							Action: &DropConstraint{
@@ -132,7 +132,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		switch ac := afterConstraint.(type) {
 		case *IndexConstraint:
 			// CREATE INDEX index_name ON table_name (column_name);
-			ddls.Stmts = append(ddls.Stmts, &CreateIndexStmt{
+			result.Stmts = append(result.Stmts, &CreateIndexStmt{
 				Unique:    ac.Unique,
 				Name:      ac.GetName(),
 				TableName: after.Name,
@@ -140,7 +140,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 			})
 		default:
 			// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
-			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
+			result.Stmts = append(result.Stmts, &AlterTableStmt{
 				Name: after.Name,
 				Action: &AddConstraint{
 					Constraint: afterConstraint,
@@ -150,7 +150,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		}
 	}
 
-	return ddls, nil
+	return result, nil
 }
 
 //nolint:funlen,cyclop

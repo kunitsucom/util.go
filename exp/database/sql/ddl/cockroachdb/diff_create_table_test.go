@@ -9,7 +9,7 @@ import (
 )
 
 //nolint:paralleltest,tparallel
-func TestDiff(t *testing.T) {
+func TestDiffCreateTable(t *testing.T) {
 	tests := []struct {
 		name    string
 		before  string

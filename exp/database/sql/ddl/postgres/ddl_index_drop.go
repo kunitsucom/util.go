@@ -1,4 +1,4 @@
-package cockroachdb
+package postgres
 
 import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 
