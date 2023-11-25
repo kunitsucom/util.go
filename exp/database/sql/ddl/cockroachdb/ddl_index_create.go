@@ -24,9 +24,9 @@ func (s *CreateIndexStmt) GetPlainName() string {
 func (s *CreateIndexStmt) String() string {
 	str := "CREATE "
 	if s.Unique {
-		str += "UNIQUE "
+		str += "UNIQUE " //nolint:goconst
 	}
-	str += "INDEX "
+	str += "INDEX " //nolint:goconst
 	if s.IfNotExists {
 		str += "IF NOT EXISTS "
 	}
