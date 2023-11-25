@@ -31,6 +31,8 @@ type PrimaryKeyConstraint struct {
 	Columns []*Ident
 }
 
+var _ Constraint = (*PrimaryKeyConstraint)(nil)
+
 func (*PrimaryKeyConstraint) isConstraint()      {}
 func (c *PrimaryKeyConstraint) GetName() *Ident  { return c.Name }
 func (c *PrimaryKeyConstraint) GoString() string { return internal.GoString(c) }
@@ -68,6 +70,8 @@ type ForeignKeyConstraint struct {
 	Ref        *Ident
 	RefColumns []*Ident
 }
+
+var _ Constraint = (*ForeignKeyConstraint)(nil)
 
 func (*ForeignKeyConstraint) isConstraint()      {}
 func (c *ForeignKeyConstraint) GetName() *Ident  { return c.Name }
@@ -116,6 +120,8 @@ type UniqueConstraint struct {
 	Columns []*Ident
 }
 
+var _ Constraint = (*UniqueConstraint)(nil)
+
 func (*UniqueConstraint) isConstraint()      {}
 func (c *UniqueConstraint) GetName() *Ident  { return c.Name }
 func (c *UniqueConstraint) GoString() string { return internal.GoString(c) }
@@ -151,6 +157,8 @@ type CheckConstraint struct {
 	Name *Ident
 	Expr []*Ident
 }
+
+var _ Constraint = (*CheckConstraint)(nil)
 
 func (*CheckConstraint) isConstraint()      {}
 func (c *CheckConstraint) GetName() *Ident  { return c.Name }
@@ -276,7 +284,15 @@ func (c *Column) String() string {
 func (c *Column) GoString() string { return internal.GoString(c) }
 
 type Option struct {
-	Str string
+	Name  string
+	Value *Ident
+}
+
+func (o *Option) String() string {
+	if o.Value == nil {
+		return ""
+	}
+	return o.Name + " " + o.Value.String()
 }
 
 func (o *Option) GoString() string { return internal.GoString(o) }

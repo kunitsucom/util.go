@@ -232,7 +232,7 @@ CREATE TABLE "users" (
 `,
 		},
 		{
-			name: "success,XXXXXXXXXXXX",
+			name: "success,complex_defaults",
 			input: `CREATE TABLE complex_defaults (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

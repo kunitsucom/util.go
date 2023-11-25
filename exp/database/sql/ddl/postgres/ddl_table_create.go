@@ -44,7 +44,7 @@ func (s *CreateTableStmt) String() string {
 		str += "\n"
 		lastIndex := len(s.Options) - 1
 		for i, v := range s.Options {
-			str += v.Str
+			str += v.String()
 			if i != lastIndex {
 				str += ",\n"
 			}

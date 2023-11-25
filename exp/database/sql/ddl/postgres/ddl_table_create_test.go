@@ -20,8 +20,8 @@ func TestCreateTableStmt_String(t *testing.T) {
 				{Name: &Ident{Name: "name", Raw: "name"}, DataType: &DataType{Name: "VARYING", Size: "255"}},
 			},
 			Options: []*Option{
-				{Str: "TABLESPACE default_tablespace"},
-				{Str: "LIKE parent_test"},
+				{Name: "TABLESPACE", Value: &Ident{Name: "default_tablespace", Raw: "default_tablespace"}},
+				{Name: "LIKE", Value: &Ident{Name: "parent_test", Raw: "parent_test"}},
 			},
 		}
 		expected := `CREATE TABLE test (
