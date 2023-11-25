@@ -78,7 +78,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 	for _, beforeConstraint := range before.Constraints {
 		afterConstraint := findConstraintByName(beforeConstraint.GetName().Name, after.Constraints)
 		if afterConstraint != nil {
-			if beforeConstraint.StringForDiff() != afterConstraint.StringForDiff() {
+			if beforeConstraint.PlainString() != afterConstraint.PlainString() {
 				// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
 				// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
 				ddls.Stmts = append(
@@ -152,7 +152,7 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 					Action: &AlterColumnDropDefault{},
 				},
 			})
-		case afterColumn.Default != nil && beforeColumn.Default.StringForDiff() != afterColumn.Default.StringForDiff():
+		case afterColumn.Default != nil && beforeColumn.Default.PlainString() != afterColumn.Default.PlainString():
 			// ALTER TABLE table_name ALTER COLUMN column_name SET DEFAULT default_value;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
 				TableName: after.Name,

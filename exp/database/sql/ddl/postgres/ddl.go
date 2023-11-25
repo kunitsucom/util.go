@@ -51,10 +51,28 @@ type Ident struct {
 	Raw           string
 }
 
-func (i *Ident) GoString() string { return internal.GoString(i) }
+func (i *Ident) GoString() string { return internal.GoString(*i) }
 
-func (i Ident) String() string {
+func (i *Ident) String() string {
 	return i.Raw
+}
+
+func (i *Ident) PlainString() string {
+	return i.Name
+}
+
+type ConstraintIdent struct {
+	Ident *Ident
+}
+
+func (i *ConstraintIdent) GoString() string { return internal.GoString(*i) }
+
+func (i *ConstraintIdent) String() string {
+	return i.Ident.String()
+}
+
+func (i *ConstraintIdent) PlainString() string {
+	return i.Ident.PlainString()
 }
 
 type DataType struct {

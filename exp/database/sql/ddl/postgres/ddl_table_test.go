@@ -21,7 +21,7 @@ func TestPrimaryKeyConstraint(t *testing.T) {
 	t.Run("success,PrimaryKeyConstraint", func(t *testing.T) {
 		t.Parallel()
 
-		primaryKeyConstraint := &PrimaryKeyConstraint{Name: &Ident{Name: "pk_users", QuotationMark: `"`, Raw: `"pk_users"`}, Columns: []*Ident{{Name: "id", QuotationMark: `"`, Raw: `"id"`}}}
+		primaryKeyConstraint := &PrimaryKeyConstraint{Name: &Ident{Name: "pk_users", QuotationMark: `"`, Raw: `"pk_users"`}, Columns: []*ConstraintIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}}}
 		expected := "CONSTRAINT \"pk_users\" PRIMARY KEY (\"id\")"
 		actual := primaryKeyConstraint.String()
 		require.Equal(t, expected, actual)
@@ -47,9 +47,9 @@ func TestForeignKeyConstraint(t *testing.T) {
 
 		foreignKeyConstraint := &ForeignKeyConstraint{
 			Name:       &Ident{Name: "fk_users_groups", QuotationMark: `"`, Raw: `"fk_users_groups"`},
-			Columns:    []*Ident{{Name: "group_id", QuotationMark: `"`, Raw: `"group_id"`}},
+			Columns:    []*ConstraintIdent{{Ident: &Ident{Name: "group_id", QuotationMark: `"`, Raw: `"group_id"`}}},
 			Ref:        &Ident{Name: "groups", QuotationMark: `"`, Raw: `"groups"`},
-			RefColumns: []*Ident{{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
+			RefColumns: []*ConstraintIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
 		}
 
 		expected := `CONSTRAINT "fk_users_groups" FOREIGN KEY ("group_id") REFERENCES "groups" ("id")`
@@ -67,7 +67,7 @@ func TestUniqueConstraint(t *testing.T) {
 
 		uniqueConstraint := &UniqueConstraint{
 			Name:    &Ident{Name: "uq_users_email", QuotationMark: `"`, Raw: `"uq_users_email"`},
-			Columns: []*Ident{{Name: "email", QuotationMark: `"`, Raw: `"email"`}},
+			Columns: []*ConstraintIdent{{Ident: &Ident{Name: "email", QuotationMark: `"`, Raw: `"email"`}}},
 		}
 
 		expected := `CONSTRAINT "uq_users_email" UNIQUE ("email")`
@@ -115,12 +115,12 @@ func TestDefault_String(t *testing.T) {
 		actual := d.String()
 		require.Equal(t, expected, actual)
 	})
-	t.Run("success,StringForDiff,nilnil", func(t *testing.T) {
+	t.Run("success,PlainString,nilnil", func(t *testing.T) {
 		t.Parallel()
 
 		d := &Default{}
 		expected := ""
-		actual := d.StringForDiff()
+		actual := d.PlainString()
 		require.Equal(t, expected, actual)
 	})
 	t.Run("success,DEFAULT_VALUE", func(t *testing.T) {

@@ -10,7 +10,7 @@ type Constraint interface {
 	GetName() *Ident
 	GoString() string
 	String() string
-	StringForDiff() string
+	PlainString() string
 }
 
 type Constraints []Constraint
@@ -28,14 +28,14 @@ func (constraints Constraints) Append(constraint Constraint) Constraints {
 // PrimaryKeyConstraint represents a PRIMARY KEY constraint.
 type PrimaryKeyConstraint struct {
 	Name    *Ident
-	Columns []*Ident
+	Columns []*ConstraintIdent
 }
 
 var _ Constraint = (*PrimaryKeyConstraint)(nil)
 
 func (*PrimaryKeyConstraint) isConstraint()      {}
 func (c *PrimaryKeyConstraint) GetName() *Ident  { return c.Name }
-func (c *PrimaryKeyConstraint) GoString() string { return internal.GoString(c) }
+func (c *PrimaryKeyConstraint) GoString() string { return internal.GoString(*c) }
 func (c *PrimaryKeyConstraint) String() string {
 	var str string
 	if c.Name != nil {
@@ -46,10 +46,10 @@ func (c *PrimaryKeyConstraint) String() string {
 	return str
 }
 
-func (c *PrimaryKeyConstraint) StringForDiff() string {
+func (c *PrimaryKeyConstraint) PlainString() string {
 	var str string
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.Name + " " //nolint:goconst
+		str += "CONSTRAINT " + c.Name.PlainString() + " " //nolint:goconst
 	}
 	str += "PRIMARY KEY"
 	str += " ("
@@ -57,7 +57,7 @@ func (c *PrimaryKeyConstraint) StringForDiff() string {
 		if i != 0 {
 			str += ", "
 		}
-		str += v.Name
+		str += v.PlainString()
 	}
 	str += ")"
 	return str
@@ -66,16 +66,16 @@ func (c *PrimaryKeyConstraint) StringForDiff() string {
 // ForeignKeyConstraint represents a FOREIGN KEY constraint.
 type ForeignKeyConstraint struct {
 	Name       *Ident
-	Columns    []*Ident
+	Columns    []*ConstraintIdent
 	Ref        *Ident
-	RefColumns []*Ident
+	RefColumns []*ConstraintIdent
 }
 
 var _ Constraint = (*ForeignKeyConstraint)(nil)
 
 func (*ForeignKeyConstraint) isConstraint()      {}
 func (c *ForeignKeyConstraint) GetName() *Ident  { return c.Name }
-func (c *ForeignKeyConstraint) GoString() string { return internal.GoString(c) }
+func (c *ForeignKeyConstraint) GoString() string { return internal.GoString(*c) }
 func (c *ForeignKeyConstraint) String() string {
 	var str string
 	if c.Name != nil {
@@ -88,10 +88,10 @@ func (c *ForeignKeyConstraint) String() string {
 	return str
 }
 
-func (c *ForeignKeyConstraint) StringForDiff() string {
+func (c *ForeignKeyConstraint) PlainString() string {
 	var str string
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.Name + " "
+		str += "CONSTRAINT " + c.Name.PlainString() + " "
 	}
 	str += "FOREIGN KEY"
 	str += " ("
@@ -99,7 +99,7 @@ func (c *ForeignKeyConstraint) StringForDiff() string {
 		if i != 0 {
 			str += ", "
 		}
-		str += v.Name
+		str += v.PlainString()
 	}
 	str += ")"
 	str += " REFERENCES " + c.Ref.Name
@@ -108,7 +108,7 @@ func (c *ForeignKeyConstraint) StringForDiff() string {
 		if i != 0 {
 			str += ", "
 		}
-		str += v.Name
+		str += v.PlainString()
 	}
 	str += ")"
 	return str
@@ -117,14 +117,14 @@ func (c *ForeignKeyConstraint) StringForDiff() string {
 // UniqueConstraint represents a UNIQUE constraint.
 type UniqueConstraint struct {
 	Name    *Ident
-	Columns []*Ident
+	Columns []*ConstraintIdent
 }
 
 var _ Constraint = (*UniqueConstraint)(nil)
 
 func (*UniqueConstraint) isConstraint()      {}
 func (c *UniqueConstraint) GetName() *Ident  { return c.Name }
-func (c *UniqueConstraint) GoString() string { return internal.GoString(c) }
+func (c *UniqueConstraint) GoString() string { return internal.GoString(*c) }
 func (c *UniqueConstraint) String() string {
 	var str string
 	if c.Name != nil {
@@ -135,10 +135,10 @@ func (c *UniqueConstraint) String() string {
 	return str
 }
 
-func (c *UniqueConstraint) StringForDiff() string {
+func (c *UniqueConstraint) PlainString() string {
 	var str string
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.Name + " "
+		str += "CONSTRAINT " + c.Name.PlainString() + " "
 	}
 	str += "UNIQUE"
 	str += " ("
@@ -146,7 +146,7 @@ func (c *UniqueConstraint) StringForDiff() string {
 		if i != 0 {
 			str += ", "
 		}
-		str += v.Name
+		str += v.PlainString()
 	}
 	str += ")"
 	return str
@@ -162,7 +162,7 @@ var _ Constraint = (*CheckConstraint)(nil)
 
 func (*CheckConstraint) isConstraint()      {}
 func (c *CheckConstraint) GetName() *Ident  { return c.Name }
-func (c *CheckConstraint) GoString() string { return internal.GoString(c) }
+func (c *CheckConstraint) GoString() string { return internal.GoString(*c) }
 func (c *CheckConstraint) String() string {
 	var str string
 	if c.Name != nil {
@@ -173,10 +173,10 @@ func (c *CheckConstraint) String() string {
 	return str
 }
 
-func (c *CheckConstraint) StringForDiff() string {
+func (c *CheckConstraint) PlainString() string {
 	var str string
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.Name + " "
+		str += "CONSTRAINT " + c.Name.PlainString() + " "
 	}
 	str += "CHECK"
 	str += " ("
@@ -184,7 +184,7 @@ func (c *CheckConstraint) StringForDiff() string {
 		if i != 0 {
 			str += " "
 		}
-		str += v.Name
+		str += v.PlainString()
 	}
 	str += ")"
 	return str
@@ -240,7 +240,7 @@ func (d *DefaultValue) String() string {
 	return str
 }
 
-func (d *Default) GoString() string { return internal.GoString(d) }
+func (d *Default) GoString() string { return internal.GoString(*d) }
 
 func (d *Default) String() string {
 	if d == nil {
@@ -252,7 +252,7 @@ func (d *Default) String() string {
 	return ""
 }
 
-func (d *Default) StringForDiff() string {
+func (d *Default) PlainString() string {
 	if d == nil {
 		return ""
 	}
@@ -262,7 +262,7 @@ func (d *Default) StringForDiff() string {
 			if i != 0 {
 				str += " "
 			}
-			str += v.Name
+			str += v.PlainString()
 		}
 		return str
 	}
@@ -281,7 +281,7 @@ func (c *Column) String() string {
 	return str
 }
 
-func (c *Column) GoString() string { return internal.GoString(c) }
+func (c *Column) GoString() string { return internal.GoString(*c) }
 
 type Option struct {
 	Name  string
@@ -295,4 +295,4 @@ func (o *Option) String() string {
 	return o.Name + " " + o.Value.String()
 }
 
-func (o *Option) GoString() string { return internal.GoString(o) }
+func (o *Option) GoString() string { return internal.GoString(*o) }

@@ -376,16 +376,9 @@ func TestDiff(t *testing.T) {
 									QuotationMark: ``,
 									Raw:           "users_pkey",
 								},
-								Columns: []*Ident{
-									{
-										Name:          "id",
-										QuotationMark: `"`,
-										Raw:           `"id"`,
-									},
-									{
-										Name: "name",
-										Raw:  `name`,
-									},
+								Columns: []*ConstraintIdent{
+									{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
+									{Ident: &Ident{Name: "name", Raw: `name`}},
 								},
 							},
 						},
@@ -427,31 +420,18 @@ func TestDiff(t *testing.T) {
 									QuotationMark: ``,
 									Raw:           "users_group_id_fkey",
 								},
-								Columns: []*Ident{
-									{
-										Name: "group_id",
-										Raw:  `group_id`,
-									},
-									{
-										Name: "name",
-										Raw:  `name`,
-									},
+								Columns: []*ConstraintIdent{
+									{Ident: &Ident{Name: "group_id", Raw: `group_id`}},
+									{Ident: &Ident{Name: "name", Raw: `name`}},
 								},
 								Ref: &Ident{
 									Name:          "groups",
 									QuotationMark: `"`,
 									Raw:           `"groups"`,
 								},
-								RefColumns: []*Ident{
-									{
-										Name:          "id",
-										QuotationMark: `"`,
-										Raw:           `"id"`,
-									},
-									{
-										Name: "name",
-										Raw:  `name`,
-									},
+								RefColumns: []*ConstraintIdent{
+									{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
+									{Ident: &Ident{Name: "name", Raw: `name`}},
 								},
 							},
 						},
@@ -493,16 +473,9 @@ func TestDiff(t *testing.T) {
 									QuotationMark: ``,
 									Raw:           "users_unique_name",
 								},
-								Columns: []*Ident{
-									{
-										Name:          "id",
-										QuotationMark: `"`,
-										Raw:           `"id"`,
-									},
-									{
-										Name: "name",
-										Raw:  `name`,
-									},
+								Columns: []*ConstraintIdent{
+									{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
+									{Ident: &Ident{Name: "name", Raw: `name`}},
 								},
 							},
 						},
@@ -792,16 +765,16 @@ func TestDiff(t *testing.T) {
 								QuotationMark: ``,
 								Raw:           "users_group_id_fkey",
 							},
-							Columns: []*Ident{
-								{Name: "group_id", QuotationMark: "", Raw: "group_id"},
+							Columns: []*ConstraintIdent{
+								{Ident: &Ident{Name: "group_id", QuotationMark: "", Raw: "group_id"}},
 							},
 							Ref: &Ident{
 								Name:          "groups",
 								QuotationMark: `"`,
 								Raw:           `"groups"`,
 							},
-							RefColumns: []*Ident{
-								{Name: "id", QuotationMark: `"`, Raw: `"id"`},
+							RefColumns: []*ConstraintIdent{
+								{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
 							},
 						},
 						&UniqueConstraint{
@@ -810,8 +783,8 @@ func TestDiff(t *testing.T) {
 								QuotationMark: ``,
 								Raw:           "users_unique_name",
 							},
-							Columns: []*Ident{
-								{Name: "name", QuotationMark: `"`, Raw: `"name"`},
+							Columns: []*ConstraintIdent{
+								{Ident: &Ident{Name: "name", QuotationMark: `"`, Raw: `"name"`}},
 							},
 						},
 						&CheckConstraint{
@@ -832,8 +805,8 @@ func TestDiff(t *testing.T) {
 								QuotationMark: ``,
 								Raw:           "users_pkey",
 							},
-							Columns: []*Ident{
-								{Name: "id", QuotationMark: `"`, Raw: `"id"`},
+							Columns: []*ConstraintIdent{
+								{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
 							},
 						},
 					},

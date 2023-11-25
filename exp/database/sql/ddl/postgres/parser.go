@@ -289,13 +289,19 @@ LabelExpr:
 			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
 		case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS,
 			TOKEN_PLUS, TOKEN_MINUS, TOKEN_ASTERISK, TOKEN_SLASH,
-			TOKEN_STRING_CONCAT, TOKEN_COMMA:
+			TOKEN_STRING_CONCAT, TOKEN_TYPECAST,
+			TOKEN_COMMA:
 			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
 		case TOKEN_CLOSE_PAREN:
 			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
 			p.nextToken()
 			break LabelExpr
 		default:
+			if isDataType(p.currentToken.Type) {
+				idents = append(idents, NewIdent(p.currentToken.Literal.Str))
+				p.nextToken()
+				continue
+			}
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
 		}
 
@@ -319,7 +325,7 @@ LabelConstraints:
 			p.nextToken() // current = KEY
 			constraints = constraints.Append(&PrimaryKeyConstraint{
 				Name:    NewIdent(fmt.Sprintf("%s_pkey", tableName.Name)),
-				Columns: []*Ident{column.Name},
+				Columns: []*ConstraintIdent{{Ident: column.Name}},
 			})
 		case TOKEN_REFERENCES:
 			if err := p.checkPeekToken(TOKEN_IDENT); err != nil {
@@ -329,19 +335,19 @@ LabelConstraints:
 			constraint := &ForeignKeyConstraint{
 				Name:    NewIdent(fmt.Sprintf("%s_%s_fkey", tableName.Name, column.Name.Name)),
 				Ref:     NewIdent(p.currentToken.Literal.Str),
-				Columns: []*Ident{column.Name},
+				Columns: []*ConstraintIdent{{Ident: column.Name}},
 			}
 			p.nextToken() // current = (
-			idents, err := p.parseIdents()
+			idents, err := p.parseConstraintIdents()
 			if err != nil {
-				return nil, errorz.Errorf("parseIdents: %w", err)
+				return nil, errorz.Errorf("parseConstraintIdents: %w", err)
 			}
 			constraint.RefColumns = idents
 			constraints = constraints.Append(constraint)
 		case TOKEN_UNIQUE:
 			constraints = constraints.Append(&UniqueConstraint{
 				Name:    NewIdent(fmt.Sprintf("%s_unique_%s", tableName.Name, column.Name.Name)),
-				Columns: []*Ident{column.Name},
+				Columns: []*ConstraintIdent{{Ident: column.Name}},
 			})
 		case TOKEN_CHECK:
 			if err := p.checkPeekToken(TOKEN_OPEN_PAREN); err != nil {
@@ -409,9 +415,9 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
 		}
 		p.nextToken() // current = (
-		idents, err := p.parseIdents()
+		idents, err := p.parseConstraintIdents()
 		if err != nil {
-			return nil, errorz.Errorf("parseIdents: %w", err)
+			return nil, errorz.Errorf("parseConstraintIdents: %w", err)
 		}
 		if constraintName == nil {
 			constraintName = NewIdent(fmt.Sprintf("%s_pkey", tableName.Name))
@@ -429,9 +435,9 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
 		}
 		p.nextToken() // current = (
-		idents, err := p.parseIdents()
+		idents, err := p.parseConstraintIdents()
 		if err != nil {
-			return nil, errorz.Errorf("parseIdents: %w", err)
+			return nil, errorz.Errorf("parseConstraintIdents: %w", err)
 		}
 		if err := p.checkCurrentToken(TOKEN_REFERENCES); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
@@ -443,14 +449,14 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 		refName := NewIdent(p.currentToken.Literal.Str)
 
 		p.nextToken() // current = (
-		identsRef, err := p.parseIdents()
+		identsRef, err := p.parseConstraintIdents()
 		if err != nil {
-			return nil, errorz.Errorf("parseIdents: %w", err)
+			return nil, errorz.Errorf("parseConstraintIdents: %w", err)
 		}
 		if constraintName == nil {
 			name := tableName.Name
 			for _, ident := range idents {
-				name += fmt.Sprintf("_%s", ident.Name)
+				name += fmt.Sprintf("_%s", ident.PlainString())
 			}
 			name += "_fkey"
 			constraintName = NewIdent(name)
@@ -467,14 +473,14 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
 		}
 		p.nextToken() // current = (
-		idents, err := p.parseIdents()
+		idents, err := p.parseConstraintIdents()
 		if err != nil {
-			return nil, errorz.Errorf("parseIdents: %w", err)
+			return nil, errorz.Errorf("parseConstraintIdents: %w", err)
 		}
 		if constraintName == nil {
 			name := fmt.Sprintf("%s_unique", tableName.Name)
 			for _, ident := range idents {
-				name += fmt.Sprintf("_%s", ident.Name)
+				name += fmt.Sprintf("_%s", ident.PlainString())
 			}
 			constraintName = NewIdent(name)
 		}
@@ -491,7 +497,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 func (p *Parser) parseDataType() (*DataType, error) {
 	dataType := &DataType{}
 	switch p.currentToken.Type { //nolint:exhaustive
-	case TOKEN_TIMESTAMP, TOKEN_TIMESTAMPZ:
+	case TOKEN_TIMESTAMP, TOKEN_TIMESTAMPTZ:
 		dataType.Name = string(p.currentToken.Type)
 		if p.peekToken.Type == TOKEN_WITH {
 			p.nextToken() // current = WITH
@@ -538,8 +544,8 @@ func (p *Parser) parseDataType() (*DataType, error) {
 	return dataType, nil
 }
 
-func (p *Parser) parseIdents() ([]*Ident, error) {
-	idents := make([]*Ident, 0)
+func (p *Parser) parseConstraintIdents() ([]*ConstraintIdent, error) {
+	idents := make([]*ConstraintIdent, 0)
 
 LabelIdents:
 	for {
@@ -547,7 +553,8 @@ LabelIdents:
 		case TOKEN_OPEN_PAREN:
 			// do nothing
 		case TOKEN_IDENT:
-			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
+			ident := &ConstraintIdent{Ident: NewIdent(p.currentToken.Literal.Str)}
+			idents = append(idents, ident)
 		case TOKEN_COMMA:
 			// do nothing
 		case TOKEN_CLOSE_PAREN:
@@ -571,7 +578,7 @@ func isDataType(tokenType TokenType) bool {
 		TOKEN_SMALLSERIAL, TOKEN_SERIAL, TOKEN_BIGSERIAL,
 		TOKEN_UUID, TOKEN_JSONB,
 		TOKEN_CHARACTER, TOKEN_VARYING, TOKEN_TEXT,
-		TOKEN_TIMESTAMP, TOKEN_TIMESTAMPZ:
+		TOKEN_TIMESTAMP, TOKEN_TIMESTAMPTZ:
 		return true
 	default:
 		return false

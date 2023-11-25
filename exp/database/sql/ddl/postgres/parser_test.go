@@ -73,9 +73,7 @@ func TestParser_Parse(t *testing.T) {
 									QuotationMark: ``,
 									Raw:           "groups_pkey",
 								},
-								Columns: []*Ident{
-									{Name: "id", QuotationMark: `"`, Raw: `"id"`},
-								},
+								Columns: []*ConstraintIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
 							},
 						},
 					},
@@ -164,17 +162,13 @@ func TestParser_Parse(t *testing.T) {
 									QuotationMark: ``,
 									Raw:           "users_group_id_fkey",
 								},
-								Columns: []*Ident{
-									{Name: "group_id", QuotationMark: "", Raw: "group_id"},
-								},
+								Columns: []*ConstraintIdent{{Ident: &Ident{Name: "group_id", QuotationMark: "", Raw: "group_id"}}},
 								Ref: &Ident{
 									Name:          "groups",
 									QuotationMark: `"`,
 									Raw:           `"groups"`,
 								},
-								RefColumns: []*Ident{
-									{Name: "id", QuotationMark: `"`, Raw: `"id"`},
-								},
+								RefColumns: []*ConstraintIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
 							},
 							&UniqueConstraint{
 								Name: &Ident{
@@ -182,9 +176,7 @@ func TestParser_Parse(t *testing.T) {
 									QuotationMark: ``,
 									Raw:           "users_unique_name",
 								},
-								Columns: []*Ident{
-									{Name: "name", QuotationMark: `"`, Raw: `"name"`},
-								},
+								Columns: []*ConstraintIdent{{Ident: &Ident{Name: "name", QuotationMark: `"`, Raw: `"name"`}}},
 							},
 							&CheckConstraint{
 								Name: &Ident{
@@ -204,9 +196,7 @@ func TestParser_Parse(t *testing.T) {
 									QuotationMark: ``,
 									Raw:           "users_pkey",
 								},
-								Columns: []*Ident{
-									{Name: "id", QuotationMark: `"`, Raw: `"id"`},
-								},
+								Columns: []*ConstraintIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
 							},
 						},
 					},
@@ -239,7 +229,7 @@ CREATE TABLE "users" (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
     status TEXT DEFAULT 'pending',
-    random_number INTEGER DEFAULT FLOOR(RANDOM() * 100)::INTEGER,
+    random_number INTEGER DEFAULT FLOOR(RANDOM() * 100::INTEGER)::INTEGER,
     json_data JSONB DEFAULT '{}',
     calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table)
 );
@@ -281,7 +271,7 @@ CREATE TABLE "users" (
 							{
 								Name:     &Ident{Name: "random_number", Raw: "random_number"},
 								DataType: &DataType{Name: "INTEGER", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "FLOOR", Raw: "FLOOR"}, {Name: "(", Raw: "("}, {Name: "RANDOM", Raw: "RANDOM"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: "*", Raw: "*"}, {Name: "100", Raw: "100"}, {Name: ")", Raw: ")"}, {Name: "::", Raw: "::"}, {Name: "INTEGER", Raw: "INTEGER"}}}},
+								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "FLOOR", Raw: "FLOOR"}, {Name: "(", Raw: "("}, {Name: "RANDOM", Raw: "RANDOM"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: "*", Raw: "*"}, {Name: "100", Raw: "100"}, {Name: "::", Raw: "::"}, {Name: "INTEGER", Raw: "INTEGER"}, {Name: ")", Raw: ")"}, {Name: "::", Raw: "::"}, {Name: "INTEGER", Raw: "INTEGER"}}}},
 							},
 							{
 								Name:     &Ident{Name: "json_data", Raw: "json_data"},
@@ -297,7 +287,7 @@ CREATE TABLE "users" (
 						Constraints: []Constraint{
 							&PrimaryKeyConstraint{
 								Name:    &Ident{Name: "complex_defaults_pkey", Raw: "complex_defaults_pkey"},
-								Columns: []*Ident{{Name: "id", Raw: "id"}},
+								Columns: []*ConstraintIdent{{Ident: &Ident{Name: "id", Raw: "id"}}},
 							},
 						},
 					},
@@ -310,7 +300,7 @@ CREATE TABLE "users" (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
     status TEXT DEFAULT 'pending',
-    random_number INTEGER DEFAULT FLOOR(RANDOM() * 100)::INTEGER,
+    random_number INTEGER DEFAULT FLOOR(RANDOM() * 100::INTEGER)::INTEGER,
     json_data JSONB DEFAULT '{}',
     calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table),
     CONSTRAINT complex_defaults_pkey PRIMARY KEY (id)
@@ -331,15 +321,15 @@ CREATE TABLE "users" (
 			require.ErrorIs(t, err, tt.wantErr)
 
 			if !assert.Equal(t, tt.want, stmt) {
-				t.Logf("❌: expected != actual:\n--- EXPECTED\n+++ ACTUAL\n%s", simplediff.Diff(fmt.Sprintf("%#v", tt.want), fmt.Sprintf("%#v", stmt)))
+				t.Logf("❌: %s: expected != actual:\n--- EXPECTED\n+++ ACTUAL\n%s", t.Name(), simplediff.Diff(fmt.Sprintf("%#v", tt.want), fmt.Sprintf("%#v", stmt)))
 			}
 
 			if !assert.Equal(t, tt.wantStr, stmt.String()) {
 				t.Fail()
 			}
 
-			t.Logf("✅: stmt: %%#v: \n%#v", stmt)
-			t.Logf("✅: stmt: %%s: \n%s", stmt)
+			t.Logf("✅: %s: stmt: %%#v: \n%#v", t.Name(), stmt)
+			t.Logf("✅: %s: stmt: %%s: \n%s", t.Name(), stmt)
 		})
 	}
 

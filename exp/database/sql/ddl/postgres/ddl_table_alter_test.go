@@ -201,8 +201,8 @@ func TestAlterTableStmt_String(t *testing.T) {
 			Action: &AddConstraint{
 				Constraint: &PrimaryKeyConstraint{
 					Name: &Ident{Name: "groups_pkey", QuotationMark: `"`, Raw: `"groups_pkey"`},
-					Columns: []*Ident{
-						{Name: "id", QuotationMark: `"`, Raw: `"id"`},
+					Columns: []*ConstraintIdent{
+						{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
 					},
 				},
 			},

@@ -81,7 +81,7 @@ const (
 	TOKEN_VARYING     TokenType = "VARYING"
 	TOKEN_TEXT        TokenType = "TEXT"
 	TOKEN_TIMESTAMP   TokenType = "TIMESTAMP"
-	TOKEN_TIMESTAMPZ  TokenType = "TIMESTAMPZ"
+	TOKEN_TIMESTAMPTZ TokenType = "TIMESTAMPTZ"
 	TOKEN_WITH        TokenType = "WITH"
 	TOKEN_TIME        TokenType = "TIME"
 	TOKEN_ZONE        TokenType = "ZONE"
@@ -90,6 +90,8 @@ const (
 	TOKEN_DEFAULT TokenType = "DEFAULT"
 	TOKEN_NOT     TokenType = "NOT"
 	TOKEN_NULL    TokenType = "NULL"
+	TOKEN_ASC     TokenType = "ASC"
+	TOKEN_DESC    TokenType = "DESC"
 
 	// CONSTRAINT.
 	TOKEN_CONSTRAINT TokenType = "CONSTRAINT"
@@ -178,8 +180,8 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_TEXT
 	case "TIMESTAMP":
 		return TOKEN_TIMESTAMP
-	case "TIMESTAMPZ":
-		return TOKEN_TIMESTAMPZ
+	case "TIMESTAMPTZ":
+		return TOKEN_TIMESTAMPTZ
 	case "WITH":
 		return TOKEN_WITH
 	case "TIME":
@@ -192,6 +194,10 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_NOT
 	case "NULL":
 		return TOKEN_NULL
+	case "ASC":
+		return TOKEN_ASC
+	case "DESC":
+		return TOKEN_DESC
 	case "CONSTRAINT":
 		return TOKEN_CONSTRAINT
 	case "PRIMARY":
@@ -268,7 +274,7 @@ func (l *Lexer) NextToken() Token {
 		}
 	case ':':
 		if l.peekChar() == ':' {
-			l.readChar() // 現在の ':' を読み込みます
+			l.readChar()
 			tok = Token{Type: TOKEN_TYPECAST, Literal: Literal{Str: "::"}}
 		} else {
 			tok = newToken(TOKEN_ILLEGAL, l.ch)
@@ -351,7 +357,8 @@ func isLiteral(ch byte) bool {
 	return 'A' <= ch && ch <= 'Z' ||
 		'a' <= ch && ch <= 'z' ||
 		'0' <= ch && ch <= '9' ||
-		ch == '_'
+		ch == '_' ||
+		ch == '.'
 }
 
 func (l *Lexer) skipWhitespace() (skipped bool) {

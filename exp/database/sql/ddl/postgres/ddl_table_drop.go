@@ -21,4 +21,4 @@ func (s *DropTableStmt) String() string {
 }
 
 func (*DropTableStmt) isStmt()            {}
-func (s *DropTableStmt) GoString() string { return internal.GoString(s) }
+func (s *DropTableStmt) GoString() string { return internal.GoString(*s) }
