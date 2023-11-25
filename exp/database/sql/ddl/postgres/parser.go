@@ -97,6 +97,8 @@ func (p *Parser) parseCreateStatement() (Stmt, error) { //nolint:ireturn
 	switch p.currentToken.Type { //nolint:exhaustive
 	case TOKEN_TABLE:
 		return p.parseCreateTableStmt()
+	case TOKEN_INDEX:
+		return p.parseCreateIndexStmt()
 	default:
 		return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
 	}
@@ -114,12 +116,13 @@ func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) {
 		return nil, errorz.Errorf("checkCurrentToken: %w", err)
 	}
 
-	switch name := strings.Split(p.currentToken.Literal.Str, "."); len(name) { //nolint:exhaustive
+	tableName := NewIdent(p.currentToken.Literal.Str)
+	switch name := strings.Split(tableName.Name, "."); len(name) { //nolint:exhaustive
 	case 2:
-		createTableStmt.Schema = NewIdent(name[0])
-		createTableStmt.Name = NewIdent(name[1])
+		createTableStmt.Schema = NewIdent(tableName.QuotationMark + name[0] + tableName.QuotationMark)
+		createTableStmt.Name = NewIdent(tableName.QuotationMark + name[1] + tableName.QuotationMark)
 	default:
-		createTableStmt.Name = NewIdent(p.currentToken.Literal.Str)
+		createTableStmt.Name = tableName
 	}
 
 	p.nextToken() // current = (
@@ -166,6 +169,61 @@ LabelColumns:
 	}
 
 	return createTableStmt, nil
+}
+
+func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
+	createIndexStmt := &CreateIndexStmt{}
+
+	p.nextToken() // current = index_name
+
+	if err := p.checkCurrentToken(TOKEN_IDENT); err != nil {
+		return nil, errorz.Errorf("checkCurrentToken: %w", err)
+	}
+
+	indexName := NewIdent(p.currentToken.Literal.Str)
+	switch name := strings.Split(indexName.Name, "."); len(name) { //nolint:exhaustive
+	case 2:
+		createIndexStmt.Schema = NewIdent(indexName.QuotationMark + name[0] + indexName.QuotationMark)
+		createIndexStmt.Name = NewIdent(indexName.QuotationMark + name[1] + indexName.QuotationMark)
+	default:
+		createIndexStmt.Name = NewIdent(p.currentToken.Literal.Str)
+	}
+
+	p.nextToken() // current = ON
+
+	if err := p.checkCurrentToken(TOKEN_ON); err != nil {
+		return nil, errorz.Errorf("checkCurrentToken: %w", err)
+	}
+
+	p.nextToken() // current = table_name
+
+	if err := p.checkCurrentToken(TOKEN_IDENT); err != nil {
+		return nil, errorz.Errorf("checkCurrentToken: %w", err)
+	}
+
+	tableName := NewIdent(p.currentToken.Literal.Str)
+	switch name := strings.Split(tableName.Name, "."); len(name) { //nolint:exhaustive
+	case 2:
+		createIndexStmt.Schema = NewIdent(tableName.QuotationMark + name[0] + tableName.QuotationMark)
+		createIndexStmt.TableName = NewIdent(tableName.QuotationMark + name[1] + tableName.QuotationMark)
+	default:
+		createIndexStmt.TableName = tableName
+	}
+
+	p.nextToken() // current = (
+
+	if err := p.checkCurrentToken(TOKEN_OPEN_PAREN); err != nil {
+		return nil, errorz.Errorf("checkCurrentToken: %w", err)
+	}
+
+	idents, err := p.parseColumnIdents()
+	if err != nil {
+		return nil, errorz.Errorf("parseColumnIdents: %w", err)
+	}
+
+	createIndexStmt.Columns = idents
+
+	return createIndexStmt, nil
 }
 
 //nolint:funlen,cyclop

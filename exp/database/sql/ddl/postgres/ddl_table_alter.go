@@ -1,9 +1,12 @@
 package postgres
 
+import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+
 // MEMO: https://www.postgresql.jp/docs/11/sql-altertable.html
 
 type AlterTableAction interface {
 	isAlterTableAction()
+	GoString() string
 }
 
 // RenameTable represents ALTER TABLE table_name RENAME TO new_table_name.
@@ -13,6 +16,8 @@ type RenameTable struct {
 
 func (*RenameTable) isAlterTableAction() {}
 
+func (s *RenameTable) GoString() string { return internal.GoString(*s) }
+
 // RenameConstraint represents ALTER TABLE table_name RENAME COLUMN.
 type RenameConstraint struct {
 	Name    *Ident
@@ -20,6 +25,8 @@ type RenameConstraint struct {
 }
 
 func (*RenameConstraint) isAlterTableAction() {}
+
+func (s *RenameConstraint) GoString() string { return internal.GoString(*s) }
 
 // RenameColumn represents ALTER TABLE table_name RENAME COLUMN.
 type RenameColumn struct {
@@ -29,6 +36,8 @@ type RenameColumn struct {
 
 func (*RenameColumn) isAlterTableAction() {}
 
+func (s *RenameColumn) GoString() string { return internal.GoString(*s) }
+
 // AddColumn represents ALTER TABLE table_name ADD COLUMN.
 type AddColumn struct {
 	Column *Column
@@ -36,12 +45,16 @@ type AddColumn struct {
 
 func (*AddColumn) isAlterTableAction() {}
 
+func (s *AddColumn) GoString() string { return internal.GoString(*s) }
+
 // DropColumn represents ALTER TABLE table_name DROP COLUMN.
 type DropColumn struct {
 	Name *Ident
 }
 
 func (*DropColumn) isAlterTableAction() {}
+
+func (s *DropColumn) GoString() string { return internal.GoString(*s) }
 
 // AlterColumn represents ALTER TABLE table_name ALTER COLUMN.
 type AlterColumn struct {
@@ -51,8 +64,11 @@ type AlterColumn struct {
 
 func (*AlterColumn) isAlterTableAction() {}
 
+func (s *AlterColumn) GoString() string { return internal.GoString(*s) }
+
 type AlterColumnAction interface {
 	isAlterColumnAction()
+	GoString() string
 }
 
 // AlterColumnSetDataType represents ALTER TABLE table_name ALTER COLUMN column_name SET DATA TYPE.
@@ -62,6 +78,8 @@ type AlterColumnSetDataType struct {
 
 func (*AlterColumnSetDataType) isAlterColumnAction() {}
 
+func (s *AlterColumnSetDataType) GoString() string { return internal.GoString(*s) }
+
 // AlterColumnSetDefault represents ALTER TABLE table_name ALTER COLUMN column_name SET DEFAULT.
 type AlterColumnSetDefault struct {
 	Default *Default
@@ -69,20 +87,28 @@ type AlterColumnSetDefault struct {
 
 func (*AlterColumnSetDefault) isAlterColumnAction() {}
 
+func (s *AlterColumnSetDefault) GoString() string { return internal.GoString(*s) }
+
 // AlterColumnDropDefault represents ALTER TABLE table_name ALTER COLUMN column_name DROP DEFAULT.
 type AlterColumnDropDefault struct{}
 
 func (*AlterColumnDropDefault) isAlterColumnAction() {}
+
+func (s *AlterColumnDropDefault) GoString() string { return internal.GoString(*s) }
 
 // AlterColumnSetNotNull represents ALTER TABLE table_name ALTER COLUMN column_name SET NOT NULL.
 type AlterColumnSetNotNull struct{}
 
 func (*AlterColumnSetNotNull) isAlterColumnAction() {}
 
+func (s *AlterColumnSetNotNull) GoString() string { return internal.GoString(*s) }
+
 // AlterColumnDropNotNull represents ALTER TABLE table_name ALTER COLUMN column_name DROP NOT NULL.
 type AlterColumnDropNotNull struct{}
 
 func (*AlterColumnDropNotNull) isAlterColumnAction() {}
+
+func (s *AlterColumnDropNotNull) GoString() string { return internal.GoString(*s) }
 
 // AddConstraint represents ALTER TABLE table_name ADD CONSTRAINT.
 type AddConstraint struct {
@@ -92,12 +118,16 @@ type AddConstraint struct {
 
 func (*AddConstraint) isAlterTableAction() {}
 
+func (s *AddConstraint) GoString() string { return internal.GoString(*s) }
+
 // DropConstraint represents ALTER TABLE table_name DROP CONSTRAINT.
 type DropConstraint struct {
 	Name *Ident
 }
 
 func (*DropConstraint) isAlterTableAction() {}
+
+func (s *DropConstraint) GoString() string { return internal.GoString(*s) }
 
 // AlterConstraint represents ALTER TABLE table_name ALTER CONSTRAINT.
 type AlterConstraint struct {
@@ -108,9 +138,12 @@ type AlterConstraint struct {
 
 func (*AlterConstraint) isAlterTableAction() {}
 
+func (s *AlterConstraint) GoString() string { return internal.GoString(*s) }
+
 var _ Stmt = (*AlterTableStmt)(nil)
 
 type AlterTableStmt struct {
+	Schema *Ident
 	Name   *Ident
 	Action AlterTableAction
 }
@@ -121,11 +154,13 @@ func (s *AlterTableStmt) GetPlainName() string {
 	return s.Name.PlainString()
 }
 
-//nolint:cyclop
+//nolint:cyclop,funlen
 func (s *AlterTableStmt) String() string {
-	str := "ALTER TABLE " +
-		s.Name.String() + " "
-
+	str := "ALTER TABLE "
+	if s.Schema != nil {
+		str += s.Schema.String() + "."
+	}
+	str += s.Name.String() + " "
 	switch a := s.Action.(type) {
 	case *RenameTable:
 		str += "RENAME TO " + a.NewName.String()
@@ -174,3 +209,5 @@ func (s *AlterTableStmt) String() string {
 
 	return str + ";\n"
 }
+
+func (s *AlterTableStmt) GoString() string { return internal.GoString(*s) }

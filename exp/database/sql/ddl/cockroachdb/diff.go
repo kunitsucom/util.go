@@ -80,7 +80,10 @@ func Diff(before, after *DDL) (*DDL, error) {
 				afterStmt := afterStmt.(*CreateIndexStmt) //nolint:forcetypeassert
 				if beforeStmt.PlainString() != afterStmt.PlainString() {
 					result.Stmts = append(result.Stmts,
-						&DropIndexStmt{Name: beforeStmt.Name},
+						&DropIndexStmt{
+							Schema: beforeStmt.Schema,
+							Name:   beforeStmt.Name,
+						},
 						afterStmt,
 					)
 				}

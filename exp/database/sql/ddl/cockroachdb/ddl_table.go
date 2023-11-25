@@ -160,8 +160,7 @@ func (c *IndexConstraint) PlainString() string {
 	if c.Name != nil {
 		str += "INDEX " + c.Name.PlainString() + " "
 	}
-	str += "UNIQUE"
-	str += " ("
+	str += "("
 	for i, v := range c.Columns {
 		if i != 0 {
 			str += ", "

@@ -8,6 +8,7 @@ var _ Stmt = (*DropIndexStmt)(nil)
 
 type DropIndexStmt struct {
 	IfExists bool
+	Schema   *Ident
 	Name     *Ident
 }
 
@@ -20,6 +21,9 @@ func (s *DropIndexStmt) String() string {
 	if s.IfExists {
 		str += "IF EXISTS " //nolint:goconst
 	}
+	if s.Schema != nil {
+		str += s.Schema.String() + "."
+	}
 	str += s.Name.String() + ";\n"
 	return str
 }
@@ -28,6 +32,9 @@ func (s *DropIndexStmt) PlainString() string {
 	str := "DROP INDEX "
 	if s.IfExists {
 		str += "IF EXISTS "
+	}
+	if s.Schema != nil {
+		str += s.Schema.PlainString() + "."
 	}
 	str += s.Name.PlainString() + ";\n"
 	return str

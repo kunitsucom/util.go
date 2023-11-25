@@ -55,10 +55,16 @@ type Ident struct {
 func (i *Ident) GoString() string { return internal.GoString(*i) }
 
 func (i *Ident) String() string {
+	if i == nil {
+		return ""
+	}
 	return i.Raw
 }
 
 func (i *Ident) PlainString() string {
+	if i == nil {
+		return ""
+	}
 	return i.Name
 }
 
@@ -74,7 +80,8 @@ func (i *ColumnIdent) String() string {
 }
 
 func (i *ColumnIdent) PlainString() string {
-	return i.Ident.PlainString()
+	str := i.Ident.PlainString()
+	return str
 }
 
 type DataType struct {
@@ -82,7 +89,10 @@ type DataType struct {
 	Size string
 }
 
-func (s DataType) String() string {
+func (s *DataType) String() string {
+	if s == nil {
+		return ""
+	}
 	str := s.Name
 	if s.Size != "" {
 		str += "(" + s.Size + ")"
