@@ -5,6 +5,7 @@ import (
 
 	errorz "github.com/kunitsucom/util.go/errors"
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
+	"github.com/kunitsucom/util.go/must"
 )
 
 //nolint:funlen,cyclop,gocognit
@@ -37,29 +38,29 @@ func Diff(before, after *DDL) (*DDL, error) {
 
 	// DROP TABLE table_name;
 	for _, stmt := range onlyLeftStmt(before, after) {
-		switch s := stmt.(type) {
+		switch beforeStmt := stmt.(type) {
 		case *CreateTableStmt:
 			result.Stmts = append(result.Stmts, &DropTableStmt{
-				Name: s.Name,
+				Name: beforeStmt.Name,
 			})
 		case *CreateIndexStmt:
 			result.Stmts = append(result.Stmts, &DropIndexStmt{
-				Name: s.Name,
+				Name: beforeStmt.Name,
 			})
 		default:
-			return nil, errorz.Errorf("%s: %T: %w", s.GetPlainName(), s, ddl.ErrNotSupported)
+			return nil, errorz.Errorf("%s: %T: %w", beforeStmt.GetPlainName(), beforeStmt, ddl.ErrNotSupported)
 		}
 	}
 
 	// CREATE TABLE table_name
 	for _, stmt := range onlyLeftStmt(after, before) {
-		switch s := stmt.(type) {
+		switch afterStmt := stmt.(type) {
 		case *CreateTableStmt:
-			result.Stmts = append(result.Stmts, s)
+			result.Stmts = append(result.Stmts, afterStmt)
 		case *CreateIndexStmt:
-			result.Stmts = append(result.Stmts, s)
+			result.Stmts = append(result.Stmts, afterStmt)
 		default:
-			return nil, errorz.Errorf("%s: %T: %w", s.GetPlainName(), s, ddl.ErrNotSupported)
+			return nil, errorz.Errorf("%s: %T: %w", afterStmt.GetPlainName(), afterStmt, ddl.ErrNotSupported)
 		}
 	}
 
@@ -70,10 +71,8 @@ func Diff(before, after *DDL) (*DDL, error) {
 		case *CreateTableStmt:
 			if afterStmt := findStmtByTypeAndName(beforeStmt, after.Stmts); afterStmt != nil {
 				afterStmt := afterStmt.(*CreateTableStmt) //nolint:forcetypeassert
-				alterStmt, err := DiffCreateTable(beforeStmt, afterStmt)
-				if err != nil {
-					return nil, errorz.Errorf("DiffCreateTable: %w", err)
-				}
+				// MEMO: in this case, DiffCreateTable does not return error
+				alterStmt := must.One(DiffCreateTable(beforeStmt, afterStmt))
 				result.Stmts = append(result.Stmts, alterStmt.Stmts...)
 			}
 		case *CreateIndexStmt:
