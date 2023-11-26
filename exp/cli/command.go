@@ -79,6 +79,9 @@ func (cmd *Command) getDescription() string {
 	if cmd.Description != "" {
 		return cmd.Description
 	}
+	if len(cmd.calledCommands) == 0 {
+		return fmt.Sprintf("command %q description", cmd.Name)
+	}
 	return fmt.Sprintf("command %q description", strings.Join(cmd.calledCommands, " "))
 }
 
