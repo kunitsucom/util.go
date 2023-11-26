@@ -27,7 +27,7 @@ func TestDiff(t *testing.T) {
 		{
 			before := &DDL{
 				Stmts: []Stmt{
-					&DropTableStmt{Name: &Ident{Name: "table_name", Raw: "table_name"}},
+					&DropTableStmt{Name: &ObjectName{Name: &Ident{Name: "table_name", Raw: "table_name"}}},
 				},
 			}
 			after := (*DDL)(nil)
@@ -37,7 +37,7 @@ func TestDiff(t *testing.T) {
 		{
 			before := &DDL{
 				Stmts: []Stmt{
-					&DropTableStmt{Name: &Ident{Name: "table_name", Raw: "table_name"}},
+					&DropTableStmt{Name: &ObjectName{Name: &Ident{Name: "table_name", Raw: "table_name"}}},
 				},
 			}
 			after := &DDL{}
@@ -48,7 +48,7 @@ func TestDiff(t *testing.T) {
 			before := &DDL{}
 			after := &DDL{
 				Stmts: []Stmt{
-					&DropTableStmt{Name: &Ident{Name: "table_name", Raw: "table_name"}},
+					&DropTableStmt{Name: &ObjectName{Name: &Ident{Name: "table_name", Raw: "table_name"}}},
 				},
 			}
 			_, err := Diff(before, after)
@@ -63,7 +63,7 @@ func TestDiff(t *testing.T) {
 		after := &DDL{
 			Stmts: []Stmt{
 				&CreateTableStmt{
-					Name: &Ident{Name: "table_name", Raw: "table_name"},
+					Name: &ObjectName{Name: &Ident{Name: "table_name", Raw: "table_name"}},
 					Columns: []*Column{
 						{
 							Name: &Ident{Name: "column_name", Raw: "column_name"},
@@ -103,8 +103,7 @@ func TestDiff(t *testing.T) {
 		before := &DDL{
 			Stmts: []Stmt{
 				&CreateTableStmt{
-					Schema: &Ident{Name: "public", Raw: "public"},
-					Name:   &Ident{Name: "table_name", Raw: "table_name"},
+					Name: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "table_name", Raw: "table_name"}},
 					Columns: []*Column{
 						{
 							Name: &Ident{Name: "column_name", Raw: "column_name"},
@@ -119,8 +118,7 @@ func TestDiff(t *testing.T) {
 		expected := &DDL{
 			Stmts: []Stmt{
 				&DropTableStmt{
-					Schema: &Ident{Name: "public", Raw: "public"},
-					Name:   &Ident{Name: "table_name", Raw: "table_name"},
+					Name: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "table_name", Raw: "table_name"}},
 				},
 			},
 		}
@@ -137,7 +135,7 @@ func TestDiff(t *testing.T) {
 		before := &DDL{
 			Stmts: []Stmt{
 				&CreateTableStmt{
-					Name: &Ident{Name: "table_name", Raw: "table_name"},
+					Name: &ObjectName{Name: &Ident{Name: "table_name", Raw: "table_name"}},
 					Columns: []*Column{
 						{
 							Name: &Ident{Name: "column_name", Raw: "column_name"},
@@ -152,7 +150,7 @@ func TestDiff(t *testing.T) {
 		expected := &DDL{
 			Stmts: []Stmt{
 				&DropTableStmt{
-					Name: &Ident{Name: "table_name", Raw: "table_name"},
+					Name: &ObjectName{Name: &Ident{Name: "table_name", Raw: "table_name"}},
 				},
 			},
 		}
@@ -169,7 +167,7 @@ func TestDiff(t *testing.T) {
 		before := &DDL{
 			Stmts: []Stmt{
 				&CreateIndexStmt{
-					Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"},
+					Name: &ObjectName{Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"}},
 					Columns: []*ColumnIdent{
 						{
 							Ident: &Ident{Name: "column_name", Raw: "column_name"},
@@ -184,7 +182,7 @@ func TestDiff(t *testing.T) {
 		expected := &DDL{
 			Stmts: []Stmt{
 				&DropIndexStmt{
-					Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"},
+					Name: &ObjectName{Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"}},
 				},
 			},
 		}
@@ -201,7 +199,7 @@ func TestDiff(t *testing.T) {
 		before := &DDL{
 			Stmts: []Stmt{
 				&CreateIndexStmt{
-					Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"},
+					Name: &ObjectName{Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"}},
 					Columns: []*ColumnIdent{
 						{
 							Ident: &Ident{Name: "column_name", Raw: "column_name"},
@@ -216,7 +214,7 @@ func TestDiff(t *testing.T) {
 		expected := &DDL{
 			Stmts: []Stmt{
 				&DropIndexStmt{
-					Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"},
+					Name: &ObjectName{Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"}},
 				},
 			},
 		}
@@ -234,8 +232,7 @@ func TestDiff(t *testing.T) {
 		after := &DDL{
 			Stmts: []Stmt{
 				&CreateTableStmt{
-					Schema: &Ident{Name: "public", Raw: "public"},
-					Name:   &Ident{Name: "table_name", Raw: "table_name"},
+					Name: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "table_name", Raw: "table_name"}},
 					Columns: []*Column{
 						{
 							Name: &Ident{Name: "column_name", Raw: "column_name"},
@@ -276,8 +273,8 @@ func TestDiff(t *testing.T) {
 		after := &DDL{
 			Stmts: []Stmt{
 				&CreateIndexStmt{
-					Name:      &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"},
-					TableName: &Ident{Name: "table_name", Raw: "table_name"},
+					Name:      &ObjectName{Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"}},
+					TableName: &ObjectName{Name: &Ident{Name: "table_name", Raw: "table_name"}},
 					Columns: []*ColumnIdent{
 						{
 							Ident: &Ident{Name: "column_name", Raw: "column_name"},
@@ -324,8 +321,7 @@ func TestDiff(t *testing.T) {
 		expected := &DDL{
 			Stmts: []Stmt{
 				&AlterTableStmt{
-					Schema: &Ident{Name: "public", Raw: "public"},
-					Name:   &Ident{Name: "users", Raw: "users"},
+					Name: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users", Raw: "users"}},
 					Action: &AddColumn{
 						Column: &Column{
 							Name:     &Ident{Name: "updated_at", Raw: "updated_at"},
@@ -393,14 +389,12 @@ func TestDiff(t *testing.T) {
 		expected := &DDL{
 			Stmts: []Stmt{
 				&DropIndexStmt{
-					Schema: &Ident{Name: "public", Raw: "public"},
-					Name:   &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"},
+					Name: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"}},
 				},
 				&CreateIndexStmt{
 					Unique:    false,
-					Schema:    &Ident{Name: "public", Raw: "public"},
-					Name:      &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"},
-					TableName: &Ident{Name: "users", Raw: "users"},
+					Name:      &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"}},
+					TableName: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users", Raw: "users"}},
 					Columns: []*ColumnIdent{
 						{
 							Ident: &Ident{Name: "username", Raw: "username"},
@@ -416,7 +410,7 @@ func TestDiff(t *testing.T) {
 			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
 		}
 		assert.Equal(t, `DROP INDEX public.users_idx_by_username;
-CREATE INDEX public.users_idx_by_username ON users (username ASC);
+CREATE INDEX public.users_idx_by_username ON public.users (username ASC);
 `, actual.String())
 	})
 
@@ -432,15 +426,13 @@ CREATE INDEX public.users_idx_by_username ON users (username ASC);
 		expected := &DDL{
 			Stmts: []Stmt{
 				&DropIndexStmt{
-					Schema: &Ident{Name: "public", Raw: "public"},
-					Name:   &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"},
+					Name: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"}},
 				},
 				&CreateIndexStmt{
 					Unique:      true,
 					IfNotExists: true,
-					Schema:      &Ident{Name: "public", Raw: "public"},
-					Name:        &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"},
-					TableName:   &Ident{Name: "users", Raw: "users"},
+					Name:        &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"}},
+					TableName:   &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users", Raw: "users"}},
 					Columns: []*ColumnIdent{
 						{
 							Ident: &Ident{Name: "username", Raw: "username"},
@@ -460,7 +452,7 @@ CREATE INDEX public.users_idx_by_username ON users (username ASC);
 			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
 		}
 		assert.Equal(t, `DROP INDEX public.users_idx_by_username;
-CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON users (username ASC, age ASC);
+CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username ASC, age ASC);
 `, actual.String())
 	})
 }

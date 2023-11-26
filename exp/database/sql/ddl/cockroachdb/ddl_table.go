@@ -2,6 +2,7 @@ package cockroachdb
 
 import (
 	"sort"
+	"strings"
 
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 	stringz "github.com/kunitsucom/util.go/strings"
@@ -207,6 +208,48 @@ func (c *CheckConstraint) PlainString() string {
 	}
 	str += ")"
 	return str
+}
+
+func NewObjectName(name string) *ObjectName {
+	objName := &ObjectName{}
+
+	tableName := NewIdent(name)
+	switch name := strings.Split(tableName.Name, "."); len(name) { //nolint:exhaustive
+	case 2:
+		// CREATE TABLE "schema.table"
+		objName.Schema = NewIdent(tableName.QuotationMark + name[0] + tableName.QuotationMark)
+		objName.Name = NewIdent(tableName.QuotationMark + name[1] + tableName.QuotationMark)
+	default:
+		// CREATE TABLE "table"
+		objName.Name = tableName
+	}
+
+	return objName
+}
+
+type ObjectName struct {
+	Schema *Ident
+	Name   *Ident
+}
+
+func (t *ObjectName) String() string {
+	if t == nil {
+		return ""
+	}
+	if t.Schema != nil {
+		return t.Name.QuotationMark + t.Schema.PlainString() + "." + t.Name.PlainString() + t.Name.QuotationMark
+	}
+	return t.Name.String()
+}
+
+func (t *ObjectName) PlainString() string {
+	if t == nil {
+		return ""
+	}
+	if t.Schema != nil {
+		return t.Schema.PlainString() + "." + t.Name.PlainString()
+	}
+	return t.Name.PlainString()
 }
 
 type Column struct {

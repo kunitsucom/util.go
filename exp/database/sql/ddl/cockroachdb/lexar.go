@@ -270,6 +270,11 @@ func (l *Lexer) NextToken() Token {
 
 	l.skipWhitespace()
 
+	if l.ch == '-' && l.peekChar() == '-' {
+		l.skipComment()
+		return l.NextToken()
+	}
+
 	switch l.ch {
 	case '"', '\'':
 		tok.Type = TOKEN_IDENT
@@ -383,4 +388,10 @@ func (l *Lexer) skipWhitespace() (skipped bool) {
 		l.readChar()
 	}
 	return skipped
+}
+
+func (l *Lexer) skipComment() {
+	for l.ch != '\n' && l.ch != 0 {
+		l.readChar()
+	}
 }

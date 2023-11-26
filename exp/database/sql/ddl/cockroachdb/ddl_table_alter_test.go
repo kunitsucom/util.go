@@ -39,8 +39,10 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name:   &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`},
-			Action: &RenameTable{NewName: &Ident{Name: "accounts", QuotationMark: `"`, Raw: `"accounts"`}},
+			Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
+			Action: &RenameTable{
+				NewName: &ObjectName{Name: &Ident{Name: "accounts", QuotationMark: `"`, Raw: `"accounts"`}},
+			},
 		}
 
 		expected := `ALTER TABLE "users" RENAME TO "accounts";` + "\n"
@@ -56,7 +58,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name:   &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`},
+			Name:   &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
 			Action: &RenameColumn{Name: &Ident{Name: "name", QuotationMark: `"`, Raw: `"name"`}, NewName: &Ident{Name: "username", QuotationMark: `"`, Raw: `"username"`}},
 		}
 
@@ -73,7 +75,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name:   &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`},
+			Name:   &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
 			Action: &RenameConstraint{Name: &Ident{Name: "users_pkey", QuotationMark: `"`, Raw: `"users_pkey"`}, NewName: &Ident{Name: "users_id_pkey", QuotationMark: `"`, Raw: `"users_id_pkey"`}},
 		}
 
@@ -90,7 +92,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`},
+			Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
 			Action: &AddColumn{
 				Column: &Column{
 					Name:     &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
@@ -112,7 +114,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name:   &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`},
+			Name:   &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
 			Action: &DropColumn{Name: &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`}},
 		}
 
@@ -129,7 +131,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`},
+			Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
 			Action: &AlterColumn{
 				Name:   &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
 				Action: &AlterColumnSetDataType{DataType: &DataType{Name: "INTEGER"}},
@@ -149,7 +151,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`},
+			Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
 			Action: &AlterColumn{
 				Name:   &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
 				Action: &AlterColumnSetDefault{Default: &Default{Value: &DefaultValue{[]*Ident{{Name: "0", Raw: "0"}}}}},
@@ -169,7 +171,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`},
+			Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
 			Action: &AlterColumn{
 				Name:   &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
 				Action: &AlterColumnDropDefault{},
@@ -189,7 +191,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`},
+			Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
 			Action: &AlterColumn{
 				Name:   &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
 				Action: &AlterColumnSetNotNull{},
@@ -209,7 +211,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`},
+			Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
 			Action: &AlterColumn{
 				Name:   &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
 				Action: &AlterColumnDropNotNull{},
@@ -229,7 +231,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name: &Ident{Name: "groups", QuotationMark: `"`, Raw: `"groups"`},
+			Name: &ObjectName{Name: &Ident{Name: "groups", QuotationMark: `"`, Raw: `"groups"`}},
 			Action: &AddConstraint{
 				Constraint: &PrimaryKeyConstraint{
 					Name: &Ident{Name: "groups_pkey", QuotationMark: `"`, Raw: `"groups_pkey"`},
@@ -253,7 +255,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name:   &Ident{Name: "groups", QuotationMark: `"`, Raw: `"groups"`},
+			Name:   &ObjectName{Name: &Ident{Name: "groups", QuotationMark: `"`, Raw: `"groups"`}},
 			Action: &DropConstraint{Name: &Ident{Name: "groups_pkey", QuotationMark: `"`, Raw: `"groups_pkey"`}},
 		}
 
@@ -270,7 +272,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name: &Ident{Name: "groups", QuotationMark: `"`, Raw: `"groups"`},
+			Name: &ObjectName{Name: &Ident{Name: "groups", QuotationMark: `"`, Raw: `"groups"`}},
 			Action: &AlterConstraint{
 				Name:              &Ident{Name: "groups_pkey", QuotationMark: `"`, Raw: `"groups_pkey"`},
 				Deferrable:        true,
@@ -291,7 +293,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name: &Ident{Name: "groups", QuotationMark: `"`, Raw: `"groups"`},
+			Name: &ObjectName{Name: &Ident{Name: "groups", QuotationMark: `"`, Raw: `"groups"`}},
 			Action: &AlterConstraint{
 				Name:              &Ident{Name: "groups_pkey", QuotationMark: `"`, Raw: `"groups_pkey"`},
 				Deferrable:        false,
@@ -312,7 +314,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 func TestAlterTableStmt_GetPlainName(t *testing.T) {
 	t.Parallel()
 
-	stmt := &AlterTableStmt{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}}
+	stmt := &AlterTableStmt{Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}}}
 
 	expected := `users`
 	actual := stmt.GetPlainName()

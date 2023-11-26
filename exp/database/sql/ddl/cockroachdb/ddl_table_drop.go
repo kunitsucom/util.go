@@ -8,8 +8,7 @@ var _ Stmt = (*DropTableStmt)(nil)
 
 type DropTableStmt struct {
 	IfExists bool
-	Schema   *Ident
-	Name     *Ident
+	Name     *ObjectName
 }
 
 func (s *DropTableStmt) GetPlainName() string {
@@ -20,9 +19,6 @@ func (s *DropTableStmt) String() string {
 	str := "DROP TABLE "
 	if s.IfExists {
 		str += "IF EXISTS "
-	}
-	if s.Schema != nil {
-		str += s.Schema.String() + "."
 	}
 	str += s.Name.String() + ";\n"
 	return str

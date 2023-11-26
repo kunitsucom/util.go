@@ -12,7 +12,7 @@ func TestDropIndexStmt_GetPlainName(t *testing.T) {
 	t.Run("success,", func(t *testing.T) {
 		t.Parallel()
 
-		stmt := &DropIndexStmt{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}}
+		stmt := &DropIndexStmt{Name: &ObjectName{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}}}
 		expected := "test"
 		actual := stmt.GetPlainName()
 
@@ -28,7 +28,7 @@ func TestDropIndexStmt_String(t *testing.T) {
 
 		stmt := &DropIndexStmt{
 			IfExists: true,
-			Name:     &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`},
+			Name:     &ObjectName{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}},
 		}
 		expected := `DROP INDEX IF EXISTS "test";` + "\n"
 		actual := stmt.String()

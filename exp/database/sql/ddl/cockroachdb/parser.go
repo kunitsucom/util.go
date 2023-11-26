@@ -128,14 +128,7 @@ func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) {
 		return nil, errorz.Errorf("checkCurrentToken: %w", err)
 	}
 
-	tableName := NewIdent(p.currentToken.Literal.Str)
-	switch name := strings.Split(tableName.Name, "."); len(name) { //nolint:exhaustive
-	case 2:
-		createTableStmt.Schema = NewIdent(tableName.QuotationMark + name[0] + tableName.QuotationMark)
-		createTableStmt.Name = NewIdent(tableName.QuotationMark + name[1] + tableName.QuotationMark)
-	default:
-		createTableStmt.Name = tableName
-	}
+	createTableStmt.Name = NewObjectName(p.currentToken.Literal.Str)
 
 	p.nextToken() // current = (
 
@@ -149,7 +142,7 @@ LabelColumns:
 	for {
 		switch { //nolint:exhaustive
 		case p.currentToken.Type == TOKEN_IDENT:
-			column, constraints, err := p.parseColumn(createTableStmt.Name)
+			column, constraints, err := p.parseColumn(createTableStmt.Name.Name)
 			if err != nil {
 				return nil, errorz.Errorf("parseColumn: %w", err)
 			}
@@ -160,7 +153,7 @@ LabelColumns:
 				}
 			}
 		case isConstraint(p.currentToken.Type):
-			constraint, err := p.parseTableConstraint(createTableStmt.Name)
+			constraint, err := p.parseTableConstraint(createTableStmt.Name.Name)
 			if err != nil {
 				return nil, errorz.Errorf("parseConstraint: %w", err)
 			}
@@ -210,14 +203,7 @@ func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 		return nil, errorz.Errorf("checkCurrentToken: %w", err)
 	}
 
-	indexName := NewIdent(p.currentToken.Literal.Str)
-	switch name := strings.Split(indexName.Name, "."); len(name) { //nolint:exhaustive
-	case 2:
-		createIndexStmt.Schema = NewIdent(indexName.QuotationMark + name[0] + indexName.QuotationMark)
-		createIndexStmt.Name = NewIdent(indexName.QuotationMark + name[1] + indexName.QuotationMark)
-	default:
-		createIndexStmt.Name = NewIdent(p.currentToken.Literal.Str)
-	}
+	createIndexStmt.Name = NewObjectName(p.currentToken.Literal.Str)
 
 	p.nextToken() // current = ON
 
@@ -231,14 +217,7 @@ func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 		return nil, errorz.Errorf("checkCurrentToken: %w", err)
 	}
 
-	tableName := NewIdent(p.currentToken.Literal.Str)
-	switch name := strings.Split(tableName.Name, "."); len(name) { //nolint:exhaustive
-	case 2:
-		createIndexStmt.Schema = NewIdent(tableName.QuotationMark + name[0] + tableName.QuotationMark)
-		createIndexStmt.TableName = NewIdent(tableName.QuotationMark + name[1] + tableName.QuotationMark)
-	default:
-		createIndexStmt.TableName = tableName
-	}
+	createIndexStmt.TableName = NewObjectName(p.currentToken.Literal.Str)
 
 	p.nextToken() // current = (
 
@@ -379,24 +358,14 @@ LabelExpr:
 			}
 			idents = append(idents, ids...)
 			continue
-		case TOKEN_IDENT:
-			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
-		case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS,
-			TOKEN_PLUS, TOKEN_MINUS, TOKEN_ASTERISK, TOKEN_SLASH,
-			TOKEN_STRING_CONCAT, TOKEN_TYPECAST, TOKEN_TYPE_ANNOTATION,
-			TOKEN_COMMA:
-			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
 		case TOKEN_CLOSE_PAREN:
 			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
 			p.nextToken()
 			break LabelExpr
-		default:
-			if isDataType(p.currentToken.Type) {
-				idents = append(idents, NewIdent(p.currentToken.Literal.Str))
-				p.nextToken()
-				continue
-			}
+		case TOKEN_EOF:
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
+		default:
+			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
 		}
 
 		p.nextToken()
@@ -418,7 +387,7 @@ LabelConstraints:
 			}
 			p.nextToken() // current = KEY
 			constraints = constraints.Append(&PrimaryKeyConstraint{
-				Name:    NewIdent(fmt.Sprintf("%s_pkey", tableName.Name)),
+				Name:    NewIdent(fmt.Sprintf("%s_pkey", tableName.PlainString())),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			})
 		case TOKEN_REFERENCES:
@@ -427,7 +396,7 @@ LabelConstraints:
 			}
 			p.nextToken() // current = table_name
 			constraint := &ForeignKeyConstraint{
-				Name:    NewIdent(fmt.Sprintf("%s_%s_fkey", tableName.Name, column.Name.Name)),
+				Name:    NewIdent(fmt.Sprintf("%s_%s_fkey", tableName.PlainString(), column.Name.PlainString())),
 				Ref:     NewIdent(p.currentToken.Literal.Str),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			}
@@ -441,7 +410,7 @@ LabelConstraints:
 		case TOKEN_UNIQUE:
 			constraints = constraints.Append(&IndexConstraint{
 				Unique:  true,
-				Name:    NewIdent(fmt.Sprintf("%s_unique_%s", tableName.Name, column.Name.Name)),
+				Name:    NewIdent(fmt.Sprintf("%s_unique_%s", tableName.PlainString(), column.Name.PlainString())),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			})
 		case TOKEN_CHECK:
@@ -450,7 +419,7 @@ LabelConstraints:
 			}
 			p.nextToken() // current = (
 			constraint := &CheckConstraint{
-				Name: NewIdent(fmt.Sprintf("%s_%s_check", tableName.Name, column.Name.Name)),
+				Name: NewIdent(fmt.Sprintf("%s_%s_check", tableName.PlainString(), column.Name.PlainString())),
 			}
 		LabelCheck:
 			for {
@@ -515,7 +484,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			return nil, errorz.Errorf("parseColumnIdents: %w", err)
 		}
 		if constraintName == nil {
-			constraintName = NewIdent(fmt.Sprintf("%s_pkey", tableName.Name))
+			constraintName = NewIdent(fmt.Sprintf("%s_pkey", tableName.PlainString()))
 		}
 		return &PrimaryKeyConstraint{
 			Name:    constraintName,
@@ -549,7 +518,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			return nil, errorz.Errorf("parseColumnIdents: %w", err)
 		}
 		if constraintName == nil {
-			name := tableName.Name
+			name := tableName.PlainString()
 			for _, ident := range idents {
 				name += fmt.Sprintf("_%s", ident.PlainString())
 			}

@@ -19,13 +19,29 @@ func Test_isStmt(t *testing.T) {
 func TestIdent_String(t *testing.T) {
 	t.Parallel()
 
-	ident := &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}
-	expected := ident.Raw
-	actual := ident.String()
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
 
-	require.Equal(t, expected, actual)
+		ident := &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}
+		expected := ident.Raw
+		actual := ident.String()
 
-	t.Logf("✅: %s: ident: %#v", t.Name(), ident)
+		require.Equal(t, expected, actual)
+
+		t.Logf("✅: %s: ident: %#v", t.Name(), ident)
+	})
+
+	t.Run("success,empty", func(t *testing.T) {
+		t.Parallel()
+
+		ident := (*Ident)(nil)
+		expected := ""
+		actual := ident.String()
+
+		require.Equal(t, expected, actual)
+
+		t.Logf("✅: %s: ident: %#v", t.Name(), ident)
+	})
 }
 
 func TestIdent_PlainString(t *testing.T) {

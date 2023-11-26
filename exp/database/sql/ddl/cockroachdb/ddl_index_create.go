@@ -12,9 +12,8 @@ var _ Stmt = (*CreateIndexStmt)(nil)
 type CreateIndexStmt struct {
 	Unique      bool
 	IfNotExists bool
-	Schema      *Ident
-	Name        *Ident
-	TableName   *Ident
+	Name        *ObjectName
+	TableName   *ObjectName
 	Columns     []*ColumnIdent
 }
 
@@ -31,9 +30,6 @@ func (s *CreateIndexStmt) String() string {
 	if s.IfNotExists {
 		str += "IF NOT EXISTS " //nolint:goconst
 	}
-	if s.Schema != nil {
-		str += s.Schema.String() + "."
-	}
 	str += s.Name.String() + " ON " + s.TableName.String() + " (" + stringz.JoinStringers(", ", s.Columns...) + ");\n"
 	return str
 }
@@ -46,9 +42,6 @@ func (s *CreateIndexStmt) PlainString() string {
 	str += "INDEX " //nolint:goconst
 	if s.IfNotExists {
 		str += "IF NOT EXISTS " //nolint:goconst
-	}
-	if s.Schema != nil {
-		str += s.Schema.PlainString() + "."
 	}
 	str += s.Name.PlainString() + " ON " + s.TableName.PlainString() + " ("
 	for i, c := range s.Columns {

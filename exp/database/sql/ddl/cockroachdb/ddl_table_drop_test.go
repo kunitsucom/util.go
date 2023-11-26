@@ -12,7 +12,7 @@ func TestDropTableStmt_GetPlainName(t *testing.T) {
 	t.Run("success,", func(t *testing.T) {
 		t.Parallel()
 
-		stmt := &DropTableStmt{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}}
+		stmt := &DropTableStmt{Name: &ObjectName{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}}}
 		expected := "test"
 		actual := stmt.GetPlainName()
 
@@ -30,7 +30,7 @@ func TestDropTableStmt_String(t *testing.T) {
 
 		stmt := &DropTableStmt{
 			IfExists: true,
-			Name:     &Ident{Name: "test", Raw: "test"},
+			Name:     &ObjectName{Name: &Ident{Name: "test", Raw: "test"}},
 		}
 		expected := `DROP TABLE IF EXISTS test;` + "\n"
 		actual := stmt.String()

@@ -9,8 +9,7 @@ var _ Stmt = (*CreateTableStmt)(nil)
 type CreateTableStmt struct {
 	Indent      string
 	IfNotExists bool
-	Schema      *Ident
-	Name        *Ident
+	Name        *ObjectName
 	Columns     []*Column
 	Constraints Constraints
 	Options     []*Option
@@ -25,9 +24,6 @@ func (s *CreateTableStmt) String() string {
 	str := "CREATE TABLE "
 	if s.IfNotExists {
 		str += "IF NOT EXISTS "
-	}
-	if s.Schema != nil {
-		str += s.Schema.String() + "."
 	}
 	str += s.Name.String() + " (\n"
 	lastIndex := len(s.Columns) - 1

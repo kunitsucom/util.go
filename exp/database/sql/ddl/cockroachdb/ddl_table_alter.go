@@ -11,7 +11,7 @@ type AlterTableAction interface {
 
 // RenameTable represents ALTER TABLE table_name RENAME TO new_table_name.
 type RenameTable struct {
-	NewName *Ident
+	NewName *ObjectName
 }
 
 func (*RenameTable) isAlterTableAction() {}
@@ -143,8 +143,7 @@ func (s *AlterConstraint) GoString() string { return internal.GoString(*s) }
 var _ Stmt = (*AlterTableStmt)(nil)
 
 type AlterTableStmt struct {
-	Schema *Ident
-	Name   *Ident
+	Name   *ObjectName
 	Action AlterTableAction
 }
 
@@ -157,13 +156,11 @@ func (s *AlterTableStmt) GetPlainName() string {
 //nolint:cyclop,funlen
 func (s *AlterTableStmt) String() string {
 	str := "ALTER TABLE "
-	if s.Schema != nil {
-		str += s.Schema.String() + "."
-	}
 	str += s.Name.String() + " "
 	switch a := s.Action.(type) {
 	case *RenameTable:
-		str += "RENAME TO " + a.NewName.String()
+		str += "RENAME TO "
+		str += a.NewName.String()
 	case *RenameColumn:
 		str += "RENAME COLUMN " + a.Name.String() + " TO " + a.NewName.String()
 	case *RenameConstraint:

@@ -142,7 +142,7 @@ LabelColumns:
 	for {
 		switch { //nolint:exhaustive
 		case p.currentToken.Type == TOKEN_IDENT:
-			column, constraints, err := p.parseColumn(createTableStmt.Name)
+			column, constraints, err := p.parseColumn(createTableStmt.Name.Name)
 			if err != nil {
 				return nil, errorz.Errorf("parseColumn: %w", err)
 			}
@@ -236,7 +236,7 @@ func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 }
 
 //nolint:funlen,cyclop
-func (p *Parser) parseColumn(tableName *ObjectName) (*Column, []Constraint, error) {
+func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 	column := &Column{}
 	constraints := make(Constraints, 0)
 
@@ -283,7 +283,7 @@ func (p *Parser) parseColumn(tableName *ObjectName) (*Column, []Constraint, erro
 			p.nextToken()
 		}
 
-		cs, err := p.parseColumnConstraints(tableName.Name, column)
+		cs, err := p.parseColumnConstraints(tableName, column)
 		if err != nil {
 			return nil, nil, errorz.Errorf("parseColumnConstraints: %w", err)
 		}
@@ -409,7 +409,7 @@ LabelConstraints:
 			constraints = constraints.Append(constraint)
 		case TOKEN_UNIQUE:
 			constraints = constraints.Append(&UniqueConstraint{
-				Name:    NewIdent(fmt.Sprintf("%s_unique_%s", tableName.PlainString(), column.Name.Name)),
+				Name:    NewIdent(fmt.Sprintf("%s_unique_%s", tableName.PlainString(), column.Name.PlainString())),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			})
 		case TOKEN_CHECK:
@@ -418,7 +418,7 @@ LabelConstraints:
 			}
 			p.nextToken() // current = (
 			constraint := &CheckConstraint{
-				Name: NewIdent(fmt.Sprintf("%s_%s_check", tableName.PlainString(), column.Name.Name)),
+				Name: NewIdent(fmt.Sprintf("%s_%s_check", tableName.PlainString(), column.Name.PlainString())),
 			}
 		LabelCheck:
 			for {

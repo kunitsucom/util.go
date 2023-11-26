@@ -20,6 +20,8 @@ func TestIdent_String(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
 		ident := &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}
 		expected := ident.Raw
 		actual := ident.String()
@@ -30,6 +32,8 @@ func TestIdent_String(t *testing.T) {
 	})
 
 	t.Run("success,empty", func(t *testing.T) {
+		t.Parallel()
+
 		ident := (*Ident)(nil)
 		expected := ""
 		actual := ident.String()

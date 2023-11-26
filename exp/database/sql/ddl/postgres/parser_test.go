@@ -575,7 +575,7 @@ func TestParser_parseColumn(t *testing.T) {
 	t.Run("failure,invalid", func(t *testing.T) {
 		t.Parallel()
 
-		_, _, err := NewParser(NewLexer(`NOT`)).parseColumn(&ObjectName{Name: &Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`}})
+		_, _, err := NewParser(NewLexer(`NOT`)).parseColumn(&Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`})
 		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
 	})
 }

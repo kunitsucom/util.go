@@ -73,7 +73,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		if afterConstraint == nil {
 			// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
 			result.Stmts = append(result.Stmts, &AlterTableStmt{
-				Name: after.Name,
+				Name: after.Name, // ALTER TABLE RENAME TO で変更された後の可能性があるため after.Name を使用する
 				Action: &DropConstraint{
 					Name: beforeConstraint.GetName(),
 				},
@@ -93,7 +93,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 				result.Stmts = append(
 					result.Stmts,
 					&AlterTableStmt{
-						Name: after.Name,
+						Name: after.Name, // ALTER TABLE RENAME TO で変更された後の可能性があるため after.Name を使用する
 						Action: &DropConstraint{
 							Name: beforeConstraint.GetName(),
 						},
@@ -132,7 +132,7 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 		if afterColumn == nil {
 			// ALTER TABLE table_name DROP COLUMN column_name;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Name: after.Name,
+				Name: after.Name, // ALTER TABLE RENAME TO で変更された後の可能性があるため after.Name を使用する
 				Action: &DropColumn{
 					Name: beforeColumn.Name,
 				},

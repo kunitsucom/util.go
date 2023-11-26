@@ -36,11 +36,7 @@ func TestParser_Parse(t *testing.T) {
 				Stmts: []Stmt{
 					&CreateTableStmt{
 						Indent: Indent,
-						Name: &Ident{
-							Name:          "groups",
-							QuotationMark: `"`,
-							Raw:           `"groups"`,
-						},
+						Name:   &ObjectName{Name: &Ident{Name: "groups", QuotationMark: `"`, Raw: `"groups"`}},
 						Columns: []*Column{
 							{
 								Name: &Ident{
@@ -79,11 +75,7 @@ func TestParser_Parse(t *testing.T) {
 					},
 					&CreateTableStmt{
 						Indent: Indent,
-						Name: &Ident{
-							Name:          "users",
-							QuotationMark: `"`,
-							Raw:           `"users"`,
-						},
+						Name:   &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
 						Columns: []*Column{
 							{
 								Name: &Ident{
@@ -224,7 +216,9 @@ CREATE TABLE "users" (
 		},
 		{
 			name: "success,complex_defaults",
-			input: `CREATE TABLE complex_defaults (
+			input: `-- table: complex_defaults
+CREATE TABLE IF NOT EXISTS complex_defaults (
+    -- id is the primary key.
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -238,12 +232,9 @@ CREATE TABLE "users" (
 			want: &DDL{
 				Stmts: []Stmt{
 					&CreateTableStmt{
-						Indent: Indent,
-						Name: &Ident{
-							Name:          "complex_defaults",
-							QuotationMark: "",
-							Raw:           "complex_defaults",
-						},
+						Indent:      Indent,
+						IfNotExists: true,
+						Name:        &ObjectName{Name: &Ident{Name: "complex_defaults", QuotationMark: "", Raw: "complex_defaults"}},
 						Columns: []*Column{
 							{
 								Name:     &Ident{Name: "id", Raw: "id"},
@@ -295,7 +286,7 @@ CREATE TABLE "users" (
 				},
 			},
 			wantErr: nil,
-			wantStr: `CREATE TABLE complex_defaults (
+			wantStr: `CREATE TABLE IF NOT EXISTS complex_defaults (
     id SERIAL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -325,8 +316,7 @@ CREATE TABLE "users" (
 					&CreateTableStmt{
 						Indent:      Indent,
 						IfNotExists: true,
-						Schema:      &Ident{Name: "public", Raw: "public"},
-						Name:        &Ident{Name: "users", Raw: "users"},
+						Name:        &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users", Raw: "users"}},
 						Columns: []*Column{
 							{Name: &Ident{Name: "user_id", Raw: "user_id"}, DataType: &DataType{Name: "UUID", Size: ""}, NotNull: true},
 							{Name: &Ident{Name: "username", Raw: "username"}, DataType: &DataType{Name: "VARCHAR", Size: "256"}, NotNull: true},
