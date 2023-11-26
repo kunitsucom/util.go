@@ -217,7 +217,9 @@ CREATE TABLE public.users (
 		},
 		{
 			name: "success,complex_defaults",
-			input: `CREATE TABLE IF NOT EXISTS complex_defaults (
+			input: `-- table: complex_defaults
+CREATE TABLE IF NOT EXISTS complex_defaults (
+    -- id is the primary key.
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
