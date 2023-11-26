@@ -379,24 +379,14 @@ LabelExpr:
 			}
 			idents = append(idents, ids...)
 			continue
-		case TOKEN_IDENT:
-			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
-		case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS,
-			TOKEN_PLUS, TOKEN_MINUS, TOKEN_ASTERISK, TOKEN_SLASH,
-			TOKEN_STRING_CONCAT, TOKEN_TYPECAST,
-			TOKEN_COMMA:
-			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
 		case TOKEN_CLOSE_PAREN:
 			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
 			p.nextToken()
 			break LabelExpr
-		default:
-			if isDataType(p.currentToken.Type) {
-				idents = append(idents, NewIdent(p.currentToken.Literal.Str))
-				p.nextToken()
-				continue
-			}
+		case TOKEN_EOF:
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
+		default:
+			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
 		}
 
 		p.nextToken()
