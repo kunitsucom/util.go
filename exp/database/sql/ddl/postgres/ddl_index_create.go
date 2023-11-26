@@ -29,7 +29,7 @@ func (s *CreateIndexStmt) String() string {
 	}
 	str += "INDEX " //nolint:goconst
 	if s.IfNotExists {
-		str += "IF NOT EXISTS "
+		str += "IF NOT EXISTS " //nolint:goconst
 	}
 	if s.Schema != nil {
 		str += s.Schema.String() + "."
@@ -45,7 +45,7 @@ func (s *CreateIndexStmt) PlainString() string {
 	}
 	str += "INDEX " //nolint:goconst
 	if s.IfNotExists {
-		str += "IF NOT EXISTS "
+		str += "IF NOT EXISTS " //nolint:goconst
 	}
 	if s.Schema != nil {
 		str += s.Schema.PlainString() + "."

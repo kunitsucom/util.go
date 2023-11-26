@@ -363,7 +363,7 @@ func TestDiff(t *testing.T) {
 `, actual.String())
 	})
 
-	t.Run("success,before,after,Table", func(t *testing.T) {
+	t.Run("success,before,after,Table,Asc", func(t *testing.T) {
 		t.Parallel()
 
 		before, err := NewParser(NewLexer(`CREATE TABLE public.users (

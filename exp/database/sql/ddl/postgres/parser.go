@@ -97,7 +97,7 @@ func (p *Parser) parseCreateStatement() (Stmt, error) { //nolint:ireturn
 	switch p.currentToken.Type { //nolint:exhaustive
 	case TOKEN_TABLE:
 		return p.parseCreateTableStmt()
-	case TOKEN_INDEX:
+	case TOKEN_INDEX, TOKEN_UNIQUE:
 		return p.parseCreateIndexStmt()
 	default:
 		return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
@@ -110,8 +110,20 @@ func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) {
 		Indent: Indent,
 	}
 
-	p.nextToken() // current = table_name
+	if p.peekToken.Type == TOKEN_IF {
+		p.nextToken() // current = IF
+		if err := p.checkPeekToken(TOKEN_NOT); err != nil {
+			return nil, errorz.Errorf("checkPeekToken: %w", err)
+		}
+		p.nextToken() // current = NOT
+		if err := p.checkPeekToken(TOKEN_EXISTS); err != nil {
+			return nil, errorz.Errorf("checkPeekToken: %w", err)
+		}
+		p.nextToken() // current = EXISTS
+		createTableStmt.IfNotExists = true
+	}
 
+	p.nextToken() // current = table_name
 	if err := p.checkCurrentToken(TOKEN_IDENT); err != nil {
 		return nil, errorz.Errorf("checkCurrentToken: %w", err)
 	}
@@ -171,11 +183,29 @@ LabelColumns:
 	return createTableStmt, nil
 }
 
+//nolint:cyclop,funlen
 func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 	createIndexStmt := &CreateIndexStmt{}
 
-	p.nextToken() // current = index_name
+	if p.currentToken.Type == TOKEN_UNIQUE {
+		createIndexStmt.Unique = true
+		p.nextToken() // current = INDEX
+	}
 
+	if p.peekToken.Type == TOKEN_IF {
+		p.nextToken() // current = IF
+		if err := p.checkPeekToken(TOKEN_NOT); err != nil {
+			return nil, errorz.Errorf("checkPeekToken: %w", err)
+		}
+		p.nextToken() // current = NOT
+		if err := p.checkPeekToken(TOKEN_EXISTS); err != nil {
+			return nil, errorz.Errorf("checkPeekToken: %w", err)
+		}
+		p.nextToken() // current = EXISTS
+		createIndexStmt.IfNotExists = true
+	}
+
+	p.nextToken() // current = index_name
 	if err := p.checkCurrentToken(TOKEN_IDENT); err != nil {
 		return nil, errorz.Errorf("checkCurrentToken: %w", err)
 	}

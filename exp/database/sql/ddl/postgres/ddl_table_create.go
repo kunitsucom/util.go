@@ -8,6 +8,7 @@ var _ Stmt = (*CreateTableStmt)(nil)
 
 type CreateTableStmt struct {
 	Indent      string
+	IfNotExists bool
 	Schema      *Ident
 	Name        *Ident
 	Columns     []*Column
@@ -22,6 +23,9 @@ func (s *CreateTableStmt) GetPlainName() string {
 //nolint:cyclop
 func (s *CreateTableStmt) String() string {
 	str := "CREATE TABLE "
+	if s.IfNotExists {
+		str += "IF NOT EXISTS "
+	}
 	if s.Schema != nil {
 		str += s.Schema.String() + "."
 	}

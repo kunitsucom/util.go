@@ -21,11 +21,13 @@ func Diff(before, after *DDL) (*DDL, error) {
 			switch s := stmt.(type) {
 			case *CreateTableStmt:
 				result.Stmts = append(result.Stmts, &DropTableStmt{
-					Name: s.Name,
+					Schema: s.Schema,
+					Name:   s.Name,
 				})
 			case *CreateIndexStmt:
 				result.Stmts = append(result.Stmts, &DropIndexStmt{
-					Name: s.Name,
+					Schema: s.Schema,
+					Name:   s.Name,
 				})
 			default:
 				return nil, errorz.Errorf("%s: %T: %w", s.GetPlainName(), s, ddl.ErrNotSupported)
@@ -41,11 +43,13 @@ func Diff(before, after *DDL) (*DDL, error) {
 		switch beforeStmt := stmt.(type) {
 		case *CreateTableStmt:
 			result.Stmts = append(result.Stmts, &DropTableStmt{
-				Name: beforeStmt.Name,
+				Schema: beforeStmt.Schema,
+				Name:   beforeStmt.Name,
 			})
 		case *CreateIndexStmt:
 			result.Stmts = append(result.Stmts, &DropIndexStmt{
-				Name: beforeStmt.Name,
+				Schema: beforeStmt.Schema,
+				Name:   beforeStmt.Name,
 			})
 		default:
 			return nil, errorz.Errorf("%s: %T: %w", beforeStmt.GetPlainName(), beforeStmt, ddl.ErrNotSupported)
