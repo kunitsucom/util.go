@@ -83,8 +83,8 @@ func TestCommand(t *testing.T) {
 								if err != nil {
 									return errorz.Errorf("FromContext: %w", err)
 								}
-								if cmd.Name != "sub-sub-cmd" {
-									return errorz.Errorf("unexpected command name: %s", cmd.Name)
+								if cmd.GetName() != "sub-sub-cmd" {
+									return errorz.Errorf("unexpected command name: %s", cmd.GetName())
 								}
 								return nil
 							},
@@ -551,6 +551,83 @@ options:
 		}
 		if _, err := c.Parse([]string{"my-cli", "sub-cmd", "--host=host", "--bar-string=bar", "--bar-bool=true", "--bar-int=100", "--bar-float64=INVALID"}); !errorz.Contains(err, "invalid syntax") {
 			t.Errorf("❌: expect != actual: err != \"invalid syntax\": %+v", err)
+		}
+	})
+}
+
+func TestCommand_GetName(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success,nil", func(t *testing.T) {
+		t.Parallel()
+		expected := ""
+		actual := (*Command)(nil).GetName()
+		if expected != actual {
+			t.Errorf("❌: expected != actual: %v != %v", expected, actual)
+		}
+	})
+}
+
+func TestCommand_IsCommand(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success,nil", func(t *testing.T) {
+		t.Parallel()
+		expected := false
+		actual := (*Command)(nil).IsCommand("")
+		if expected != actual {
+			t.Errorf("❌: expected != actual: %v != %v", expected, actual)
+		}
+	})
+
+	t.Run("success,alias", func(t *testing.T) {
+		t.Parallel()
+		alias := "short"
+		cmd := &Command{
+			Name:  "my-cli",
+			Short: "short",
+		}
+		expected := true
+		actual := cmd.IsCommand(alias)
+		if expected != actual {
+			t.Errorf("❌: expected != actual: %v != %v", expected, actual)
+		}
+	})
+}
+
+func TestCommand_getDescription(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success,nil", func(t *testing.T) {
+		t.Parallel()
+		expected := ""
+		actual := (*Command)(nil).getDescription()
+		if expected != actual {
+			t.Errorf("❌: expected != actual: %v != %v", expected, actual)
+		}
+	})
+
+	t.Run("success,Description", func(t *testing.T) {
+		t.Parallel()
+		cmd := &Command{
+			Description: "my awesome CLI tool",
+		}
+		expected := "my awesome CLI tool"
+		actual := cmd.getDescription()
+		if expected != actual {
+			t.Errorf("❌: expected != actual: %v != %v", expected, actual)
+		}
+	})
+
+	t.Run("success,default", func(t *testing.T) {
+		t.Parallel()
+		cmd := &Command{
+			Name: "my-cli",
+		}
+		expected := `command "my-cli" description`
+		actual := cmd.getDescription()
+		if expected != actual {
+			t.Errorf("❌: expected != actual: %v != %v", expected, actual)
 		}
 	})
 }

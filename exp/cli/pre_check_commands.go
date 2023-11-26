@@ -4,7 +4,7 @@ import errorz "github.com/kunitsucom/util.go/errors"
 
 func (cmd *Command) preCheckSubCommands() error {
 	if err := cmd.preCheckDuplicateSubCommands(); err != nil {
-		return errorz.Errorf("%s: %w", cmd.Name, err)
+		return errorz.Errorf("%s: %w", cmd.GetName(), err)
 	}
 
 	return nil
@@ -14,7 +14,7 @@ func (cmd *Command) preCheckDuplicateSubCommands() error {
 	names := make(map[string]bool)
 
 	for _, cmd := range cmd.SubCommands {
-		name := cmd.Name
+		name := cmd.GetName()
 
 		TraceLog.Printf("preCheckDuplicateSubCommands: %s", name)
 
