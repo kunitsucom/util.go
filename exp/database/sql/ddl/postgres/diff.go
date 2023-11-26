@@ -5,7 +5,6 @@ import (
 
 	errorz "github.com/kunitsucom/util.go/errors"
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
-	"github.com/kunitsucom/util.go/must"
 )
 
 //nolint:funlen,cyclop,gocognit
@@ -21,13 +20,11 @@ func Diff(before, after *DDL) (*DDL, error) {
 			switch s := stmt.(type) {
 			case *CreateTableStmt:
 				result.Stmts = append(result.Stmts, &DropTableStmt{
-					Schema: s.Schema,
-					Name:   s.Name,
+					Name: s.Name,
 				})
 			case *CreateIndexStmt:
 				result.Stmts = append(result.Stmts, &DropIndexStmt{
-					Schema: s.Schema,
-					Name:   s.Name,
+					Name: s.Name,
 				})
 			default:
 				return nil, errorz.Errorf("%s: %T: %w", s.GetPlainName(), s, ddl.ErrNotSupported)
@@ -43,13 +40,11 @@ func Diff(before, after *DDL) (*DDL, error) {
 		switch beforeStmt := stmt.(type) {
 		case *CreateTableStmt:
 			result.Stmts = append(result.Stmts, &DropTableStmt{
-				Schema: beforeStmt.Schema,
-				Name:   beforeStmt.Name,
+				Name: beforeStmt.Name,
 			})
 		case *CreateIndexStmt:
 			result.Stmts = append(result.Stmts, &DropIndexStmt{
-				Schema: beforeStmt.Schema,
-				Name:   beforeStmt.Name,
+				Name: beforeStmt.Name,
 			})
 		default:
 			return nil, errorz.Errorf("%s: %T: %w", beforeStmt.GetPlainName(), beforeStmt, ddl.ErrNotSupported)
@@ -75,9 +70,12 @@ func Diff(before, after *DDL) (*DDL, error) {
 		case *CreateTableStmt:
 			if afterStmt := findStmtByTypeAndName(beforeStmt, after.Stmts); afterStmt != nil {
 				afterStmt := afterStmt.(*CreateTableStmt) //nolint:forcetypeassert
-				// MEMO: in this case, DiffCreateTable does not return error
-				alterStmt := must.One(DiffCreateTable(beforeStmt, afterStmt))
-				result.Stmts = append(result.Stmts, alterStmt.Stmts...)
+				alterStmt, err := DiffCreateTable(beforeStmt, afterStmt)
+				if err == nil {
+					result.Stmts = append(result.Stmts, alterStmt.Stmts...)
+				}
+				errorz.PanicOrIgnore(err, ddl.ErrNoDifference) // MEMO: If before and after table_name is match, DiffCreateTable does not return error except ddl.ErrNoDifference.
+				continue
 			}
 		case *CreateIndexStmt:
 			if afterStmt := findStmtByTypeAndName(beforeStmt, after.Stmts); afterStmt != nil {
@@ -85,8 +83,7 @@ func Diff(before, after *DDL) (*DDL, error) {
 				if beforeStmt.PlainString() != afterStmt.PlainString() {
 					result.Stmts = append(result.Stmts,
 						&DropIndexStmt{
-							Schema: beforeStmt.Schema,
-							Name:   beforeStmt.Name,
+							Name: beforeStmt.Name,
 						},
 						afterStmt,
 					)

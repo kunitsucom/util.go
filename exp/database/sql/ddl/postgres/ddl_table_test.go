@@ -96,6 +96,31 @@ func TestCheckConstraint(t *testing.T) {
 	})
 }
 
+func TestObjectName_PlainString(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success,ObjectName", func(t *testing.T) {
+		t.Parallel()
+
+		objectName := &ObjectName{Schema: &Ident{Name: "public", QuotationMark: `"`, Raw: `"public"`}, Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}}
+		expected := "public.users"
+		actual := objectName.PlainString()
+		require.Equal(t, expected, actual)
+
+		t.Logf("✅: %s: objectName: %#v", t.Name(), objectName)
+	})
+	t.Run("success,ObjectName,empty", func(t *testing.T) {
+		t.Parallel()
+
+		objectName := (*ObjectName)(nil)
+		expected := ""
+		actual := objectName.PlainString()
+		require.Equal(t, expected, actual)
+
+		t.Logf("✅: %s: objectName: %#v", t.Name(), objectName)
+	})
+}
+
 func TestDefault_String(t *testing.T) {
 	t.Parallel()
 

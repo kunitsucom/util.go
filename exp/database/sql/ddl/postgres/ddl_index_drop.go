@@ -8,8 +8,7 @@ var _ Stmt = (*DropIndexStmt)(nil)
 
 type DropIndexStmt struct {
 	IfExists bool
-	Schema   *Ident
-	Name     *Ident
+	Name     *ObjectName
 }
 
 func (s *DropIndexStmt) GetPlainName() string {
@@ -20,9 +19,6 @@ func (s *DropIndexStmt) String() string {
 	str := "DROP INDEX "
 	if s.IfExists {
 		str += "IF EXISTS " //nolint:goconst
-	}
-	if s.Schema != nil {
-		str += s.Schema.String() + "."
 	}
 	str += s.Name.String() + ";\n"
 	return str

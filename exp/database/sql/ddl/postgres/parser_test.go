@@ -36,8 +36,7 @@ func TestParser_Parse(t *testing.T) {
 				Stmts: []Stmt{
 					&CreateTableStmt{
 						Indent: Indent,
-						Schema: &Ident{Name: "public", Raw: "public"},
-						Name:   &Ident{Name: "groups", Raw: "groups"},
+						Name:   &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "groups", Raw: "groups"}},
 						Columns: []*Column{
 							{
 								Name: &Ident{
@@ -76,8 +75,7 @@ func TestParser_Parse(t *testing.T) {
 					},
 					&CreateTableStmt{
 						Indent: Indent,
-						Schema: &Ident{Name: "public", Raw: "public"},
-						Name:   &Ident{Name: "users", Raw: "users"},
+						Name:   &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users", Raw: "users"}},
 						Columns: []*Column{
 							{
 								Name: &Ident{
@@ -235,10 +233,12 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 					&CreateTableStmt{
 						Indent:      Indent,
 						IfNotExists: true,
-						Name: &Ident{
-							Name:          "complex_defaults",
-							QuotationMark: "",
-							Raw:           "complex_defaults",
+						Name: &ObjectName{
+							Name: &Ident{
+								Name:          "complex_defaults",
+								QuotationMark: "",
+								Raw:           "complex_defaults",
+							},
 						},
 						Columns: []*Column{
 							{
@@ -575,7 +575,7 @@ func TestParser_parseColumn(t *testing.T) {
 	t.Run("failure,invalid", func(t *testing.T) {
 		t.Parallel()
 
-		_, _, err := NewParser(NewLexer(`NOT`)).parseColumn(&Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`})
+		_, _, err := NewParser(NewLexer(`NOT`)).parseColumn(&ObjectName{Name: &Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`}})
 		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
 	})
 }

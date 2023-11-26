@@ -12,7 +12,7 @@ func TestCreateIndexStmt_GetPlainName(t *testing.T) {
 	t.Run("success,", func(t *testing.T) {
 		t.Parallel()
 
-		stmt := &CreateIndexStmt{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}}
+		stmt := &CreateIndexStmt{Name: &ObjectName{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}}}
 		expected := "test"
 		actual := stmt.GetPlainName()
 
@@ -28,8 +28,8 @@ func TestCreateIndexStmt_String(t *testing.T) {
 
 		stmt := &CreateIndexStmt{
 			IfNotExists: true,
-			Name:        &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`},
-			TableName:   &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`},
+			Name:        &ObjectName{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}},
+			TableName:   &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
 			Columns: []*ColumnIdent{
 				{
 					Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`},
