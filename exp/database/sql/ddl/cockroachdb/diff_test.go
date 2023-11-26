@@ -67,14 +67,34 @@ func TestDiff(t *testing.T) {
 					Columns: []*Column{
 						{
 							Name: &Ident{Name: "column_name", Raw: "column_name"},
+							DataType: &DataType{
+								Name: "STRING",
+							},
+							NotNull: true,
+						},
+					},
+					Constraints: []Constraint{
+						&PrimaryKeyConstraint{
+							Columns: []*ColumnIdent{
+								{
+									Ident: &Ident{Name: "column_name", Raw: "column_name"},
+								},
+							},
 						},
 					},
 				},
 			},
 		}
-		result, err := Diff(before, after)
+		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		require.Equal(t, after, result)
+		if !assert.Equal(t, after, actual) {
+			assert.Equal(t, fmt.Sprintf("%#v", after), fmt.Sprintf("%#v", actual))
+		}
+		assert.Equal(t, `CREATE TABLE table_name (
+    column_name STRING NOT NULL,
+    PRIMARY KEY (column_name)
+);
+`, actual.String())
 	})
 
 	t.Run("success,before,nil,Table", func(t *testing.T) {
@@ -83,7 +103,8 @@ func TestDiff(t *testing.T) {
 		before := &DDL{
 			Stmts: []Stmt{
 				&CreateTableStmt{
-					Name: &Ident{Name: "table_name", Raw: "table_name"},
+					Schema: &Ident{Name: "public", Raw: "public"},
+					Name:   &Ident{Name: "table_name", Raw: "table_name"},
 					Columns: []*Column{
 						{
 							Name: &Ident{Name: "column_name", Raw: "column_name"},
@@ -93,15 +114,21 @@ func TestDiff(t *testing.T) {
 			},
 		}
 		after := (*DDL)(nil)
-		result, err := Diff(before, after)
+		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		require.Equal(t, result, &DDL{
+		expected := &DDL{
 			Stmts: []Stmt{
 				&DropTableStmt{
-					Name: &Ident{Name: "table_name", Raw: "table_name"},
+					Schema: &Ident{Name: "public", Raw: "public"},
+					Name:   &Ident{Name: "table_name", Raw: "table_name"},
 				},
 			},
-		})
+		}
+		if !assert.Equal(t, expected, actual) {
+			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
+		}
+		assert.Equal(t, `DROP TABLE public.table_name;
+`, actual.String())
 	})
 
 	t.Run("success,before,Table", func(t *testing.T) {
@@ -120,15 +147,20 @@ func TestDiff(t *testing.T) {
 			},
 		}
 		after := &DDL{}
-		result, err := Diff(before, after)
+		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		require.Equal(t, result, &DDL{
+		expected := &DDL{
 			Stmts: []Stmt{
 				&DropTableStmt{
 					Name: &Ident{Name: "table_name", Raw: "table_name"},
 				},
 			},
-		})
+		}
+		if !assert.Equal(t, expected, actual) {
+			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
+		}
+		assert.Equal(t, `DROP TABLE table_name;
+`, actual.String())
 	})
 
 	t.Run("success,before,nil,Index", func(t *testing.T) {
@@ -147,15 +179,20 @@ func TestDiff(t *testing.T) {
 			},
 		}
 		after := (*DDL)(nil)
-		result, err := Diff(before, after)
+		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		require.Equal(t, result, &DDL{
+		expected := &DDL{
 			Stmts: []Stmt{
 				&DropIndexStmt{
 					Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"},
 				},
 			},
-		})
+		}
+		if !assert.Equal(t, expected, actual) {
+			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
+		}
+		assert.Equal(t, `DROP INDEX table_name_idx_column_name;
+`, actual.String())
 	})
 
 	t.Run("success,before,Index", func(t *testing.T) {
@@ -174,15 +211,20 @@ func TestDiff(t *testing.T) {
 			},
 		}
 		after := &DDL{}
-		result, err := Diff(before, after)
+		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		require.Equal(t, result, &DDL{
+		expected := &DDL{
 			Stmts: []Stmt{
 				&DropIndexStmt{
 					Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"},
 				},
 			},
-		})
+		}
+		if !assert.Equal(t, expected, actual) {
+			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
+		}
+		assert.Equal(t, `DROP INDEX table_name_idx_column_name;
+`, actual.String())
 	})
 
 	t.Run("success,before,Table", func(t *testing.T) {
@@ -192,18 +234,39 @@ func TestDiff(t *testing.T) {
 		after := &DDL{
 			Stmts: []Stmt{
 				&CreateTableStmt{
-					Name: &Ident{Name: "table_name", Raw: "table_name"},
+					Schema: &Ident{Name: "public", Raw: "public"},
+					Name:   &Ident{Name: "table_name", Raw: "table_name"},
 					Columns: []*Column{
 						{
 							Name: &Ident{Name: "column_name", Raw: "column_name"},
+							DataType: &DataType{
+								Name: "STRING",
+							},
+							NotNull: true,
+						},
+					},
+					Constraints: []Constraint{
+						&PrimaryKeyConstraint{
+							Columns: []*ColumnIdent{
+								{
+									Ident: &Ident{Name: "column_name", Raw: "column_name"},
+								},
+							},
 						},
 					},
 				},
 			},
 		}
-		result, err := Diff(before, after)
+		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		require.Equal(t, result, after)
+		if !assert.Equal(t, after, actual) {
+			assert.Equal(t, fmt.Sprintf("%#v", after), fmt.Sprintf("%#v", actual))
+		}
+		assert.Equal(t, `CREATE TABLE public.table_name (
+    column_name STRING NOT NULL,
+    PRIMARY KEY (column_name)
+);
+`, actual.String())
 	})
 
 	t.Run("success,before,Index", func(t *testing.T) {
@@ -213,7 +276,8 @@ func TestDiff(t *testing.T) {
 		after := &DDL{
 			Stmts: []Stmt{
 				&CreateIndexStmt{
-					Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"},
+					Name:      &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"},
+					TableName: &Ident{Name: "table_name", Raw: "table_name"},
 					Columns: []*ColumnIdent{
 						{
 							Ident: &Ident{Name: "column_name", Raw: "column_name"},
@@ -222,9 +286,13 @@ func TestDiff(t *testing.T) {
 				},
 			},
 		}
-		result, err := Diff(before, after)
+		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		require.Equal(t, result, after)
+		if !assert.Equal(t, after, actual) {
+			assert.Equal(t, fmt.Sprintf("%#v", after), fmt.Sprintf("%#v", actual))
+		}
+		assert.Equal(t, `CREATE INDEX table_name_idx_column_name ON table_name (column_name);
+`, actual.String())
 	})
 
 	t.Run("success,before,after,Table", func(t *testing.T) {
@@ -291,6 +359,8 @@ func TestDiff(t *testing.T) {
 		if !assert.Equal(t, expected, actual) {
 			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
 		}
+		assert.Equal(t, `ALTER TABLE public.users ADD COLUMN updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ);
+`, actual.String())
 	})
 
 	t.Run("success,before,after,Table", func(t *testing.T) {
@@ -345,15 +415,18 @@ func TestDiff(t *testing.T) {
 		if !assert.Equal(t, expected, actual) {
 			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
 		}
+		assert.Equal(t, `DROP INDEX public.users_idx_by_username;
+CREATE INDEX public.users_idx_by_username ON users (username ASC);
+`, actual.String())
 	})
 
 	t.Run("success,before,after,Index", func(t *testing.T) {
 		t.Parallel()
 
-		before, err := NewParser(NewLexer(`CREATE INDEX public.users_idx_by_username ON public.users (username DESC);`)).Parse()
+		before, err := NewParser(NewLexer(`CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username DESC);`)).Parse()
 		require.NoError(t, err)
 
-		after, err := NewParser(NewLexer(`CREATE INDEX public.users_idx_by_username ON public.users (username ASC);`)).Parse()
+		after, err := NewParser(NewLexer(`CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username ASC, age ASC);`)).Parse()
 		require.NoError(t, err)
 
 		expected := &DDL{
@@ -363,13 +436,18 @@ func TestDiff(t *testing.T) {
 					Name:   &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"},
 				},
 				&CreateIndexStmt{
-					Unique:    false,
-					Schema:    &Ident{Name: "public", Raw: "public"},
-					Name:      &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"},
-					TableName: &Ident{Name: "users", Raw: "users"},
+					Unique:      true,
+					IfNotExists: true,
+					Schema:      &Ident{Name: "public", Raw: "public"},
+					Name:        &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"},
+					TableName:   &Ident{Name: "users", Raw: "users"},
 					Columns: []*ColumnIdent{
 						{
 							Ident: &Ident{Name: "username", Raw: "username"},
+							Order: &Order{Desc: false},
+						},
+						{
+							Ident: &Ident{Name: "age", Raw: "age"},
 							Order: &Order{Desc: false},
 						},
 					},
@@ -381,5 +459,8 @@ func TestDiff(t *testing.T) {
 		if !assert.Equal(t, expected, actual) {
 			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
 		}
+		assert.Equal(t, `DROP INDEX public.users_idx_by_username;
+CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON users (username ASC, age ASC);
+`, actual.String())
 	})
 }

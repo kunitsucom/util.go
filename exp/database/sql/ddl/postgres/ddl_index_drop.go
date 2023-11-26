@@ -28,17 +28,5 @@ func (s *DropIndexStmt) String() string {
 	return str
 }
 
-func (s *DropIndexStmt) PlainString() string {
-	str := "DROP INDEX "
-	if s.IfExists {
-		str += "IF EXISTS "
-	}
-	if s.Schema != nil {
-		str += s.Schema.PlainString() + "."
-	}
-	str += s.Name.PlainString() + ";\n"
-	return str
-}
-
 func (*DropIndexStmt) isStmt()            {}
 func (s *DropIndexStmt) GoString() string { return internal.GoString(*s) }

@@ -27,3 +27,25 @@ func TestIdent_String(t *testing.T) {
 
 	t.Logf("✅: %s: ident: %#v", t.Name(), ident)
 }
+
+func TestIdent_PlainString(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+		ident := &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}
+		expected := ident.Name
+		actual := ident.PlainString()
+
+		require.Equal(t, expected, actual)
+	})
+
+	t.Run("success,empty", func(t *testing.T) {
+		t.Parallel()
+		ident := (*Ident)(nil)
+		expected := ""
+		actual := ident.PlainString()
+
+		require.Equal(t, expected, actual)
+	})
+}

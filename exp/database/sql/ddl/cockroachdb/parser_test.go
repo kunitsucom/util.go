@@ -310,7 +310,7 @@ CREATE TABLE "users" (
 		},
 		{
 			name: "success,CREATE_TABLE_TYPE_ANNOTATION",
-			input: `CREATE TABLE public.users (
+			input: `CREATE TABLE IF NOT EXISTS public.users (
     user_id UUID NOT NULL,
     username VARCHAR(256) NOT NULL,
     is_verified BOOL NOT NULL DEFAULT false,
@@ -323,9 +323,10 @@ CREATE TABLE "users" (
 			want: &DDL{
 				Stmts: []Stmt{
 					&CreateTableStmt{
-						Indent: Indent,
-						Schema: &Ident{Name: "public", Raw: "public"},
-						Name:   &Ident{Name: "users", Raw: "users"},
+						Indent:      Indent,
+						IfNotExists: true,
+						Schema:      &Ident{Name: "public", Raw: "public"},
+						Name:        &Ident{Name: "users", Raw: "users"},
 						Columns: []*Column{
 							{Name: &Ident{Name: "user_id", Raw: "user_id"}, DataType: &DataType{Name: "UUID", Size: ""}, NotNull: true},
 							{Name: &Ident{Name: "username", Raw: "username"}, DataType: &DataType{Name: "VARCHAR", Size: "256"}, NotNull: true},
@@ -347,7 +348,7 @@ CREATE TABLE "users" (
 				},
 			},
 			wantErr: nil,
-			wantStr: `CREATE TABLE public.users (
+			wantStr: `CREATE TABLE IF NOT EXISTS public.users (
     user_id UUID NOT NULL,
     username VARCHAR(256) NOT NULL,
     is_verified BOOL NOT NULL DEFAULT false,
@@ -395,32 +396,42 @@ CREATE TABLE "users" (
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 		{
-			name:    "failure,CREATE",
+			name:    "failure,CREATE_INVALID",
 			input:   `CREATE INVALID;`,
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 		{
-			name:    "failure,CREATE_TABLE",
+			name:    "failure,CREATE_TABLE_INVALID",
 			input:   `CREATE TABLE;`,
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 		{
-			name:    "failure,CREATE_TABLE_table_name",
+			name:    "failure,CREATE_TABLE_IF_INVALID",
+			input:   `CREATE TABLE IF;`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_IF_NOT_INVALID",
+			input:   `CREATE TABLE IF NOT;`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_INVALID",
 			input:   `CREATE TABLE "users";`,
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 		{
-			name:    "failure,CREATE_TABLE_table_name_column_name",
+			name:    "failure,CREATE_TABLE_table_name_column_name_INVALID",
 			input:   `CREATE TABLE "users" ("id";`,
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 		{
-			name:    "failure,CREATE_TABLE_table_name_column_name_data_type",
+			name:    "failure,CREATE_TABLE_table_name_column_name_data_type_INVALID",
 			input:   `CREATE TABLE "users" ("id" UUID;`,
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 		{
-			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT",
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_INVALID",
 			input:   `CREATE TABLE "users" ("id" UUID, CONSTRAINT "invalid" NOT;`,
 			wantErr: ddl.ErrUnexpectedToken,
 		},
@@ -562,6 +573,46 @@ CREATE TABLE "users" (
 		{
 			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_IDENTS_INVALID",
 			input:   `CREATE TABLE "users" ("id" UUID, name TEXT, UNIQUE ("id", name)`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_INDEX_INVALID",
+			input:   `CREATE INDEX NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_INDEX_IF_INVALID",
+			input:   `CREATE INDEX IF;`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_INDEX_IF_NOT_INVALID",
+			input:   `CREATE INDEX IF NOT;`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_INDEX_IF_NOT_EXISTS_INVALID",
+			input:   `CREATE INDEX IF NOT EXISTS;`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_INDEX_index_name_INVALID",
+			input:   `CREATE INDEX users_idx_username NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_INDEX_index_name_ON_INVALID",
+			input:   `CREATE INDEX users_idx_username ON NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_INDEX_index_name_ON_table_name_INVALID",
+			input:   `CREATE INDEX users_idx_username ON users NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_INDEX_index_name_ON_table_name_INVALID",
+			input:   `CREATE INDEX users_idx_username ON users (NOT)`,
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 	}
