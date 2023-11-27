@@ -113,7 +113,7 @@ func TestCheckConstraint(t *testing.T) {
 	})
 }
 
-func TestObjectName_PlainString(t *testing.T) {
+func TestObjectName_StringForDiff(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success,ObjectName", func(t *testing.T) {
@@ -121,7 +121,7 @@ func TestObjectName_PlainString(t *testing.T) {
 
 		objectName := &ObjectName{Schema: &Ident{Name: "public", QuotationMark: `"`, Raw: `"public"`}, Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}}
 		expected := "public.users"
-		actual := objectName.PlainString()
+		actual := objectName.StringForDiff()
 		require.Equal(t, expected, actual)
 
 		t.Logf("✅: %s: objectName: %#v", t.Name(), objectName)
@@ -131,7 +131,7 @@ func TestObjectName_PlainString(t *testing.T) {
 
 		objectName := (*ObjectName)(nil)
 		expected := ""
-		actual := objectName.PlainString()
+		actual := objectName.StringForDiff()
 		require.Equal(t, expected, actual)
 
 		t.Logf("✅: %s: objectName: %#v", t.Name(), objectName)
@@ -162,7 +162,7 @@ func TestDefault_String(t *testing.T) {
 
 		d := &Default{}
 		expected := ""
-		actual := d.PlainString()
+		actual := d.StringForDiff()
 		require.Equal(t, expected, actual)
 	})
 	t.Run("success,DEFAULT_VALUE", func(t *testing.T) {

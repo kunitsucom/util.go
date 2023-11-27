@@ -80,7 +80,7 @@ func Diff(before, after *DDL) (*DDL, error) {
 		case *CreateIndexStmt:
 			if afterStmt := findStmtByTypeAndName(beforeStmt, after.Stmts); afterStmt != nil {
 				afterStmt := afterStmt.(*CreateIndexStmt) //nolint:forcetypeassert
-				if beforeStmt.PlainString() != afterStmt.PlainString() {
+				if beforeStmt.StringForDiff() != afterStmt.StringForDiff() {
 					result.Stmts = append(result.Stmts,
 						&DropIndexStmt{
 							Name: beforeStmt.Name,

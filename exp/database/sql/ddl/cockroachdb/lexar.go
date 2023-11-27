@@ -25,7 +25,7 @@ func (l *Literal) String() string {
 	return l.Str
 }
 
-func (l *Literal) PlainString() string {
+func (l *Literal) StringForDiff() string {
 	return l.Str
 }
 
@@ -70,28 +70,31 @@ const (
 	TOKEN_TO     TokenType = "TO"
 
 	// DATA TYPE.
-	TOKEN_BOOL        TokenType = "BOOL"
-	TOKEN_SMALLINT    TokenType = "SMALLINT"
-	TOKEN_INTEGER     TokenType = "INTEGER"
-	TOKEN_BIGINT      TokenType = "BIGINT"
-	TOKEN_DECIMAL     TokenType = "DECIMAL"
-	TOKEN_NUMERIC     TokenType = "NUMERIC"
-	TOKEN_REAL        TokenType = "REAL"
-	TOKEN_DOUBLE      TokenType = "DOUBLE"
-	TOKEN_PRECISION   TokenType = "PRECISION"
-	TOKEN_SMALLSERIAL TokenType = "SMALLSERIAL"
-	TOKEN_SERIAL      TokenType = "SERIAL"
-	TOKEN_BIGSERIAL   TokenType = "BIGSERIAL"
-	TOKEN_UUID        TokenType = "UUID"
-	TOKEN_JSONB       TokenType = "JSONB"
-	TOKEN_CHARACTER   TokenType = "CHARACTER"
-	TOKEN_VARCHAR     TokenType = "VARCHAR"
-	TOKEN_STRING      TokenType = "STRING"
-	TOKEN_TIMESTAMP   TokenType = "TIMESTAMP"
-	TOKEN_TIMESTAMPTZ TokenType = "TIMESTAMPTZ"
-	TOKEN_WITH        TokenType = "WITH"
-	TOKEN_TIME        TokenType = "TIME"
-	TOKEN_ZONE        TokenType = "ZONE"
+	TOKEN_BOOL              TokenType = "BOOL"
+	TOKEN_SMALLINT          TokenType = "SMALLINT"
+	TOKEN_INTEGER           TokenType = "INTEGER"
+	TOKEN_BIGINT            TokenType = "BIGINT"
+	TOKEN_DECIMAL           TokenType = "DECIMAL"
+	TOKEN_NUMERIC           TokenType = "NUMERIC"
+	TOKEN_REAL              TokenType = "REAL"
+	TOKEN_DOUBLE            TokenType = "DOUBLE"
+	TOKEN_PRECISION         TokenType = "PRECISION"
+	TOKEN_DOUBLE_PRECISION  TokenType = "DOUBLE PRECISION"
+	TOKEN_SMALLSERIAL       TokenType = "SMALLSERIAL"
+	TOKEN_SERIAL            TokenType = "SERIAL"
+	TOKEN_BIGSERIAL         TokenType = "BIGSERIAL"
+	TOKEN_UUID              TokenType = "UUID"
+	TOKEN_JSONB             TokenType = "JSONB"
+	TOKEN_CHARACTER_VARYING TokenType = "CHARACTER VARYING"
+	TOKEN_CHARACTER         TokenType = "CHARACTER"
+	TOKEN_VARYING           TokenType = "VARYING"
+	TOKEN_VARCHAR           TokenType = "VARCHAR"
+	TOKEN_STRING            TokenType = "STRING"
+	TOKEN_TIMESTAMPTZ       TokenType = "TIMESTAMPTZ"
+	TOKEN_TIMESTAMP         TokenType = "TIMESTAMP"
+	TOKEN_WITH              TokenType = "WITH"
+	TOKEN_TIME              TokenType = "TIME"
+	TOKEN_ZONE              TokenType = "ZONE"
 
 	// COLUMN.
 	TOKEN_DEFAULT TokenType = "DEFAULT"

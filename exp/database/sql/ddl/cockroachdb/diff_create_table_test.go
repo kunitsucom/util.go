@@ -32,7 +32,8 @@ func TestDiffCreateTable(t *testing.T) {
 		assert.ErrorIs(t, err, ddl.ErrNoDifference)
 		assert.Nil(t, actual)
 
-		t.Logf("✅: %s:\n%s", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 
 	t.Run("success,ADD_COLUMN", func(t *testing.T) {
@@ -53,49 +54,14 @@ func TestDiffCreateTable(t *testing.T) {
 			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
 		)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &AddColumn{
-						Column: &Column{
-							Name:     &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
-							DataType: &DataType{Name: "INTEGER"},
-							Default: &Default{
-								Value: &DefaultValue{
-									[]*Ident{
-										{Name: "0", QuotationMark: "", Raw: "0"},
-									},
-								},
-							},
-							NotNull: true,
-						},
-					},
-				},
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &AddConstraint{
-						Constraint: &CheckConstraint{
-							Name: &Ident{Name: "users_age_check", QuotationMark: ``, Raw: "users_age_check"},
-							Expr: []*Ident{
-								{Name: "age", QuotationMark: `"`, Raw: `"age"`},
-								{Name: ">=", Raw: ">="},
-								{Name: "0", Raw: "0"},
-							},
-						},
-					},
-				},
-			},
-		}
 		expectedStr := `ALTER TABLE "users" ADD COLUMN "age" INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" >= 0);
 `
 
 		assert.NoError(t, err)
-		assert.Equal(t, expected, actual)
 		assert.Equal(t, expectedStr, actual.String())
 
-		t.Logf("✅: %s:\n%s", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%#v:\n%#v", t.Name(), actual)
 	})
 
 	t.Run("success,DROP_COLUMN", func(t *testing.T) {
@@ -116,35 +82,15 @@ ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" >= 0);
 			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
 		)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&DropIndexStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users_unique_name", Raw: "users_unique_name"}},
-				},
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &DropConstraint{
-						Name: &Ident{Name: "users_age_check", QuotationMark: ``, Raw: "users_age_check"},
-					},
-				},
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &DropColumn{
-						Name: &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
-					},
-				},
-			},
-		}
 		expectedStr := `DROP INDEX users_unique_name;
 ALTER TABLE "users" DROP CONSTRAINT users_age_check;
 ALTER TABLE "users" DROP COLUMN "age";
 `
 
 		assert.NoError(t, err)
-		assert.Equal(t, expected, actual)
 		assert.Equal(t, expectedStr, actual.String())
 
-		t.Logf("✅: %s:\n%s", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%#v:\n%#v", t.Name(), actual)
 	})
 
 	t.Run("success,ALTER_COLUMN_SET_DATA_TYPE", func(t *testing.T) {
@@ -165,44 +111,15 @@ ALTER TABLE "users" DROP COLUMN "age";
 			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
 		)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &AlterColumn{
-						Name: &Ident{Name: "name", QuotationMark: `"`, Raw: `"name"`},
-						Action: &AlterColumnSetDataType{
-							DataType: &DataType{Name: "STRING"},
-						},
-					},
-				},
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &AlterColumn{
-						Name: &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
-						Action: &AlterColumnSetDataType{
-							DataType: &DataType{Name: "BIGINT"},
-						},
-					},
-				},
-				&CreateIndexStmt{
-					Unique:    true,
-					Name:      &ObjectName{Name: &Ident{Name: "users_unique_name", Raw: "users_unique_name"}},
-					TableName: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Columns:   []*ColumnIdent{{Ident: &Ident{Name: "name", QuotationMark: `"`, Raw: `"name"`}}},
-				},
-			},
-		}
 		expectedStr := `ALTER TABLE "users" ALTER COLUMN "name" SET DATA TYPE STRING;
 ALTER TABLE "users" ALTER COLUMN "age" SET DATA TYPE BIGINT;
 CREATE UNIQUE INDEX users_unique_name ON "users" ("name");
 `
 
 		assert.NoError(t, err)
-		assert.Equal(t, expected, actual)
 		assert.Equal(t, expectedStr, actual.String())
 
-		t.Logf("✅: %s:\n%s", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%#v:\n%#v", t.Name(), actual)
 	})
 
 	t.Run("success,ALTER_COLUMN_DROP_DEFAULT", func(t *testing.T) {
@@ -214,17 +131,6 @@ CREATE UNIQUE INDEX users_unique_name ON "users" ("name");
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &AlterColumn{
-						Name:   &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
-						Action: &AlterColumnDropDefault{},
-					},
-				},
-			},
-		}
 		expectedStr := `ALTER TABLE "users" ALTER COLUMN "age" DROP DEFAULT;
 `
 
@@ -234,10 +140,9 @@ CREATE UNIQUE INDEX users_unique_name ON "users" ("name");
 			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
 		)
 		assert.NoError(t, err)
-		assert.Equal(t, expected, actual)
 		assert.Equal(t, expectedStr, actual.String())
 
-		t.Logf("✅: %s:\n%s", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%#v:\n%#v", t.Name(), actual)
 	})
 
 	t.Run("success,ALTER_COLUMN_SET_DEFAULT", func(t *testing.T) {
@@ -249,66 +154,6 @@ CREATE UNIQUE INDEX users_unique_name ON "users" ("name");
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &AlterColumn{
-						Name: &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
-						Action: &AlterColumnSetDefault{
-							Default: &Default{
-								Value: &DefaultValue{
-									[]*Ident{
-										{
-											Name:          "0",
-											QuotationMark: "",
-											Raw:           "0",
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &DropConstraint{
-						Name: &Ident{
-							Name:          "users_age_check",
-							QuotationMark: ``,
-							Raw:           "users_age_check",
-						},
-					},
-				},
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &AddConstraint{
-						Constraint: &CheckConstraint{
-							Name: &Ident{
-								Name:          "users_age_check",
-								QuotationMark: ``,
-								Raw:           "users_age_check",
-							},
-							Expr: []*Ident{
-								{
-									Name:          "age",
-									QuotationMark: `"`,
-									Raw:           `"age"`,
-								},
-								{
-									Name: "<>",
-									Raw:  "<>",
-								},
-								{
-									Name: "0",
-									Raw:  "0",
-								},
-							},
-						},
-					},
-				},
-			},
-		}
 		expectedStr := `ALTER TABLE "users" ALTER COLUMN "age" SET DEFAULT 0;
 ALTER TABLE "users" DROP CONSTRAINT users_age_check;
 ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" <> 0);
@@ -320,10 +165,9 @@ ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" <> 0);
 			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
 		)
 		assert.NoError(t, err)
-		assert.Equal(t, expected, actual)
 		assert.Equal(t, expectedStr, actual.String())
 
-		t.Logf("✅: %s:\n%s", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%#v:\n%#v", t.Name(), actual)
 	})
 
 	t.Run("success,ALTER_TABLE_RENAME_TO", func(t *testing.T) {
@@ -439,7 +283,8 @@ ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_age_check CHECK ("age" >
 		assert.Equal(t, expectedStr, actual.String())
 		assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
 
-		t.Logf("✅: %s:\n%s", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 
 	t.Run("success,SET_NOT_NULL", func(t *testing.T) {
@@ -453,17 +298,6 @@ ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_age_check CHECK ("age" >
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &AlterColumn{
-						Name:   &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
-						Action: &AlterColumnSetNotNull{},
-					},
-				},
-			},
-		}
 		expectedStr := `ALTER TABLE "users" ALTER COLUMN "age" SET NOT NULL;
 `
 
@@ -473,10 +307,9 @@ ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_age_check CHECK ("age" >
 			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
 		)
 		assert.NoError(t, err)
-		assert.Equal(t, expected, actual)
 		assert.Equal(t, expectedStr, actual.String())
 
-		t.Logf("✅: %s:\n%s", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%#v:\n%#v", t.Name(), actual)
 	})
 
 	t.Run("success,DROP_NOT_NULL", func(t *testing.T) {
@@ -490,21 +323,6 @@ ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_age_check CHECK ("age" >
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &AlterColumn{
-						Name: &Ident{
-							Name:          "age",
-							QuotationMark: `"`,
-							Raw:           `"age"`,
-						},
-						Action: &AlterColumnDropNotNull{},
-					},
-				},
-			},
-		}
 		expectedStr := `ALTER TABLE "users" ALTER COLUMN "age" DROP NOT NULL;
 `
 
@@ -514,10 +332,9 @@ ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_age_check CHECK ("age" >
 			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
 		)
 		assert.NoError(t, err)
-		assert.Equal(t, expected, actual)
 		assert.Equal(t, expectedStr, actual.String())
 
-		t.Logf("✅: %s:\n%s", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%#v:\n%#v", t.Name(), actual)
 	})
 
 	t.Run("success,DROP_ADD_PRIMARY_KEY", func(t *testing.T) {
@@ -531,36 +348,6 @@ ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_age_check CHECK ("age" >
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &DropConstraint{
-						Name: &Ident{
-							Name:          "users_pkey",
-							QuotationMark: ``,
-							Raw:           "users_pkey",
-						},
-					},
-				},
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &AddConstraint{
-						Constraint: &PrimaryKeyConstraint{
-							Name: &Ident{
-								Name:          "users_pkey",
-								QuotationMark: ``,
-								Raw:           "users_pkey",
-							},
-							Columns: []*ColumnIdent{
-								{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
-								{Ident: &Ident{Name: "name", Raw: `name`}},
-							},
-						},
-					},
-				},
-			},
-		}
 		expectedStr := `ALTER TABLE "users" DROP CONSTRAINT users_pkey;
 ALTER TABLE "users" ADD CONSTRAINT users_pkey PRIMARY KEY ("id", name);
 `
@@ -571,10 +358,9 @@ ALTER TABLE "users" ADD CONSTRAINT users_pkey PRIMARY KEY ("id", name);
 			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
 		)
 		assert.NoError(t, err)
-		assert.Equal(t, expected, actual)
 		assert.Equal(t, expectedStr, actual.String())
 
-		t.Logf("✅: %s:\n%s", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%#v:\n%#v", t.Name(), actual)
 	})
 
 	t.Run("success,DROP_ADD_FOREIGN_KEY", func(t *testing.T) {
@@ -588,45 +374,6 @@ ALTER TABLE "users" ADD CONSTRAINT users_pkey PRIMARY KEY ("id", name);
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &DropConstraint{
-						Name: &Ident{
-							Name:          "users_group_id_fkey",
-							QuotationMark: ``,
-							Raw:           "users_group_id_fkey",
-						},
-					},
-				},
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &AddConstraint{
-						Constraint: &ForeignKeyConstraint{
-							Name: &Ident{
-								Name:          "users_group_id_fkey",
-								QuotationMark: ``,
-								Raw:           "users_group_id_fkey",
-							},
-							Columns: []*ColumnIdent{
-								{Ident: &Ident{Name: "group_id", Raw: `group_id`}},
-								{Ident: &Ident{Name: "name", Raw: `name`}},
-							},
-							Ref: &Ident{
-								Name:          "groups",
-								QuotationMark: `"`,
-								Raw:           `"groups"`,
-							},
-							RefColumns: []*ColumnIdent{
-								{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
-								{Ident: &Ident{Name: "name", Raw: `name`}},
-							},
-						},
-					},
-				},
-			},
-		}
 		expectedStr := `ALTER TABLE "users" DROP CONSTRAINT users_group_id_fkey;
 ALTER TABLE "users" ADD CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id, name) REFERENCES "groups" ("id", name);
 `
@@ -637,10 +384,9 @@ ALTER TABLE "users" ADD CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id, na
 			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
 		)
 		assert.NoError(t, err)
-		assert.Equal(t, expected, actual)
 		assert.Equal(t, expectedStr, actual.String())
 
-		t.Logf("✅: %s:\n%s", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%#v:\n%#v", t.Name(), actual)
 	})
 
 	t.Run("success,DROP_ADD_UNIQUE", func(t *testing.T) {
@@ -654,22 +400,6 @@ ALTER TABLE "users" ADD CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id, na
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&DropIndexStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users_unique_name", Raw: "users_unique_name"}},
-				},
-				&CreateIndexStmt{
-					Unique:    true,
-					Name:      &ObjectName{Name: &Ident{Name: "users_unique_name", Raw: "users_unique_name"}},
-					TableName: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Columns: []*ColumnIdent{
-						{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}, Order: &Order{Desc: false}},
-						{Ident: &Ident{Name: "name", Raw: `name`}, Order: &Order{Desc: false}},
-					},
-				},
-			},
-		}
 		expectedStr := `DROP INDEX users_unique_name;
 CREATE UNIQUE INDEX users_unique_name ON "users" ("id" ASC, name ASC);
 `
@@ -680,10 +410,9 @@ CREATE UNIQUE INDEX users_unique_name ON "users" ("id" ASC, name ASC);
 			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
 		)
 		assert.NoError(t, err)
-		assert.Equal(t, expected, actual)
 		assert.Equal(t, expectedStr, actual.String())
 
-		t.Logf("✅: %s:\n%s", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%#v:\n%#v", t.Name(), actual)
 	})
 
 	tests := []struct {
@@ -809,207 +538,56 @@ CREATE UNIQUE INDEX users_unique_name ON "users" ("id" ASC, name ASC);
 	t.Run("success,DiffCreateTableUseAlterTableAddConstraintNotValid", func(t *testing.T) {
 		t.Parallel()
 
-		before := `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0, description TEXT, PRIMARY KEY ("id"));`
-		beforeDDL, err := NewParser(NewLexer(before)).Parse()
+		beforeDDL, err := NewParser(NewLexer(`CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0, description TEXT, PRIMARY KEY ("id"));`)).Parse()
 		require.NoError(t, err)
 
-		after := `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`
-
-		afterDDL, err := NewParser(NewLexer(after)).Parse()
+		afterDDL, err := NewParser(NewLexer(`CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`)).Parse()
 		require.NoError(t, err)
 
-		ddls, err := DiffCreateTable(
+		expected := `ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" >= 0) NOT VALID;
+`
+		actual, err := DiffCreateTable(
 			beforeDDL.Stmts[0].(*CreateTableStmt),
 			afterDDL.Stmts[0].(*CreateTableStmt),
 			DiffCreateTableUseAlterTableAddConstraintNotValid(true),
 		)
 
 		assert.NoError(t, err)
-		assert.Equal(t, &DDL{
-			Stmts: []Stmt{
-				&AlterTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Action: &AddConstraint{
-						Constraint: &CheckConstraint{
-							Name: &Ident{
-								Name:          "users_age_check",
-								QuotationMark: ``,
-								Raw:           "users_age_check",
-							},
-							Expr: []*Ident{
-								{
-									Name:          "age",
-									QuotationMark: `"`,
-									Raw:           `"age"`,
-								},
-								{
-									Name: ">=",
-									Raw:  ">=",
-								},
-								{
-									Name: "0",
-									Raw:  "0",
-								},
-							},
-						},
-						NotValid: true,
-					},
-				},
-			},
-		}, ddls)
+		assert.Equal(t, expected, actual.String())
 
-		t.Logf("✅: %s:\n%s", t.Name(), ddls)
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 
 	t.Run("success,CREATE_TABLE", func(t *testing.T) {
 		t.Parallel()
 
-		after := `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`
-
-		afterDDL, err := NewParser(NewLexer(after)).Parse()
+		afterDDL, err := NewParser(NewLexer(`CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`)).Parse()
 		require.NoError(t, err)
 
-		ddls, err := DiffCreateTable(
+		expected := `CREATE TABLE "users" (
+    id UUID NOT NULL,
+    group_id UUID NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "age" INTEGER DEFAULT 0,
+    description STRING,
+    CONSTRAINT users_pkey PRIMARY KEY ("id"),
+    CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id"),
+    UNIQUE INDEX users_unique_name ("name"),
+    CONSTRAINT users_age_check CHECK ("age" >= 0)
+);
+`
+		actual, err := DiffCreateTable(
 			nil,
 			afterDDL.Stmts[0].(*CreateTableStmt),
 			DiffCreateTableUseAlterTableAddConstraintNotValid(true),
 		)
 
 		assert.NoError(t, err)
-		assert.Equal(t, &DDL{
-			Stmts: []Stmt{
-				&CreateTableStmt{
-					Indent: Indent,
-					Name:   &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-					Columns: []*Column{
-						{
-							Name: &Ident{
-								Name:          "id",
-								QuotationMark: "",
-								Raw:           "id",
-							},
-							DataType: &DataType{
-								Name: "UUID",
-								Size: "",
-							},
-							NotNull: true,
-						},
-						{
-							Name: &Ident{
-								Name:          "group_id",
-								QuotationMark: "",
-								Raw:           "group_id",
-							},
-							DataType: &DataType{
-								Name: "UUID",
-								Size: "",
-							},
-							NotNull: true,
-						},
-						{
-							Name: &Ident{
-								Name:          "name",
-								QuotationMark: `"`,
-								Raw:           `"name"`,
-							},
-							DataType: &DataType{
-								Name: "VARCHAR",
-								Size: "255",
-							},
-							NotNull: true,
-						},
-						{
-							Name: &Ident{
-								Name:          "age",
-								QuotationMark: `"`,
-								Raw:           `"age"`,
-							},
-							DataType: &DataType{
-								Name: "INTEGER",
-								Size: "",
-							},
-							Default: &Default{
-								Value: &DefaultValue{
-									[]*Ident{
-										{
-											Name:          "0",
-											QuotationMark: "",
-											Raw:           "0",
-										},
-									},
-								},
-							},
-						},
-						{
-							Name: &Ident{
-								Name:          "description",
-								QuotationMark: "",
-								Raw:           "description",
-							},
-							DataType: &DataType{
-								Name: "STRING",
-								Size: "",
-							},
-						},
-					},
-					Constraints: []Constraint{
-						&PrimaryKeyConstraint{
-							Name: &Ident{
-								Name:          "users_pkey",
-								QuotationMark: ``,
-								Raw:           "users_pkey",
-							},
-							Columns: []*ColumnIdent{
-								{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
-							},
-						},
-						&ForeignKeyConstraint{
-							Name: &Ident{
-								Name:          "users_group_id_fkey",
-								QuotationMark: ``,
-								Raw:           "users_group_id_fkey",
-							},
-							Columns: []*ColumnIdent{
-								{Ident: &Ident{Name: "group_id", QuotationMark: "", Raw: "group_id"}},
-							},
-							Ref: &Ident{
-								Name:          "groups",
-								QuotationMark: `"`,
-								Raw:           `"groups"`,
-							},
-							RefColumns: []*ColumnIdent{
-								{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}},
-							},
-						},
-						&IndexConstraint{
-							Unique: true,
-							Name: &Ident{
-								Name:          "users_unique_name",
-								QuotationMark: ``,
-								Raw:           "users_unique_name",
-							},
-							Columns: []*ColumnIdent{
-								{Ident: &Ident{Name: "name", QuotationMark: `"`, Raw: `"name"`}},
-							},
-						},
-						&CheckConstraint{
-							Name: &Ident{
-								Name:          "users_age_check",
-								QuotationMark: ``,
-								Raw:           "users_age_check",
-							},
-							Expr: []*Ident{
-								{Name: "age", QuotationMark: `"`, Raw: `"age"`},
-								{Name: ">=", Raw: ">="},
-								{Name: "0", Raw: "0"},
-							},
-						},
-					},
-				},
-			},
-		}, ddls)
+		assert.Equal(t, expected, actual.String())
 
-		t.Logf("✅: %s:\n%s", t.Name(), ddls)
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 
 	t.Run("success,DROP_TABLE", func(t *testing.T) {

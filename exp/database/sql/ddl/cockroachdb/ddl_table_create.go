@@ -16,7 +16,7 @@ type CreateTableStmt struct {
 }
 
 func (s *CreateTableStmt) GetPlainName() string {
-	return s.Name.PlainString()
+	return s.Name.StringForDiff()
 }
 
 //nolint:cyclop

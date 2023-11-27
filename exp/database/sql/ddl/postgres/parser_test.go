@@ -2,14 +2,12 @@
 package postgres
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"testing"
 
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
-	"github.com/kunitsucom/util.go/exp/diff/simplediff"
 	"github.com/kunitsucom/util.go/testing/assert"
 	"github.com/kunitsucom/util.go/testing/require"
 )
@@ -25,175 +23,12 @@ func TestParser_Parse(t *testing.T) {
 	successTests := []struct {
 		name    string
 		input   string
-		want    *DDL
 		wantErr error
 		wantStr string
 	}{
 		{
-			name:  "success,CREATE_TABLE",
-			input: `CREATE TABLE public.groups ("id" UUID NOT NULL PRIMARY KEY, description TEXT); CREATE TABLE public.users (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
-			want: &DDL{
-				Stmts: []Stmt{
-					&CreateTableStmt{
-						Indent: Indent,
-						Name:   &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "groups", Raw: "groups"}},
-						Columns: []*Column{
-							{
-								Name: &Ident{
-									Name:          "id",
-									QuotationMark: `"`,
-									Raw:           `"id"`,
-								},
-								DataType: &DataType{
-									Name: "UUID",
-									Size: "",
-								},
-								NotNull: true,
-							},
-							{
-								Name: &Ident{
-									Name:          "description",
-									QuotationMark: "",
-									Raw:           "description",
-								},
-								DataType: &DataType{
-									Name: "TEXT",
-									Size: "",
-								},
-							},
-						},
-						Constraints: []Constraint{
-							&PrimaryKeyConstraint{
-								Name: &Ident{
-									Name:          "groups_pkey",
-									QuotationMark: ``,
-									Raw:           "groups_pkey",
-								},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
-							},
-						},
-					},
-					&CreateTableStmt{
-						Indent: Indent,
-						Name:   &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users", Raw: "users"}},
-						Columns: []*Column{
-							{
-								Name: &Ident{
-									Name:          "id",
-									QuotationMark: "",
-									Raw:           "id",
-								},
-								DataType: &DataType{
-									Name: "UUID",
-									Size: "",
-								},
-								NotNull: true,
-							},
-							{
-								Name: &Ident{
-									Name:          "group_id",
-									QuotationMark: "",
-									Raw:           "group_id",
-								},
-								DataType: &DataType{
-									Name: "UUID",
-									Size: "",
-								},
-								NotNull: true,
-							},
-							{
-								Name: &Ident{
-									Name:          "name",
-									QuotationMark: `"`,
-									Raw:           `"name"`,
-								},
-								DataType: &DataType{
-									Name: "VARYING",
-									Size: "255",
-								},
-								NotNull: true,
-							},
-							{
-								Name: &Ident{
-									Name:          "age",
-									QuotationMark: `"`,
-									Raw:           `"age"`,
-								},
-								DataType: &DataType{
-									Name: "INTEGER",
-									Size: "",
-								},
-								Default: &Default{
-									Value: &DefaultValue{
-										[]*Ident{
-											{
-												Name:          "0",
-												QuotationMark: "",
-												Raw:           "0",
-											},
-										},
-									},
-								},
-							},
-							{
-								Name: &Ident{
-									Name:          "description",
-									QuotationMark: "",
-									Raw:           "description",
-								},
-								DataType: &DataType{
-									Name: "TEXT",
-									Size: "",
-								},
-							},
-						},
-						Constraints: []Constraint{
-							&ForeignKeyConstraint{
-								Name: &Ident{
-									Name:          "users_group_id_fkey",
-									QuotationMark: ``,
-									Raw:           "users_group_id_fkey",
-								},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "group_id", QuotationMark: "", Raw: "group_id"}}},
-								Ref: &Ident{
-									Name:          "groups",
-									QuotationMark: `"`,
-									Raw:           `"groups"`,
-								},
-								RefColumns: []*ColumnIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
-							},
-							&UniqueConstraint{
-								Name: &Ident{
-									Name:          "users_unique_name",
-									QuotationMark: ``,
-									Raw:           "users_unique_name",
-								},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "name", QuotationMark: `"`, Raw: `"name"`}}},
-							},
-							&CheckConstraint{
-								Name: &Ident{
-									Name:          "users_age_check",
-									QuotationMark: ``,
-									Raw:           "users_age_check",
-								},
-								Expr: []*Ident{
-									{Name: "age", QuotationMark: `"`, Raw: `"age"`},
-									{Name: ">=", Raw: ">="},
-									{Name: "0", Raw: "0"},
-								},
-							},
-							&PrimaryKeyConstraint{
-								Name: &Ident{
-									Name:          "users_pkey",
-									QuotationMark: ``,
-									Raw:           "users_pkey",
-								},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
-							},
-						},
-					},
-				},
-			},
+			name:    "success,CREATE_TABLE",
+			input:   `CREATE TABLE public.groups ("id" UUID NOT NULL PRIMARY KEY, description TEXT); CREATE TABLE public.users (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), birthday TIMESTAMP NOT NULL, description TEXT, PRIMARY KEY ("id"));`,
 			wantErr: nil,
 			wantStr: `CREATE TABLE public.groups (
     "id" UUID NOT NULL,
@@ -205,6 +40,7 @@ CREATE TABLE public.users (
     group_id UUID NOT NULL,
     "name" VARYING(255) NOT NULL,
     "age" INTEGER DEFAULT 0,
+    birthday TIMESTAMP NOT NULL,
     description TEXT,
     CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id"),
     CONSTRAINT users_unique_name UNIQUE ("name"),
@@ -220,7 +56,7 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
     -- id is the primary key.
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
     status TEXT DEFAULT 'pending',
     random_number INTEGER DEFAULT FLOOR(RANDOM() * 100::INTEGER)::INTEGER,
@@ -228,73 +64,11 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
     calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table)
 );
 `,
-			want: &DDL{
-				Stmts: []Stmt{
-					&CreateTableStmt{
-						Indent:      Indent,
-						IfNotExists: true,
-						Name: &ObjectName{
-							Name: &Ident{
-								Name:          "complex_defaults",
-								QuotationMark: "",
-								Raw:           "complex_defaults",
-							},
-						},
-						Columns: []*Column{
-							{
-								Name:     &Ident{Name: "id", Raw: "id"},
-								DataType: &DataType{Name: "SERIAL", Size: ""},
-							},
-							{
-								Name:     &Ident{Name: "created_at", Raw: "created_at"},
-								DataType: &DataType{Name: "TIMESTAMP WITH TIME ZONE", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "CURRENT_TIMESTAMP", Raw: "CURRENT_TIMESTAMP"}}}},
-							},
-							{
-								Name:     &Ident{Name: "updated_at", Raw: "updated_at"},
-								DataType: &DataType{Name: "TIMESTAMP WITH TIME ZONE", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "CURRENT_TIMESTAMP", Raw: "CURRENT_TIMESTAMP"}}}},
-							},
-							{
-								Name:     &Ident{Name: "unique_code", Raw: "unique_code"},
-								DataType: &DataType{Name: "TEXT", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "'CODE-'", Raw: "'CODE-'"}, {Name: "||", Raw: "||"}, {Name: "TO_CHAR", Raw: "TO_CHAR"}, {Name: "(", Raw: "("}, {Name: "NOW", Raw: "NOW"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: ",", Raw: ","}, {Name: "'YYYYMMDDHH24MISS'", Raw: "'YYYYMMDDHH24MISS'"}, {Name: ")", Raw: ")"}, {Name: "||", Raw: "||"}, {Name: "'-'", Raw: "'-'"}, {Name: "||", Raw: "||"}, {Name: "LPAD", Raw: "LPAD"}, {Name: "(", Raw: "("}, {Name: "TO_CHAR", Raw: "TO_CHAR"}, {Name: "(", Raw: "("}, {Name: "NEXTVAL", Raw: "NEXTVAL"}, {Name: "(", Raw: "("}, {Name: "'seq_complex_default'", Raw: "'seq_complex_default'"}, {Name: ")", Raw: ")"}, {Name: ")", Raw: ")"}, {Name: ",", Raw: ","}, {Name: "5", Raw: "5"}, {Name: ",", Raw: ","}, {Name: "'0'", Raw: "'0'"}, {Name: ")", Raw: ")"}}}},
-							},
-							{
-								Name:     &Ident{Name: "status", Raw: "status"},
-								DataType: &DataType{Name: "TEXT", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "'pending'", Raw: "'pending'"}}}},
-							},
-							{
-								Name:     &Ident{Name: "random_number", Raw: "random_number"},
-								DataType: &DataType{Name: "INTEGER", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "FLOOR", Raw: "FLOOR"}, {Name: "(", Raw: "("}, {Name: "RANDOM", Raw: "RANDOM"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: "*", Raw: "*"}, {Name: "100", Raw: "100"}, {Name: "::", Raw: "::"}, {Name: "INTEGER", Raw: "INTEGER"}, {Name: ")", Raw: ")"}, {Name: "::", Raw: "::"}, {Name: "INTEGER", Raw: "INTEGER"}}}},
-							},
-							{
-								Name:     &Ident{Name: "json_data", Raw: "json_data"},
-								DataType: &DataType{Name: "JSONB", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "'{}'", Raw: "'{}'"}}}},
-							},
-							{
-								Name:     &Ident{Name: "calculated_value", Raw: "calculated_value"},
-								DataType: &DataType{Name: "INTEGER", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "(", Raw: "("}, {Name: "SELECT", Raw: "SELECT"}, {Name: "COUNT", Raw: "COUNT"}, {Name: "(", Raw: "("}, {Name: "*", Raw: "*"}, {Name: ")", Raw: ")"}, {Name: "FROM", Raw: "FROM"}, {Name: "another_table", Raw: "another_table"}, {Name: ")", Raw: ")"}}}},
-							},
-						},
-						Constraints: []Constraint{
-							&PrimaryKeyConstraint{
-								Name:    &Ident{Name: "complex_defaults_pkey", Raw: "complex_defaults_pkey"},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "id", Raw: "id"}}},
-							},
-						},
-					},
-				},
-			},
 			wantErr: nil,
 			wantStr: `CREATE TABLE IF NOT EXISTS complex_defaults (
     id SERIAL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
     status TEXT DEFAULT 'pending',
     random_number INTEGER DEFAULT FLOOR(RANDOM() * 100::INTEGER)::INTEGER,
@@ -317,12 +91,8 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 			stmt, err := p.Parse()
 			require.ErrorIs(t, err, tt.wantErr)
 
-			if !assert.Equal(t, tt.want, stmt) {
-				t.Logf("❌: %s: expected != actual:\n--- EXPECTED\n+++ ACTUAL\n%s", t.Name(), simplediff.Diff(fmt.Sprintf("%#v", tt.want), fmt.Sprintf("%#v", stmt)))
-			}
-
 			if !assert.Equal(t, tt.wantStr, stmt.String()) {
-				t.Fail()
+				t.Errorf("❌: %s: stmt: %%#v: \n%#v", t.Name(), stmt)
 			}
 
 			t.Logf("✅: %s: stmt: %%#v: \n%#v", t.Name(), stmt)

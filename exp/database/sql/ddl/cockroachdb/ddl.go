@@ -61,7 +61,7 @@ func (i *Ident) String() string {
 	return i.Raw
 }
 
-func (i *Ident) PlainString() string {
+func (i *Ident) StringForDiff() string {
 	if i == nil {
 		return ""
 	}
@@ -91,8 +91,8 @@ func (i *ColumnIdent) String() string {
 	return str
 }
 
-func (i *ColumnIdent) PlainString() string {
-	str := i.Ident.PlainString()
+func (i *ColumnIdent) StringForDiff() string {
+	str := i.Ident.StringForDiff()
 	if i.Order != nil {
 		if i.Order.Desc {
 			str += " DESC"
@@ -105,6 +105,7 @@ func (i *ColumnIdent) PlainString() string {
 
 type DataType struct {
 	Name string
+	Type TokenType
 	Size string
 }
 
@@ -116,5 +117,23 @@ func (s *DataType) String() string {
 	if s.Size != "" {
 		str += "(" + s.Size + ")"
 	}
+	return str
+}
+
+func (s *DataType) StringForDiff() string {
+	if s == nil {
+		return ""
+	}
+	var str string
+	if s.Type != "" {
+		str += string(s.Type)
+	} else {
+		str += string(TOKEN_ILLEGAL)
+	}
+
+	if s.Size != "" {
+		str += "(" + s.Size + ")"
+	}
+
 	return str
 }

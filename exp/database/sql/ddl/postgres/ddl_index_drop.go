@@ -12,7 +12,7 @@ type DropIndexStmt struct {
 }
 
 func (s *DropIndexStmt) GetPlainName() string {
-	return s.Name.PlainString()
+	return s.Name.StringForDiff()
 }
 
 func (s *DropIndexStmt) String() string {

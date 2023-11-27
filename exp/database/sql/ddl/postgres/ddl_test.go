@@ -44,14 +44,14 @@ func TestIdent_String(t *testing.T) {
 	})
 }
 
-func TestIdent_PlainString(t *testing.T) {
+func TestIdent_StringForDiff(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		ident := &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}
 		expected := ident.Name
-		actual := ident.PlainString()
+		actual := ident.StringForDiff()
 
 		require.Equal(t, expected, actual)
 	})
@@ -60,7 +60,47 @@ func TestIdent_PlainString(t *testing.T) {
 		t.Parallel()
 		ident := (*Ident)(nil)
 		expected := ""
-		actual := ident.PlainString()
+		actual := ident.StringForDiff()
+
+		require.Equal(t, expected, actual)
+	})
+}
+
+func TestDataType_StringForDiff(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+		dataType := &DataType{Name: "integer", Type: TOKEN_INTEGER, Size: ""}
+		expected := string(TOKEN_INTEGER)
+		actual := dataType.StringForDiff()
+
+		require.Equal(t, expected, actual)
+	})
+
+	t.Run("success,nil", func(t *testing.T) {
+		t.Parallel()
+		dataType := (*DataType)(nil)
+		expected := ""
+		actual := dataType.StringForDiff()
+
+		require.Equal(t, expected, actual)
+	})
+
+	t.Run("success,TOKEN_ILLEGAL", func(t *testing.T) {
+		t.Parallel()
+		dataType := &DataType{Name: "unknown", Type: TOKEN_ILLEGAL, Size: ""}
+		expected := string(TOKEN_ILLEGAL)
+		actual := dataType.StringForDiff()
+
+		require.Equal(t, expected, actual)
+	})
+
+	t.Run("success,empty", func(t *testing.T) {
+		t.Parallel()
+		dataType := &DataType{Name: "unknown", Type: "", Size: ""}
+		expected := string(TOKEN_ILLEGAL)
+		actual := dataType.StringForDiff()
 
 		require.Equal(t, expected, actual)
 	})

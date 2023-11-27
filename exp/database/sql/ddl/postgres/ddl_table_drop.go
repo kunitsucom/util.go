@@ -12,7 +12,7 @@ type DropTableStmt struct {
 }
 
 func (s *DropTableStmt) GetPlainName() string {
-	return s.Name.PlainString()
+	return s.Name.StringForDiff()
 }
 
 func (s *DropTableStmt) String() string {

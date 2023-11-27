@@ -270,7 +270,7 @@ func TestLiteral(t *testing.T) {
 
 		literal := Literal{Str: "users"}
 		expected := literal.Str
-		actual := literal.PlainString()
+		actual := literal.StringForDiff()
 
 		require.Equal(t, expected, actual)
 	})

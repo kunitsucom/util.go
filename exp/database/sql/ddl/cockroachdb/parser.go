@@ -387,7 +387,7 @@ LabelConstraints:
 			}
 			p.nextToken() // current = KEY
 			constraints = constraints.Append(&PrimaryKeyConstraint{
-				Name:    NewIdent(fmt.Sprintf("%s_pkey", tableName.PlainString())),
+				Name:    NewIdent(fmt.Sprintf("%s_pkey", tableName.StringForDiff())),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			})
 		case TOKEN_REFERENCES:
@@ -396,7 +396,7 @@ LabelConstraints:
 			}
 			p.nextToken() // current = table_name
 			constraint := &ForeignKeyConstraint{
-				Name:    NewIdent(fmt.Sprintf("%s_%s_fkey", tableName.PlainString(), column.Name.PlainString())),
+				Name:    NewIdent(fmt.Sprintf("%s_%s_fkey", tableName.StringForDiff(), column.Name.StringForDiff())),
 				Ref:     NewIdent(p.currentToken.Literal.Str),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			}
@@ -410,7 +410,7 @@ LabelConstraints:
 		case TOKEN_UNIQUE:
 			constraints = constraints.Append(&IndexConstraint{
 				Unique:  true,
-				Name:    NewIdent(fmt.Sprintf("%s_unique_%s", tableName.PlainString(), column.Name.PlainString())),
+				Name:    NewIdent(fmt.Sprintf("%s_unique_%s", tableName.StringForDiff(), column.Name.StringForDiff())),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			})
 		case TOKEN_CHECK:
@@ -419,7 +419,7 @@ LabelConstraints:
 			}
 			p.nextToken() // current = (
 			constraint := &CheckConstraint{
-				Name: NewIdent(fmt.Sprintf("%s_%s_check", tableName.PlainString(), column.Name.PlainString())),
+				Name: NewIdent(fmt.Sprintf("%s_%s_check", tableName.StringForDiff(), column.Name.StringForDiff())),
 			}
 		LabelCheck:
 			for {
@@ -484,7 +484,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			return nil, errorz.Errorf("parseColumnIdents: %w", err)
 		}
 		if constraintName == nil {
-			constraintName = NewIdent(fmt.Sprintf("%s_pkey", tableName.PlainString()))
+			constraintName = NewIdent(fmt.Sprintf("%s_pkey", tableName.StringForDiff()))
 		}
 		return &PrimaryKeyConstraint{
 			Name:    constraintName,
@@ -518,9 +518,9 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			return nil, errorz.Errorf("parseColumnIdents: %w", err)
 		}
 		if constraintName == nil {
-			name := tableName.PlainString()
+			name := tableName.StringForDiff()
 			for _, ident := range idents {
-				name += fmt.Sprintf("_%s", ident.PlainString())
+				name += fmt.Sprintf("_%s", ident.StringForDiff())
 			}
 			name += "_fkey"
 			constraintName = NewIdent(name)
@@ -562,42 +562,53 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 	}
 }
 
-//nolint:cyclop
+//nolint:cyclop,funlen
 func (p *Parser) parseDataType() (*DataType, error) {
-	dataType := &DataType{}
+	dataType := &DataType{Type: TOKEN_ILLEGAL}
+
 	switch p.currentToken.Type { //nolint:exhaustive
-	case TOKEN_TIMESTAMP, TOKEN_TIMESTAMPTZ:
-		dataType.Name = string(p.currentToken.Type)
+	case TOKEN_TIMESTAMPTZ:
+		dataType.Name = p.currentToken.Literal.String()
+		dataType.Type = TOKEN_TIMESTAMPTZ
+	case TOKEN_TIMESTAMP:
+		dataType.Name = p.currentToken.Literal.String()
 		if p.peekToken.Type == TOKEN_WITH {
 			p.nextToken() // current = WITH
-			dataType.Name += " " + string(p.currentToken.Type)
+			dataType.Name += " " + p.currentToken.Literal.String()
 			if err := p.checkPeekToken(TOKEN_TIME); err != nil {
 				return nil, errorz.Errorf("checkPeekToken: %w", err)
 			}
 			p.nextToken() // current = TIME
-			dataType.Name += " " + string(p.currentToken.Type)
+			dataType.Name += " " + p.currentToken.Literal.String()
 			if err := p.checkPeekToken(TOKEN_ZONE); err != nil {
 				return nil, errorz.Errorf("checkPeekToken: %w", err)
 			}
 			p.nextToken() // current = ZONE
-			dataType.Name += " " + string(p.currentToken.Type)
+			dataType.Name += " " + p.currentToken.Literal.String()
+			dataType.Type = TOKEN_TIMESTAMPTZ
+		} else {
+			dataType.Name = p.currentToken.Literal.String()
+			dataType.Type = TOKEN_TIMESTAMP
 		}
 	case TOKEN_DOUBLE:
-		dataType.Name = string(p.currentToken.Type)
+		dataType.Name = p.currentToken.Literal.String()
 		if err := p.checkPeekToken(TOKEN_PRECISION); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
 		}
 		p.nextToken() // current = PRECISION
-		dataType.Name += " " + string(p.currentToken.Type)
+		dataType.Name += " " + p.currentToken.Literal.String()
+		dataType.Type = TOKEN_DOUBLE_PRECISION
 	case TOKEN_CHARACTER:
-		dataType.Name = string(p.currentToken.Type)
-		if err := p.checkPeekToken(TOKEN_VARCHAR); err != nil {
+		dataType.Name = p.currentToken.Literal.String()
+		if err := p.checkPeekToken(TOKEN_VARYING); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
 		}
 		p.nextToken() // current = VARYING
-		dataType.Name += " " + string(p.currentToken.Type)
+		dataType.Name += " " + p.currentToken.Literal.String()
+		dataType.Type = TOKEN_CHARACTER_VARYING
 	default:
 		dataType.Name = string(p.currentToken.Type)
+		dataType.Type = p.currentToken.Type
 	}
 
 	if p.peekToken.Type == TOKEN_OPEN_PAREN {

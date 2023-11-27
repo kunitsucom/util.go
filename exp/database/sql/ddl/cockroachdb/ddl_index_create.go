@@ -18,7 +18,7 @@ type CreateIndexStmt struct {
 }
 
 func (s *CreateIndexStmt) GetPlainName() string {
-	return s.Name.PlainString()
+	return s.Name.StringForDiff()
 }
 
 func (s *CreateIndexStmt) String() string {
@@ -34,7 +34,7 @@ func (s *CreateIndexStmt) String() string {
 	return str
 }
 
-func (s *CreateIndexStmt) PlainString() string {
+func (s *CreateIndexStmt) StringForDiff() string {
 	str := "CREATE "
 	if s.Unique {
 		str += "UNIQUE " //nolint:goconst
@@ -43,12 +43,12 @@ func (s *CreateIndexStmt) PlainString() string {
 	if s.IfNotExists {
 		str += "IF NOT EXISTS " //nolint:goconst
 	}
-	str += s.Name.PlainString() + " ON " + s.TableName.PlainString() + " ("
+	str += s.Name.StringForDiff() + " ON " + s.TableName.StringForDiff() + " ("
 	for i, c := range s.Columns {
 		if i > 0 {
 			str += ", "
 		}
-		str += c.PlainString()
+		str += c.StringForDiff()
 	}
 	str += ");\n"
 	return str

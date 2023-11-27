@@ -150,7 +150,7 @@ type AlterTableStmt struct {
 func (*AlterTableStmt) isStmt() {}
 
 func (s *AlterTableStmt) GetPlainName() string {
-	return s.Name.PlainString()
+	return s.Name.StringForDiff()
 }
 
 //nolint:cyclop,funlen

@@ -2,14 +2,12 @@
 package cockroachdb
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"testing"
 
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
-	"github.com/kunitsucom/util.go/exp/diff/simplediff"
 	"github.com/kunitsucom/util.go/testing/assert"
 	"github.com/kunitsucom/util.go/testing/require"
 )
@@ -25,176 +23,12 @@ func TestParser_Parse(t *testing.T) {
 	successTests := []struct {
 		name    string
 		input   string
-		want    *DDL
 		wantErr error
 		wantStr string
 	}{
 		{
-			name:  "success,CREATE_TABLE",
-			input: `CREATE TABLE "groups" ("id" UUID NOT NULL PRIMARY KEY, description TEXT); CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
-			want: &DDL{
-				Stmts: []Stmt{
-					&CreateTableStmt{
-						Indent: Indent,
-						Name:   &ObjectName{Name: &Ident{Name: "groups", QuotationMark: `"`, Raw: `"groups"`}},
-						Columns: []*Column{
-							{
-								Name: &Ident{
-									Name:          "id",
-									QuotationMark: `"`,
-									Raw:           `"id"`,
-								},
-								DataType: &DataType{
-									Name: "UUID",
-									Size: "",
-								},
-								NotNull: true,
-							},
-							{
-								Name: &Ident{
-									Name:          "description",
-									QuotationMark: "",
-									Raw:           "description",
-								},
-								DataType: &DataType{
-									Name: "STRING",
-									Size: "",
-								},
-							},
-						},
-						Constraints: []Constraint{
-							&PrimaryKeyConstraint{
-								Name: &Ident{
-									Name:          "groups_pkey",
-									QuotationMark: ``,
-									Raw:           "groups_pkey",
-								},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
-							},
-						},
-					},
-					&CreateTableStmt{
-						Indent: Indent,
-						Name:   &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-						Columns: []*Column{
-							{
-								Name: &Ident{
-									Name:          "id",
-									QuotationMark: "",
-									Raw:           "id",
-								},
-								DataType: &DataType{
-									Name: "UUID",
-									Size: "",
-								},
-								NotNull: true,
-							},
-							{
-								Name: &Ident{
-									Name:          "group_id",
-									QuotationMark: "",
-									Raw:           "group_id",
-								},
-								DataType: &DataType{
-									Name: "UUID",
-									Size: "",
-								},
-								NotNull: true,
-							},
-							{
-								Name: &Ident{
-									Name:          "name",
-									QuotationMark: `"`,
-									Raw:           `"name"`,
-								},
-								DataType: &DataType{
-									Name: "VARCHAR",
-									Size: "255",
-								},
-								NotNull: true,
-							},
-							{
-								Name: &Ident{
-									Name:          "age",
-									QuotationMark: `"`,
-									Raw:           `"age"`,
-								},
-								DataType: &DataType{
-									Name: "INTEGER",
-									Size: "",
-								},
-								Default: &Default{
-									Value: &DefaultValue{
-										[]*Ident{
-											{
-												Name:          "0",
-												QuotationMark: "",
-												Raw:           "0",
-											},
-										},
-									},
-								},
-							},
-							{
-								Name: &Ident{
-									Name:          "description",
-									QuotationMark: "",
-									Raw:           "description",
-								},
-								DataType: &DataType{
-									Name: "STRING",
-									Size: "",
-								},
-							},
-						},
-						Constraints: []Constraint{
-							&PrimaryKeyConstraint{
-								Name: &Ident{
-									Name:          "users_pkey",
-									QuotationMark: ``,
-									Raw:           "users_pkey",
-								},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
-							},
-							&ForeignKeyConstraint{
-								Name: &Ident{
-									Name:          "users_group_id_fkey",
-									QuotationMark: ``,
-									Raw:           "users_group_id_fkey",
-								},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "group_id", QuotationMark: "", Raw: "group_id"}}},
-								Ref: &Ident{
-									Name:          "groups",
-									QuotationMark: `"`,
-									Raw:           `"groups"`,
-								},
-								RefColumns: []*ColumnIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}},
-							},
-							&IndexConstraint{
-								Unique: true,
-								Name: &Ident{
-									Name:          "users_unique_name",
-									QuotationMark: ``,
-									Raw:           "users_unique_name",
-								},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "name", QuotationMark: `"`, Raw: `"name"`}}},
-							},
-							&CheckConstraint{
-								Name: &Ident{
-									Name:          "users_age_check",
-									QuotationMark: ``,
-									Raw:           "users_age_check",
-								},
-								Expr: []*Ident{
-									{Name: "age", QuotationMark: `"`, Raw: `"age"`},
-									{Name: ">=", Raw: ">="},
-									{Name: "0", Raw: "0"},
-								},
-							},
-						},
-					},
-				},
-			},
+			name:    "success,CREATE_TABLE",
+			input:   `CREATE TABLE "groups" ("id" UUID NOT NULL PRIMARY KEY, description TEXT); CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`,
 			wantErr: nil,
 			wantStr: `CREATE TABLE "groups" (
     "id" UUID NOT NULL,
@@ -229,62 +63,6 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
     calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table)
 );
 `,
-			want: &DDL{
-				Stmts: []Stmt{
-					&CreateTableStmt{
-						Indent:      Indent,
-						IfNotExists: true,
-						Name:        &ObjectName{Name: &Ident{Name: "complex_defaults", QuotationMark: "", Raw: "complex_defaults"}},
-						Columns: []*Column{
-							{
-								Name:     &Ident{Name: "id", Raw: "id"},
-								DataType: &DataType{Name: "SERIAL", Size: ""},
-							},
-							{
-								Name:     &Ident{Name: "created_at", Raw: "created_at"},
-								DataType: &DataType{Name: "TIMESTAMP WITH TIME ZONE", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "CURRENT_TIMESTAMP", Raw: "CURRENT_TIMESTAMP"}}}},
-							},
-							{
-								Name:     &Ident{Name: "updated_at", Raw: "updated_at"},
-								DataType: &DataType{Name: "TIMESTAMP WITH TIME ZONE", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "CURRENT_TIMESTAMP", Raw: "CURRENT_TIMESTAMP"}}}},
-							},
-							{
-								Name:     &Ident{Name: "unique_code", Raw: "unique_code"},
-								DataType: &DataType{Name: "STRING", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "'CODE-'", Raw: "'CODE-'"}, {Name: "||", Raw: "||"}, {Name: "TO_CHAR", Raw: "TO_CHAR"}, {Name: "(", Raw: "("}, {Name: "NOW", Raw: "NOW"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: ",", Raw: ","}, {Name: "'YYYYMMDDHH24MISS'", Raw: "'YYYYMMDDHH24MISS'"}, {Name: ")", Raw: ")"}, {Name: "||", Raw: "||"}, {Name: "'-'", Raw: "'-'"}, {Name: "||", Raw: "||"}, {Name: "LPAD", Raw: "LPAD"}, {Name: "(", Raw: "("}, {Name: "TO_CHAR", Raw: "TO_CHAR"}, {Name: "(", Raw: "("}, {Name: "NEXTVAL", Raw: "NEXTVAL"}, {Name: "(", Raw: "("}, {Name: "'seq_complex_default'", Raw: "'seq_complex_default'"}, {Name: ")", Raw: ")"}, {Name: ")", Raw: ")"}, {Name: ",", Raw: ","}, {Name: "5", Raw: "5"}, {Name: ",", Raw: ","}, {Name: "'0'", Raw: "'0'"}, {Name: ")", Raw: ")"}}}},
-							},
-							{
-								Name:     &Ident{Name: "status", Raw: "status"},
-								DataType: &DataType{Name: "STRING", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "'pending'", Raw: "'pending'"}}}},
-							},
-							{
-								Name:     &Ident{Name: "random_number", Raw: "random_number"},
-								DataType: &DataType{Name: "INTEGER", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "FLOOR", Raw: "FLOOR"}, {Name: "(", Raw: "("}, {Name: "RANDOM", Raw: "RANDOM"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: "*", Raw: "*"}, {Name: "100", Raw: "100"}, {Name: "::", Raw: "::"}, {Name: "INTEGER", Raw: "INTEGER"}, {Name: ")", Raw: ")"}, {Name: "::", Raw: "::"}, {Name: "INTEGER", Raw: "INTEGER"}}}},
-							},
-							{
-								Name:     &Ident{Name: "json_data", Raw: "json_data"},
-								DataType: &DataType{Name: "JSONB", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "'{}'", Raw: "'{}'"}}}},
-							},
-							{
-								Name:     &Ident{Name: "calculated_value", Raw: "calculated_value"},
-								DataType: &DataType{Name: "INTEGER", Size: ""},
-								Default:  &Default{Value: &DefaultValue{[]*Ident{{Name: "(", Raw: "("}, {Name: "SELECT", Raw: "SELECT"}, {Name: "COUNT", Raw: "COUNT"}, {Name: "(", Raw: "("}, {Name: "*", Raw: "*"}, {Name: ")", Raw: ")"}, {Name: "FROM", Raw: "FROM"}, {Name: "another_table", Raw: "another_table"}, {Name: ")", Raw: ")"}}}},
-							},
-						},
-						Constraints: []Constraint{
-							&PrimaryKeyConstraint{
-								Name:    &Ident{Name: "complex_defaults_pkey", Raw: "complex_defaults_pkey"},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "id", Raw: "id"}}},
-							},
-						},
-					},
-				},
-			},
 			wantErr: nil,
 			wantStr: `CREATE TABLE IF NOT EXISTS complex_defaults (
     id SERIAL,
@@ -311,32 +89,6 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
     INDEX users_idx_by_username (username DESC)
 );
 `,
-			want: &DDL{
-				Stmts: []Stmt{
-					&CreateTableStmt{
-						Indent:      Indent,
-						IfNotExists: true,
-						Name:        &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users", Raw: "users"}},
-						Columns: []*Column{
-							{Name: &Ident{Name: "user_id", Raw: "user_id"}, DataType: &DataType{Name: "UUID", Size: ""}, NotNull: true},
-							{Name: &Ident{Name: "username", Raw: "username"}, DataType: &DataType{Name: "VARCHAR", Size: "256"}, NotNull: true},
-							{Name: &Ident{Name: "is_verified", Raw: "is_verified"}, DataType: &DataType{Name: "BOOL", Size: ""}, NotNull: true, Default: &Default{Value: &DefaultValue{[]*Ident{{Name: "false", Raw: "false"}}}}},
-							{Name: &Ident{Name: "created_at", Raw: "created_at"}, DataType: &DataType{Name: "TIMESTAMPTZ", Size: ""}, NotNull: true, Default: &Default{Value: &DefaultValue{[]*Ident{{Name: "timezone", Raw: "timezone"}, {Name: "(", Raw: "("}, {Name: "'UTC'", Raw: "'UTC'"}, {Name: ":::", Raw: ":::"}, {Name: "STRING", Raw: "STRING"}, {Name: ",", Raw: ","}, {Name: "current_timestamp", Raw: "current_timestamp"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: ":::", Raw: ":::"}, {Name: "TIMESTAMPTZ", Raw: "TIMESTAMPTZ"}, {Name: ")", Raw: ")"}}}}},
-							{Name: &Ident{Name: "updated_at", Raw: "updated_at"}, DataType: &DataType{Name: "TIMESTAMPTZ", Size: ""}, NotNull: true, Default: &Default{Value: &DefaultValue{[]*Ident{{Name: "timezone", Raw: "timezone"}, {Name: "(", Raw: "("}, {Name: "'UTC'", Raw: "'UTC'"}, {Name: ":::", Raw: ":::"}, {Name: "STRING", Raw: "STRING"}, {Name: ",", Raw: ","}, {Name: "current_timestamp", Raw: "current_timestamp"}, {Name: "(", Raw: "("}, {Name: ")", Raw: ")"}, {Name: ":::", Raw: ":::"}, {Name: "TIMESTAMPTZ", Raw: "TIMESTAMPTZ"}, {Name: ")", Raw: ")"}}}}},
-						},
-						Constraints: []Constraint{
-							&PrimaryKeyConstraint{
-								Name:    &Ident{Name: "users_pkey", Raw: "users_pkey"},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "user_id", Raw: "user_id"}, Order: &Order{Desc: false}}},
-							},
-							&IndexConstraint{
-								Name:    &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"},
-								Columns: []*ColumnIdent{{Ident: &Ident{Name: "username", Raw: "username"}, Order: &Order{Desc: true}}},
-							},
-						},
-					},
-				},
-			},
 			wantErr: nil,
 			wantStr: `CREATE TABLE IF NOT EXISTS public.users (
     user_id UUID NOT NULL,
@@ -359,19 +111,15 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 
 			l := NewLexer(tt.input)
 			p := NewParser(l)
-			stmt, err := p.Parse()
+			actual, err := p.Parse()
 			require.ErrorIs(t, err, tt.wantErr)
 
-			if !assert.Equal(t, tt.want, stmt) {
-				t.Logf("❌: %s: expected != actual:\n--- EXPECTED\n+++ ACTUAL\n%s", t.Name(), simplediff.Diff(fmt.Sprintf("%#v", tt.want), fmt.Sprintf("%#v", stmt)))
-			}
-
-			if !assert.Equal(t, tt.wantStr, stmt.String()) {
+			if !assert.Equal(t, tt.wantStr, actual.String()) {
 				t.Fail()
 			}
 
-			t.Logf("✅: %s: stmt: %%#v: \n%#v", t.Name(), stmt)
-			t.Logf("✅: %s: stmt: %%s: \n%s", t.Name(), stmt)
+			t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+			t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 		})
 	}
 

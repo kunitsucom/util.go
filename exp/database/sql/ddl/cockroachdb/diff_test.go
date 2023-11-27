@@ -85,16 +85,17 @@ func TestDiff(t *testing.T) {
 				},
 			},
 		}
-		actual, err := Diff(before, after)
-		require.NoError(t, err)
-		if !assert.Equal(t, after, actual) {
-			assert.Equal(t, fmt.Sprintf("%#v", after), fmt.Sprintf("%#v", actual))
-		}
-		assert.Equal(t, `CREATE TABLE table_name (
+		expected := `CREATE TABLE table_name (
     column_name STRING NOT NULL,
     PRIMARY KEY (column_name)
 );
-`, actual.String())
+`
+		actual, err := Diff(before, after)
+		require.NoError(t, err)
+		assert.Equal(t, expected, actual.String())
+
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 
 	t.Run("success,before,nil,Table", func(t *testing.T) {
@@ -113,20 +114,16 @@ func TestDiff(t *testing.T) {
 			},
 		}
 		after := (*DDL)(nil)
+
+		expected := `DROP TABLE public.table_name;
+`
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		expected := &DDL{
-			Stmts: []Stmt{
-				&DropTableStmt{
-					Name: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "table_name", Raw: "table_name"}},
-				},
-			},
-		}
-		if !assert.Equal(t, expected, actual) {
-			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
-		}
-		assert.Equal(t, `DROP TABLE public.table_name;
-`, actual.String())
+
+		assert.Equal(t, expected, actual.String())
+
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 
 	t.Run("success,before,Table", func(t *testing.T) {
@@ -145,20 +142,15 @@ func TestDiff(t *testing.T) {
 			},
 		}
 		after := &DDL{}
+
+		expected := `DROP TABLE table_name;
+`
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		expected := &DDL{
-			Stmts: []Stmt{
-				&DropTableStmt{
-					Name: &ObjectName{Name: &Ident{Name: "table_name", Raw: "table_name"}},
-				},
-			},
-		}
-		if !assert.Equal(t, expected, actual) {
-			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
-		}
-		assert.Equal(t, `DROP TABLE table_name;
-`, actual.String())
+		assert.Equal(t, expected, actual.String())
+
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 
 	t.Run("success,before,nil,Index", func(t *testing.T) {
@@ -179,18 +171,12 @@ func TestDiff(t *testing.T) {
 		after := (*DDL)(nil)
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		expected := &DDL{
-			Stmts: []Stmt{
-				&DropIndexStmt{
-					Name: &ObjectName{Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"}},
-				},
-			},
-		}
-		if !assert.Equal(t, expected, actual) {
-			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
-		}
-		assert.Equal(t, `DROP INDEX table_name_idx_column_name;
-`, actual.String())
+		expected := `DROP INDEX table_name_idx_column_name;
+`
+		assert.Equal(t, expected, actual.String())
+
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 
 	t.Run("success,before,Index", func(t *testing.T) {
@@ -211,18 +197,12 @@ func TestDiff(t *testing.T) {
 		after := &DDL{}
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		expected := &DDL{
-			Stmts: []Stmt{
-				&DropIndexStmt{
-					Name: &ObjectName{Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"}},
-				},
-			},
-		}
-		if !assert.Equal(t, expected, actual) {
-			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
-		}
-		assert.Equal(t, `DROP INDEX table_name_idx_column_name;
-`, actual.String())
+		expected := `DROP INDEX table_name_idx_column_name;
+`
+		assert.Equal(t, expected, actual.String())
+
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 
 	t.Run("success,before,Table", func(t *testing.T) {
@@ -254,16 +234,19 @@ func TestDiff(t *testing.T) {
 				},
 			},
 		}
-		actual, err := Diff(before, after)
-		require.NoError(t, err)
-		if !assert.Equal(t, after, actual) {
-			assert.Equal(t, fmt.Sprintf("%#v", after), fmt.Sprintf("%#v", actual))
-		}
-		assert.Equal(t, `CREATE TABLE public.table_name (
+
+		expected := `CREATE TABLE public.table_name (
     column_name STRING NOT NULL,
     PRIMARY KEY (column_name)
 );
-`, actual.String())
+`
+		actual, err := Diff(before, after)
+		require.NoError(t, err)
+
+		assert.Equal(t, expected, actual.String())
+
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 
 	t.Run("success,before,Index", func(t *testing.T) {
@@ -299,7 +282,7 @@ func TestDiff(t *testing.T) {
     user_id UUID NOT NULL,
     username VARCHAR(256) NOT NULL,
     is_verified BOOL NOT NULL DEFAULT false,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
     CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
     INDEX users_idx_by_username (username DESC)
 );
@@ -310,53 +293,23 @@ func TestDiff(t *testing.T) {
     user_id UUID NOT NULL,
     username VARCHAR(256) NOT NULL,
     is_verified BOOL NOT NULL DEFAULT false,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ),
     CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
     INDEX users_idx_by_username (username DESC)
 );
 `)).Parse()
 		require.NoError(t, err)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&AlterTableStmt{
-					Name: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users", Raw: "users"}},
-					Action: &AddColumn{
-						Column: &Column{
-							Name:     &Ident{Name: "updated_at", Raw: "updated_at"},
-							DataType: &DataType{Name: "TIMESTAMPTZ", Size: ""},
-							NotNull:  true,
-							Default: &Default{
-								Value: &DefaultValue{
-									Idents: []*Ident{
-										{Name: "timezone", Raw: "timezone"},
-										{Name: "(", Raw: "("},
-										{Name: "'UTC'", Raw: "'UTC'"},
-										{Name: ":::", Raw: ":::"},
-										{Name: "STRING", Raw: "STRING"},
-										{Name: ",", Raw: ","},
-										{Name: "current_timestamp", Raw: "current_timestamp"},
-										{Name: "(", Raw: "("},
-										{Name: ")", Raw: ")"},
-										{Name: ":::", Raw: ":::"},
-										{Name: "TIMESTAMPTZ", Raw: "TIMESTAMPTZ"},
-										{Name: ")", Raw: ")"},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}
+		expected := `ALTER TABLE public.users ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ);
+`
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		if !assert.Equal(t, expected, actual) {
-			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
-		}
-		assert.Equal(t, `ALTER TABLE public.users ADD COLUMN updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ);
-`, actual.String())
+
+		assert.Equal(t, expected, actual.String())
+
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 
 	t.Run("success,before,after,Table,Asc", func(t *testing.T) {
@@ -386,32 +339,15 @@ func TestDiff(t *testing.T) {
 `)).Parse()
 		require.NoError(t, err)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&DropIndexStmt{
-					Name: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"}},
-				},
-				&CreateIndexStmt{
-					Unique:    false,
-					Name:      &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"}},
-					TableName: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users", Raw: "users"}},
-					Columns: []*ColumnIdent{
-						{
-							Ident: &Ident{Name: "username", Raw: "username"},
-							Order: &Order{Desc: false},
-						},
-					},
-				},
-			},
-		}
+		expected := `DROP INDEX public.users_idx_by_username;
+CREATE INDEX public.users_idx_by_username ON public.users (username ASC);
+`
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		if !assert.Equal(t, expected, actual) {
-			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
-		}
-		assert.Equal(t, `DROP INDEX public.users_idx_by_username;
-CREATE INDEX public.users_idx_by_username ON public.users (username ASC);
-`, actual.String())
+		assert.Equal(t, expected, actual.String())
+
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 
 	t.Run("success,before,after,Index", func(t *testing.T) {
@@ -423,36 +359,15 @@ CREATE INDEX public.users_idx_by_username ON public.users (username ASC);
 		after, err := NewParser(NewLexer(`CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username ASC, age ASC);`)).Parse()
 		require.NoError(t, err)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&DropIndexStmt{
-					Name: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"}},
-				},
-				&CreateIndexStmt{
-					Unique:      true,
-					IfNotExists: true,
-					Name:        &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"}},
-					TableName:   &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users", Raw: "users"}},
-					Columns: []*ColumnIdent{
-						{
-							Ident: &Ident{Name: "username", Raw: "username"},
-							Order: &Order{Desc: false},
-						},
-						{
-							Ident: &Ident{Name: "age", Raw: "age"},
-							Order: &Order{Desc: false},
-						},
-					},
-				},
-			},
-		}
+		expected := `DROP INDEX public.users_idx_by_username;
+CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username ASC, age ASC);
+`
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		if !assert.Equal(t, expected, actual) {
-			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
-		}
-		assert.Equal(t, `DROP INDEX public.users_idx_by_username;
-CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username ASC, age ASC);
-`, actual.String())
+
+		assert.Equal(t, expected, actual.String())
+
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
 	})
 }

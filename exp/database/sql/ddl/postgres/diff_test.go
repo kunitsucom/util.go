@@ -269,27 +269,22 @@ func TestDiff(t *testing.T) {
 	t.Run("success,before,Index", func(t *testing.T) {
 		t.Parallel()
 
-		before := &DDL{}
-		after := &DDL{
-			Stmts: []Stmt{
-				&CreateIndexStmt{
-					TableName: &ObjectName{Name: &Ident{Name: "table_name", Raw: "table_name"}},
-					Name:      &ObjectName{Name: &Ident{Name: "table_name_idx_column_name", Raw: "table_name_idx_column_name"}},
-					Columns: []*ColumnIdent{
-						{
-							Ident: &Ident{Name: "column_name", Raw: "column_name"},
-						},
-					},
-				},
-			},
-		}
+		before, err := NewParser(NewLexer(``)).Parse()
+		require.NoError(t, err)
+
+		after, err := NewParser(NewLexer(`CREATE INDEX table_name_idx_column_name ON table_name (column_name);
+`)).Parse()
+		require.NoError(t, err)
+
+		expected := `CREATE INDEX table_name_idx_column_name ON table_name (column_name);
+`
+
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		if !assert.Equal(t, after, actual) {
-			assert.Equal(t, fmt.Sprintf("%#v", after), fmt.Sprintf("%#v", actual))
+
+		if !assert.Equal(t, expected, actual.String()) {
+			t.Errorf("❌: %s: stmt: %%#v: \n%#v", t.Name(), actual)
 		}
-		assert.Equal(t, `CREATE INDEX table_name_idx_column_name ON table_name (column_name);
-`, actual.String())
 	})
 
 	t.Run("success,before,after,Table", func(t *testing.T) {
@@ -319,27 +314,14 @@ CREATE TABLE public.users (
 `)).Parse()
 		require.NoError(t, err)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&AlterTableStmt{
-					Name: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users", Raw: "users"}},
-					Action: &AddColumn{
-						Column: &Column{
-							Name:     &Ident{Name: "description", Raw: "description"},
-							DataType: &DataType{Name: "TEXT", Size: ""},
-							NotNull:  true,
-						},
-					},
-				},
-			},
-		}
+		expected := `ALTER TABLE public.users ADD COLUMN description TEXT NOT NULL;
+`
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		if !assert.Equal(t, expected, actual) {
-			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
+
+		if !assert.Equal(t, expected, actual.String()) {
+			t.Errorf("❌: %s: stmt: %%#v: \n%#v", t.Name(), actual)
 		}
-		assert.Equal(t, `ALTER TABLE public.users ADD COLUMN description TEXT NOT NULL;
-`, actual.String())
 	})
 
 	t.Run("success,before,after,Index", func(t *testing.T) {
@@ -351,34 +333,13 @@ CREATE TABLE public.users (
 		after, err := NewParser(NewLexer(`CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username, age);`)).Parse()
 		require.NoError(t, err)
 
-		expected := &DDL{
-			Stmts: []Stmt{
-				&DropIndexStmt{
-					Name: &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"}},
-				},
-				&CreateIndexStmt{
-					Unique:      true,
-					IfNotExists: true,
-					Name:        &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users_idx_by_username", Raw: "users_idx_by_username"}},
-					TableName:   &ObjectName{Schema: &Ident{Name: "public", Raw: "public"}, Name: &Ident{Name: "users", Raw: "users"}},
-					Columns: []*ColumnIdent{
-						{
-							Ident: &Ident{Name: "username", Raw: "username"},
-						},
-						{
-							Ident: &Ident{Name: "age", Raw: "age"},
-						},
-					},
-				},
-			},
-		}
+		expected := `DROP INDEX public.users_idx_by_username;
+CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username, age);
+`
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
-		if !assert.Equal(t, expected, actual) {
-			assert.Equal(t, fmt.Sprintf("%#v", expected), fmt.Sprintf("%#v", actual))
+		if !assert.Equal(t, expected, actual.String()) {
+			t.Errorf("❌: %s: stmt: %%#v: \n%#v", t.Name(), actual)
 		}
-		assert.Equal(t, `DROP INDEX public.users_idx_by_username;
-CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username, age);
-`, actual.String())
 	})
 }

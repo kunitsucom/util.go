@@ -12,7 +12,7 @@ type Constraint interface {
 	GetName() *Ident
 	GoString() string
 	String() string
-	PlainString() string
+	StringForDiff() string
 }
 
 type Constraints []Constraint
@@ -49,10 +49,10 @@ func (c *PrimaryKeyConstraint) String() string {
 	return str
 }
 
-func (c *PrimaryKeyConstraint) PlainString() string {
+func (c *PrimaryKeyConstraint) StringForDiff() string {
 	var str string
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.PlainString() + " " //nolint:goconst
+		str += "CONSTRAINT " + c.Name.StringForDiff() + " " //nolint:goconst
 	}
 	str += "PRIMARY KEY"
 	str += " ("
@@ -60,7 +60,7 @@ func (c *PrimaryKeyConstraint) PlainString() string {
 		if i != 0 {
 			str += ", "
 		}
-		str += v.PlainString()
+		str += v.StringForDiff()
 	}
 	str += ")"
 	return str
@@ -91,10 +91,10 @@ func (c *ForeignKeyConstraint) String() string {
 	return str
 }
 
-func (c *ForeignKeyConstraint) PlainString() string {
+func (c *ForeignKeyConstraint) StringForDiff() string {
 	var str string
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.PlainString() + " "
+		str += "CONSTRAINT " + c.Name.StringForDiff() + " "
 	}
 	str += "FOREIGN KEY"
 	str += " ("
@@ -102,7 +102,7 @@ func (c *ForeignKeyConstraint) PlainString() string {
 		if i != 0 {
 			str += ", "
 		}
-		str += v.PlainString()
+		str += v.StringForDiff()
 	}
 	str += ")"
 	str += " REFERENCES " + c.Ref.Name
@@ -111,7 +111,7 @@ func (c *ForeignKeyConstraint) PlainString() string {
 		if i != 0 {
 			str += ", "
 		}
-		str += v.PlainString()
+		str += v.StringForDiff()
 	}
 	str += ")"
 	return str
@@ -138,10 +138,10 @@ func (c *UniqueConstraint) String() string {
 	return str
 }
 
-func (c *UniqueConstraint) PlainString() string {
+func (c *UniqueConstraint) StringForDiff() string {
 	var str string
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.PlainString() + " "
+		str += "CONSTRAINT " + c.Name.StringForDiff() + " "
 	}
 	str += "UNIQUE"
 	str += " ("
@@ -149,7 +149,7 @@ func (c *UniqueConstraint) PlainString() string {
 		if i != 0 {
 			str += ", "
 		}
-		str += v.PlainString()
+		str += v.StringForDiff()
 	}
 	str += ")"
 	return str
@@ -176,10 +176,10 @@ func (c *CheckConstraint) String() string {
 	return str
 }
 
-func (c *CheckConstraint) PlainString() string {
+func (c *CheckConstraint) StringForDiff() string {
 	var str string
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.PlainString() + " "
+		str += "CONSTRAINT " + c.Name.StringForDiff() + " "
 	}
 	str += "CHECK"
 	str += " ("
@@ -187,7 +187,7 @@ func (c *CheckConstraint) PlainString() string {
 		if i != 0 {
 			str += " "
 		}
-		str += v.PlainString()
+		str += v.StringForDiff()
 	}
 	str += ")"
 	return str
@@ -220,19 +220,19 @@ func (t *ObjectName) String() string {
 		return ""
 	}
 	if t.Schema != nil {
-		return t.Name.QuotationMark + t.Schema.PlainString() + "." + t.Name.PlainString() + t.Name.QuotationMark
+		return t.Name.QuotationMark + t.Schema.StringForDiff() + "." + t.Name.StringForDiff() + t.Name.QuotationMark
 	}
 	return t.Name.String()
 }
 
-func (t *ObjectName) PlainString() string {
+func (t *ObjectName) StringForDiff() string {
 	if t == nil {
 		return ""
 	}
 	if t.Schema != nil {
-		return t.Schema.PlainString() + "." + t.Name.PlainString()
+		return t.Schema.StringForDiff() + "." + t.Name.StringForDiff()
 	}
-	return t.Name.PlainString()
+	return t.Name.StringForDiff()
 }
 
 type Column struct {
@@ -297,7 +297,7 @@ func (d *Default) String() string {
 	return ""
 }
 
-func (d *Default) PlainString() string {
+func (d *Default) StringForDiff() string {
 	if d == nil {
 		return ""
 	}
@@ -307,7 +307,7 @@ func (d *Default) PlainString() string {
 			if i != 0 {
 				str += " "
 			}
-			str += v.PlainString()
+			str += v.StringForDiff()
 		}
 		return str
 	}
