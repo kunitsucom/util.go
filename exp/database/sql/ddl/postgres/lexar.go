@@ -69,7 +69,7 @@ const (
 	TOKEN_TO     TokenType = "TO"
 
 	// DATA TYPE.
-	TOKEN_BOOLEAN                  TokenType = "BOOLEAN"
+	TOKEN_BOOLEAN                  TokenType = "BOOLEAN" //diff:ignore-line-postgres-cockroach
 	TOKEN_SMALLINT                 TokenType = "SMALLINT"
 	TOKEN_INTEGER                  TokenType = "INTEGER"
 	TOKEN_BIGINT                   TokenType = "BIGINT"
@@ -87,9 +87,10 @@ const (
 	TOKEN_CHARACTER_VARYING        TokenType = "CHARACTER VARYING"
 	TOKEN_CHARACTER                TokenType = "CHARACTER"
 	TOKEN_VARYING                  TokenType = "VARYING"
-	TOKEN_TEXT                     TokenType = "TEXT"
+	TOKEN_VARCHAR                  TokenType = "VARCHAR"
+	TOKEN_TEXT                     TokenType = "TEXT" //diff:ignore-line-postgres-cockroach
 	TOKEN_TIMESTAMPTZ              TokenType = "TIMESTAMPTZ"
-	TOKEN_TIMESTAMP_WITH_TIME_ZONE TokenType = "TIMESTAMP WITH TIME ZONE"
+	TOKEN_TIMESTAMP_WITH_TIME_ZONE TokenType = "TIMESTAMP WITH TIME ZONE" //diff:ignore-line-postgres-cockroach
 	TOKEN_TIMESTAMP                TokenType = "TIMESTAMP"
 	TOKEN_WITH                     TokenType = "WITH"
 	TOKEN_TIME                     TokenType = "TIME"
@@ -157,8 +158,8 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_ON
 	case "TO":
 		return TOKEN_TO
-	case "BOOLEAN":
-		return TOKEN_BOOLEAN
+	case "BOOLEAN": //diff:ignore-line-postgres-cockroach
+		return TOKEN_BOOLEAN //diff:ignore-line-postgres-cockroach
 	case "SMALLINT":
 		return TOKEN_SMALLINT
 	case "INTEGER", "INT":
@@ -187,10 +188,12 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_JSONB
 	case "CHARACTER":
 		return TOKEN_CHARACTER
-	case "VARYING", "VARCHAR":
+	case "VARYING":
 		return TOKEN_VARYING
-	case "TEXT":
-		return TOKEN_TEXT
+	case "VARCHAR":
+		return TOKEN_VARCHAR
+	case "TEXT": //diff:ignore-line-postgres-cockroach
+		return TOKEN_TEXT //diff:ignore-line-postgres-cockroach
 	case "TIMESTAMP":
 		return TOKEN_TIMESTAMP
 	case "TIMESTAMPTZ":

@@ -2,7 +2,7 @@ package cockroachdb
 
 import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 
-// MEMO: https://www.cockroachlabs.com/docs/stable/alter-table
+// MEMO: https://www.cockroachlabs.com/docs/stable/alter-table //diff:ignore-line-postgres-cockroach
 
 type AlterTableAction interface {
 	isAlterTableAction()

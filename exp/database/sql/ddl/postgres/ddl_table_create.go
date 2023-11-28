@@ -2,7 +2,7 @@ package postgres
 
 import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 
-// MEMO: https://www.postgresql.jp/docs/11/sql-createtable.html
+// MEMO: https://www.postgresql.jp/docs/11/sql-createtable.html //diff:ignore-line-postgres-cockroach
 
 var _ Stmt = (*CreateTableStmt)(nil)
 

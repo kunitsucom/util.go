@@ -51,7 +51,7 @@ const (
 	TOKEN_SLASH           TokenType = "SLASH"           // /
 	TOKEN_STRING_CONCAT   TokenType = "STRING_CONCAT"   //nolint:gosec // ||
 	TOKEN_TYPECAST        TokenType = "TYPECAST"        // ::
-	TOKEN_TYPE_ANNOTATION TokenType = "TYPE_ANNOTATION" // :::
+	TOKEN_TYPE_ANNOTATION TokenType = "TYPE_ANNOTATION" // ::: //diff:ignore-line-postgres-cockroach
 
 	// VERB.
 	TOKEN_CREATE   TokenType = "CREATE"
@@ -70,7 +70,7 @@ const (
 	TOKEN_TO     TokenType = "TO"
 
 	// DATA TYPE.
-	TOKEN_BOOL              TokenType = "BOOL"
+	TOKEN_BOOL              TokenType = "BOOL" //diff:ignore-line-postgres-cockroach
 	TOKEN_SMALLINT          TokenType = "SMALLINT"
 	TOKEN_INTEGER           TokenType = "INTEGER"
 	TOKEN_BIGINT            TokenType = "BIGINT"
@@ -89,7 +89,7 @@ const (
 	TOKEN_CHARACTER         TokenType = "CHARACTER"
 	TOKEN_VARYING           TokenType = "VARYING"
 	TOKEN_VARCHAR           TokenType = "VARCHAR"
-	TOKEN_STRING            TokenType = "STRING"
+	TOKEN_STRING            TokenType = "STRING" //diff:ignore-line-postgres-cockroach
 	TOKEN_TIMESTAMPTZ       TokenType = "TIMESTAMPTZ"
 	TOKEN_TIMESTAMP         TokenType = "TIMESTAMP"
 	TOKEN_WITH              TokenType = "WITH"
@@ -158,8 +158,8 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_ON
 	case "TO":
 		return TOKEN_TO
-	case "BOOL", "BOOLEAN":
-		return TOKEN_BOOL
+	case "BOOLEAN", "BOOL": //diff:ignore-line-postgres-cockroach
+		return TOKEN_BOOL //diff:ignore-line-postgres-cockroach
 	case "SMALLINT":
 		return TOKEN_SMALLINT
 	case "INTEGER", "INT":
@@ -192,8 +192,8 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_VARYING
 	case "VARCHAR":
 		return TOKEN_VARCHAR
-	case "STRING", "TEXT":
-		return TOKEN_STRING
+	case "TEXT", "STRING": //diff:ignore-line-postgres-cockroach
+		return TOKEN_STRING //diff:ignore-line-postgres-cockroach
 	case "TIMESTAMP":
 		return TOKEN_TIMESTAMP
 	case "TIMESTAMPTZ":
@@ -296,12 +296,12 @@ func (l *Lexer) NextToken() Token {
 	case ':':
 		if l.peekChar() == ':' {
 			l.readChar()
-			if l.peekChar() == ':' {
-				l.readChar()
-				tok = Token{Type: TOKEN_TYPE_ANNOTATION, Literal: Literal{Str: ":::"}}
-			} else {
+			if l.peekChar() == ':' { //diff:ignore-line-postgres-cockroach
+				l.readChar()                                                           //diff:ignore-line-postgres-cockroach
+				tok = Token{Type: TOKEN_TYPE_ANNOTATION, Literal: Literal{Str: ":::"}} //diff:ignore-line-postgres-cockroach
+			} else { //diff:ignore-line-postgres-cockroach
 				tok = Token{Type: TOKEN_TYPECAST, Literal: Literal{Str: "::"}}
-			}
+			} //diff:ignore-line-postgres-cockroach
 		} else {
 			tok = newToken(TOKEN_ILLEGAL, l.ch)
 		}

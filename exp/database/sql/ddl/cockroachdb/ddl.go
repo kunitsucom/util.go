@@ -70,34 +70,32 @@ func (i *Ident) StringForDiff() string {
 
 type ColumnIdent struct {
 	Ident *Ident
-	Order *Order
+	Order *Order //diff:ignore-line-postgres-cockroach
 }
 
-type Order struct {
-	Desc bool
-}
+type Order struct{ Desc bool } //diff:ignore-line-postgres-cockroach
 
 func (i *ColumnIdent) GoString() string { return internal.GoString(*i) }
 
 func (i *ColumnIdent) String() string {
 	str := i.Ident.String()
-	if i.Order != nil {
-		if i.Order.Desc {
-			str += " DESC"
-		} else {
-			str += " ASC"
-		}
-	}
+	if i.Order != nil { //diff:ignore-line-postgres-cockroach
+		if i.Order.Desc { //diff:ignore-line-postgres-cockroach
+			str += " DESC" //diff:ignore-line-postgres-cockroach
+		} else { //diff:ignore-line-postgres-cockroach
+			str += " ASC" //diff:ignore-line-postgres-cockroach
+		} //diff:ignore-line-postgres-cockroach
+	} //diff:ignore-line-postgres-cockroach
 	return str
 }
 
 func (i *ColumnIdent) StringForDiff() string {
 	str := i.Ident.StringForDiff()
-	if i.Order != nil && i.Order.Desc {
-		str += " DESC"
-	} else {
-		str += " ASC"
-	}
+	if i.Order != nil && i.Order.Desc { //diff:ignore-line-postgres-cockroach
+		str += " DESC" //diff:ignore-line-postgres-cockroach
+	} else { //diff:ignore-line-postgres-cockroach
+		str += " ASC" //diff:ignore-line-postgres-cockroach
+	} //diff:ignore-line-postgres-cockroach
 	return str
 }
 

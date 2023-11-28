@@ -71,16 +71,16 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 	for _, beforeConstraint := range before.Constraints {
 		afterConstraint := findConstraintByName(beforeConstraint.GetName().Name, after.Constraints)
 		if afterConstraint == nil {
-			switch bc := beforeConstraint.(type) {
-			case *IndexConstraint:
-				// DROP INDEX index_name;
-				result.Stmts = append(result.Stmts, &DropIndexStmt{
-					Name: &ObjectName{
-						Schema: before.Name.Schema,
-						Name:   bc.GetName(),
-					},
-				})
-			default:
+			switch bc := beforeConstraint.(type) { //diff:ignore-line-postgres-cockroach
+			case *IndexConstraint: //diff:ignore-line-postgres-cockroach
+				// DROP INDEX index_name; //diff:ignore-line-postgres-cockroach
+				result.Stmts = append(result.Stmts, &DropIndexStmt{ //diff:ignore-line-postgres-cockroach
+					Name: &ObjectName{ //diff:ignore-line-postgres-cockroach
+						Schema: before.Name.Schema, //diff:ignore-line-postgres-cockroach
+						Name:   bc.GetName(),       //diff:ignore-line-postgres-cockroach
+					}, //diff:ignore-line-postgres-cockroach
+				}) //diff:ignore-line-postgres-cockroach
+			default: //diff:ignore-line-postgres-cockroach
 				// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
 				result.Stmts = append(result.Stmts, &AlterTableStmt{
 					Name: after.Name, // ALTER TABLE RENAME TO で変更された後の可能性があるため after.Name を使用する
@@ -88,7 +88,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 						Name: beforeConstraint.GetName(),
 					},
 				})
-			}
+			} //diff:ignore-line-postgres-cockroach
 			continue
 		}
 	}
@@ -99,29 +99,29 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		afterConstraint := findConstraintByName(beforeConstraint.GetName().Name, after.Constraints)
 		if afterConstraint != nil {
 			if beforeConstraint.StringForDiff() != afterConstraint.StringForDiff() {
-				switch ac := afterConstraint.(type) {
-				case *IndexConstraint:
-					// DROP INDEX index_name;
-					// CREATE INDEX index_name ON table_name (column_name);
-					result.Stmts = append(
-						result.Stmts,
-						&DropIndexStmt{
-							Name: &ObjectName{
-								Schema: before.Name.Schema,
-								Name:   beforeConstraint.GetName(),
-							},
-						},
-						&CreateIndexStmt{
-							Unique: ac.Unique,
-							Name: &ObjectName{
-								Schema: after.Name.Schema,
-								Name:   ac.GetName(),
-							},
-							TableName: after.Name,
-							Columns:   ac.Columns,
-						},
-					)
-				default:
+				switch ac := afterConstraint.(type) { //diff:ignore-line-postgres-cockroach
+				case *IndexConstraint: //diff:ignore-line-postgres-cockroach
+					// DROP INDEX index_name;                               //diff:ignore-line-postgres-cockroach
+					// CREATE INDEX index_name ON table_name (column_name); //diff:ignore-line-postgres-cockroach
+					result.Stmts = append( //diff:ignore-line-postgres-cockroach
+						result.Stmts, //diff:ignore-line-postgres-cockroach
+						&DropIndexStmt{ //diff:ignore-line-postgres-cockroach
+							Name: &ObjectName{ //diff:ignore-line-postgres-cockroach
+								Schema: before.Name.Schema,         //diff:ignore-line-postgres-cockroach
+								Name:   beforeConstraint.GetName(), //diff:ignore-line-postgres-cockroach
+							}, //diff:ignore-line-postgres-cockroach
+						}, //diff:ignore-line-postgres-cockroach
+						&CreateIndexStmt{ //diff:ignore-line-postgres-cockroach
+							Unique: ac.Unique, //diff:ignore-line-postgres-cockroach
+							Name: &ObjectName{ //diff:ignore-line-postgres-cockroach
+								Schema: after.Name.Schema, //diff:ignore-line-postgres-cockroach
+								Name:   ac.GetName(),      //diff:ignore-line-postgres-cockroach
+							}, //diff:ignore-line-postgres-cockroach
+							TableName: after.Name, //diff:ignore-line-postgres-cockroach
+							Columns:   ac.Columns, //diff:ignore-line-postgres-cockroach
+						}, //diff:ignore-line-postgres-cockroach
+					) //diff:ignore-line-postgres-cockroach
+				default: //diff:ignore-line-postgres-cockroach
 					// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
 					// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
 					result.Stmts = append(
@@ -140,26 +140,26 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 							},
 						},
 					)
-				}
+				} //diff:ignore-line-postgres-cockroach
 			}
 			continue
 		}
 	}
 
 	for _, afterConstraint := range onlyLeftConstraint(after.Constraints, before.Constraints) {
-		switch ac := afterConstraint.(type) {
-		case *IndexConstraint:
-			// CREATE INDEX index_name ON table_name (column_name);
-			result.Stmts = append(result.Stmts, &CreateIndexStmt{
-				Unique: ac.Unique,
-				Name: &ObjectName{
-					Schema: after.Name.Schema,
-					Name:   ac.GetName(),
-				},
-				TableName: after.Name,
-				Columns:   ac.Columns,
-			})
-		default:
+		switch ac := afterConstraint.(type) { //diff:ignore-line-postgres-cockroach
+		case *IndexConstraint: //diff:ignore-line-postgres-cockroach
+			// CREATE INDEX index_name ON table_name (column_name); //diff:ignore-line-postgres-cockroach
+			result.Stmts = append(result.Stmts, &CreateIndexStmt{ //diff:ignore-line-postgres-cockroach
+				Unique: ac.Unique, //diff:ignore-line-postgres-cockroach
+				Name: &ObjectName{ //diff:ignore-line-postgres-cockroach
+					Schema: after.Name.Schema, //diff:ignore-line-postgres-cockroach
+					Name:   ac.GetName(),      //diff:ignore-line-postgres-cockroach
+				}, //diff:ignore-line-postgres-cockroach
+				TableName: after.Name, //diff:ignore-line-postgres-cockroach
+				Columns:   ac.Columns, //diff:ignore-line-postgres-cockroach
+			}) //diff:ignore-line-postgres-cockroach
+		default: //diff:ignore-line-postgres-cockroach
 			// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
 			result.Stmts = append(result.Stmts, &AlterTableStmt{
 				Name: after.Name,
@@ -168,7 +168,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 					NotValid:   config.UseAlterTableAddConstraintNotValid,
 				},
 			})
-		}
+		} //diff:ignore-line-postgres-cockroach
 	}
 
 	if len(result.Stmts) == 0 {

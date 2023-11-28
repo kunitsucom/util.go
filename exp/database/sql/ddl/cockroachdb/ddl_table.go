@@ -1,7 +1,7 @@
 package cockroachdb
 
 import (
-	"sort"
+	"sort" //diff:ignore-line-postgres-cockroach
 	"strings"
 
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
@@ -27,15 +27,15 @@ func (constraints Constraints) Append(constraint Constraint) Constraints {
 	}
 	constraints = append(constraints, constraint)
 
-	sort.Slice(constraints, func(left, right int) bool {
-		_, leftIsPrimaryKeyConstraint := constraints[left].(*PrimaryKeyConstraint)
-		switch {
-		case leftIsPrimaryKeyConstraint:
-			return true
-		default:
-			return false
-		}
-	})
+	sort.Slice(constraints, func(left, right int) bool { //diff:ignore-line-postgres-cockroach
+		_, leftIsPrimaryKeyConstraint := constraints[left].(*PrimaryKeyConstraint) //diff:ignore-line-postgres-cockroach
+		switch {                                                                   //diff:ignore-line-postgres-cockroach
+		case leftIsPrimaryKeyConstraint: //diff:ignore-line-postgres-cockroach
+			return true //diff:ignore-line-postgres-cockroach
+		default: //diff:ignore-line-postgres-cockroach
+			return false //diff:ignore-line-postgres-cockroach
+		} //diff:ignore-line-postgres-cockroach
+	}) //diff:ignore-line-postgres-cockroach
 
 	return constraints
 }
@@ -129,37 +129,37 @@ func (c *ForeignKeyConstraint) StringForDiff() string {
 	return str
 }
 
-// IndexConstraint represents a UNIQUE constraint.
-type IndexConstraint struct {
+// IndexConstraint represents a UNIQUE constraint. //diff:ignore-line-postgres-cockroach.
+type IndexConstraint struct { //diff:ignore-line-postgres-cockroach
 	Name    *Ident
-	Unique  bool
+	Unique  bool //diff:ignore-line-postgres-cockroach
 	Columns []*ColumnIdent
 }
 
-var _ Constraint = (*IndexConstraint)(nil)
+var _ Constraint = (*IndexConstraint)(nil) //diff:ignore-line-postgres-cockroach
 
-func (*IndexConstraint) isConstraint()      {}
-func (c *IndexConstraint) GetName() *Ident  { return c.Name }
-func (c *IndexConstraint) GoString() string { return internal.GoString(*c) }
-func (c *IndexConstraint) String() string {
+func (*IndexConstraint) isConstraint()      {}                               //diff:ignore-line-postgres-cockroach
+func (c *IndexConstraint) GetName() *Ident  { return c.Name }                //diff:ignore-line-postgres-cockroach
+func (c *IndexConstraint) GoString() string { return internal.GoString(*c) } //diff:ignore-line-postgres-cockroach
+func (c *IndexConstraint) String() string { //diff:ignore-line-postgres-cockroach
 	var str string
-	if c.Unique {
-		str += "UNIQUE "
-	}
-	if c.Name != nil {
-		str += "INDEX " + c.Name.String() + " "
+	if c.Unique { //diff:ignore-line-postgres-cockroach
+		str += "UNIQUE " //diff:ignore-line-postgres-cockroach
+	} //diff:ignore-line-postgres-cockroach
+	if c.Name != nil { //diff:ignore-line-postgres-cockroach
+		str += "INDEX " + c.Name.String() + " " //diff:ignore-line-postgres-cockroach
 	}
 	str += "(" + stringz.JoinStringers(", ", c.Columns...) + ")"
 	return str
 }
 
-func (c *IndexConstraint) StringForDiff() string {
+func (c *IndexConstraint) StringForDiff() string { //diff:ignore-line-postgres-cockroach
 	var str string
-	if c.Unique {
-		str += "UNIQUE "
-	}
+	if c.Unique { //diff:ignore-line-postgres-cockroach
+		str += "UNIQUE " //diff:ignore-line-postgres-cockroach
+	} //diff:ignore-line-postgres-cockroach
 	if c.Name != nil {
-		str += "INDEX " + c.Name.StringForDiff() + " "
+		str += "INDEX " + c.Name.StringForDiff() + " " //diff:ignore-line-postgres-cockroach
 	}
 	str += "("
 	for i, v := range c.Columns {
@@ -291,7 +291,7 @@ func (d *DefaultValue) String() string {
 			d.Idents[i-1].String() == "(" || d.Idents[i].String() == "(" ||
 			d.Idents[i].String() == ")" ||
 			d.Idents[i-1].String() == "::" || d.Idents[i].String() == "::" ||
-			d.Idents[i-1].String() == ":::" || d.Idents[i].String() == ":::" ||
+			d.Idents[i-1].String() == ":::" || d.Idents[i].String() == ":::" || //diff:ignore-line-postgres-cockroach
 			d.Idents[i].String() == ",":
 			// noop
 		default:
@@ -335,11 +335,11 @@ func (d *Default) StringForDiff() string {
 func (c *Column) String() string {
 	str := c.Name.String() + " " +
 		c.DataType.String()
-	if c.NotNull {
-		str += " NOT NULL"
-	}
-	if c.Default != nil {
-		str += " " + c.Default.String()
+	if c.NotNull { //diff:ignore-line-postgres-cockroach
+		str += " NOT NULL" //diff:ignore-line-postgres-cockroach
+	} //diff:ignore-line-postgres-cockroach
+	if c.Default != nil { //diff:ignore-line-postgres-cockroach
+		str += " " + c.Default.String() //diff:ignore-line-postgres-cockroach
 	}
 	return str
 }

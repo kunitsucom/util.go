@@ -117,34 +117,34 @@ func (c *ForeignKeyConstraint) StringForDiff() string {
 	return str
 }
 
-// UniqueConstraint represents a UNIQUE constraint.
-type UniqueConstraint struct {
+// UniqueConstraint represents a UNIQUE constraint. //diff:ignore-line-postgres-cockroach.
+type UniqueConstraint struct { //diff:ignore-line-postgres-cockroach
 	Name    *Ident
 	Columns []*ColumnIdent
 }
 
-var _ Constraint = (*UniqueConstraint)(nil)
+var _ Constraint = (*UniqueConstraint)(nil) //diff:ignore-line-postgres-cockroach
 
-func (*UniqueConstraint) isConstraint()      {}
-func (c *UniqueConstraint) GetName() *Ident  { return c.Name }
-func (c *UniqueConstraint) GoString() string { return internal.GoString(*c) }
-func (c *UniqueConstraint) String() string {
+func (*UniqueConstraint) isConstraint()      {}                               //diff:ignore-line-postgres-cockroach
+func (c *UniqueConstraint) GetName() *Ident  { return c.Name }                //diff:ignore-line-postgres-cockroach
+func (c *UniqueConstraint) GoString() string { return internal.GoString(*c) } //diff:ignore-line-postgres-cockroach
+func (c *UniqueConstraint) String() string { //diff:ignore-line-postgres-cockroach
 	var str string
-	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.String() + " "
+	if c.Name != nil { //diff:ignore-line-postgres-cockroach
+		str += "CONSTRAINT " + c.Name.String() + " " //diff:ignore-line-postgres-cockroach
 	}
-	str += "UNIQUE " //nolint:goconst
+	str += "UNIQUE " //nolint:goconst //diff:ignore-line-postgres-cockroach
 	str += "(" + stringz.JoinStringers(", ", c.Columns...) + ")"
 	return str
 }
 
-func (c *UniqueConstraint) StringForDiff() string {
+func (c *UniqueConstraint) StringForDiff() string { //diff:ignore-line-postgres-cockroach
 	var str string
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.StringForDiff() + " "
+		str += "CONSTRAINT " + c.Name.StringForDiff() + " " //diff:ignore-line-postgres-cockroach
 	}
-	str += "UNIQUE"
-	str += " ("
+	str += "UNIQUE " //diff:ignore-line-postgres-cockroach
+	str += "("
 	for i, v := range c.Columns {
 		if i != 0 {
 			str += ", "
@@ -317,11 +317,11 @@ func (d *Default) StringForDiff() string {
 func (c *Column) String() string {
 	str := c.Name.String() + " " +
 		c.DataType.String()
-	if c.Default != nil {
-		str += " " + c.Default.String()
-	}
-	if c.NotNull {
-		str += " NOT NULL"
+	if c.Default != nil { //diff:ignore-line-postgres-cockroach
+		str += " " + c.Default.String() //diff:ignore-line-postgres-cockroach
+	} //diff:ignore-line-postgres-cockroach
+	if c.NotNull { //diff:ignore-line-postgres-cockroach
+		str += " NOT NULL" //diff:ignore-line-postgres-cockroach
 	}
 	return str
 }

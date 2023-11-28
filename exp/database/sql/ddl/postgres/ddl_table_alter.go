@@ -2,7 +2,7 @@ package postgres
 
 import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 
-// MEMO: https://www.postgresql.jp/docs/11/sql-altertable.html
+// MEMO: https://www.postgresql.jp/docs/11/sql-altertable.html //diff:ignore-line-postgres-cockroach
 
 type AlterTableAction interface {
 	isAlterTableAction()

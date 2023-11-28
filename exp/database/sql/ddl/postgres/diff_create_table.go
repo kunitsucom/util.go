@@ -122,6 +122,10 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		})
 	}
 
+	if len(result.Stmts) == 0 {
+		return nil, errorz.Errorf("before: %s, after: %s: %w", before.GetNameForDiff(), after.GetNameForDiff(), ddl.ErrNoDifference)
+	}
+
 	return result, nil
 }
 

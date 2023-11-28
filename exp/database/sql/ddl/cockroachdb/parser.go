@@ -310,7 +310,8 @@ LabelDefault:
 			def.Value = def.Value.Append(NewIdent(p.currentToken.Literal.Str))
 		case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS,
 			TOKEN_PLUS, TOKEN_MINUS, TOKEN_ASTERISK, TOKEN_SLASH,
-			TOKEN_STRING_CONCAT, TOKEN_TYPECAST, TOKEN_TYPE_ANNOTATION:
+			TOKEN_TYPE_ANNOTATION, //diff:ignore-line-postgres-cockroach
+			TOKEN_STRING_CONCAT, TOKEN_TYPECAST:
 			def.Value = def.Value.Append(NewIdent(p.currentToken.Literal.Str))
 		case TOKEN_OPEN_PAREN:
 			ids, err := p.parseExpr()
@@ -408,8 +409,8 @@ LabelConstraints:
 			constraint.RefColumns = idents
 			constraints = constraints.Append(constraint)
 		case TOKEN_UNIQUE:
-			constraints = constraints.Append(&IndexConstraint{
-				Unique:  true,
+			constraints = constraints.Append(&IndexConstraint{ //diff:ignore-line-postgres-cockroach
+				Unique:  true, //diff:ignore-line-postgres-cockroach
 				Name:    NewIdent(fmt.Sprintf("%s_unique_%s", tableName.StringForDiff(), column.Name.StringForDiff())),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			})
@@ -466,7 +467,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
 		}
 		constraintName = NewIdent(p.currentToken.Literal.Str)
-		p.nextToken() // current = PRIMARY or CHECK
+		p.nextToken() // current = PRIMARY or CHECK //diff:ignore-line-postgres-cockroach
 	}
 
 	switch p.currentToken.Type { //nolint:exhaustive
@@ -532,20 +533,20 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			RefColumns: identsRef,
 		}, nil
 
-	case TOKEN_UNIQUE, TOKEN_INDEX:
-		c := &IndexConstraint{}
-		if p.currentToken.Type == TOKEN_UNIQUE {
-			c.Unique = true
-			if err := p.checkPeekToken(TOKEN_INDEX); err != nil {
-				return nil, errorz.Errorf("checkPeekToken: %w", err)
-			}
-			p.nextToken() // current = INDEX
-		}
-		p.nextToken() // current = index_name
-		if err := p.checkCurrentToken(TOKEN_IDENT); err != nil {
-			return nil, errorz.Errorf("checkCurrentToken: %w", err)
-		}
-		constraintName := NewIdent(p.currentToken.Literal.Str)
+	case TOKEN_UNIQUE, TOKEN_INDEX: //diff:ignore-line-postgres-cockroach
+		c := &IndexConstraint{}                  //diff:ignore-line-postgres-cockroach
+		if p.currentToken.Type == TOKEN_UNIQUE { //diff:ignore-line-postgres-cockroach
+			c.Unique = true                                       //diff:ignore-line-postgres-cockroach
+			if err := p.checkPeekToken(TOKEN_INDEX); err != nil { //diff:ignore-line-postgres-cockroach
+				return nil, errorz.Errorf("checkPeekToken: %w", err) //diff:ignore-line-postgres-cockroach
+			} //diff:ignore-line-postgres-cockroach
+			p.nextToken() // current = INDEX //diff:ignore-line-postgres-cockroach
+		} //diff:ignore-line-postgres-cockroach
+		p.nextToken()                                            // current = index_name//diff:ignore-line-postgres-cockroach
+		if err := p.checkCurrentToken(TOKEN_IDENT); err != nil { //diff:ignore-line-postgres-cockroach
+			return nil, errorz.Errorf("checkCurrentToken: %w", err) //diff:ignore-line-postgres-cockroach
+		} //diff:ignore-line-postgres-cockroach
+		constraintName := NewIdent(p.currentToken.Literal.Str) //diff:ignore-line-postgres-cockroach
 		if err := p.checkPeekToken(TOKEN_OPEN_PAREN); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
 		}
@@ -582,7 +583,7 @@ func (p *Parser) parseDataType() (*DataType, error) {
 			}
 			p.nextToken() // current = ZONE
 			dataType.Name += " " + p.currentToken.Literal.String()
-			dataType.Type = TOKEN_TIMESTAMPTZ
+			dataType.Type = TOKEN_TIMESTAMPTZ //diff:ignore-line-postgres-cockroach
 		} else {
 			dataType.Type = TOKEN_TIMESTAMP
 		}
@@ -601,7 +602,7 @@ func (p *Parser) parseDataType() (*DataType, error) {
 		}
 		p.nextToken() // current = VARYING
 		dataType.Name += " " + p.currentToken.Literal.String()
-		dataType.Type = TOKEN_VARCHAR
+		dataType.Type = TOKEN_VARCHAR //diff:ignore-line-postgres-cockroach
 	default:
 		dataType.Name = p.currentToken.Literal.String()
 		dataType.Type = p.currentToken.Type
@@ -630,14 +631,14 @@ LabelIdents:
 			// do nothing
 		case TOKEN_IDENT:
 			ident := &ColumnIdent{Ident: NewIdent(p.currentToken.Literal.Str)}
-			switch p.peekToken.Type { //nolint:exhaustive
-			case TOKEN_ASC:
-				ident.Order = &Order{Desc: false}
-				p.nextToken() // current = ASC
-			case TOKEN_DESC:
-				ident.Order = &Order{Desc: true}
-				p.nextToken() // current = DESC
-			}
+			switch p.peekToken.Type { //nolint:exhaustive //diff:ignore-line-postgres-cockroach
+			case TOKEN_ASC: //diff:ignore-line-postgres-cockroach
+				ident.Order = &Order{Desc: false} //diff:ignore-line-postgres-cockroach
+				p.nextToken()                     // current = ASC //diff:ignore-line-postgres-cockroach
+			case TOKEN_DESC: //diff:ignore-line-postgres-cockroach
+				ident.Order = &Order{Desc: true} //diff:ignore-line-postgres-cockroach
+				p.nextToken()                    // current = DESC //diff:ignore-line-postgres-cockroach
+			} //diff:ignore-line-postgres-cockroach
 			idents = append(idents, ident)
 		case TOKEN_COMMA:
 			// do nothing
@@ -655,14 +656,14 @@ LabelIdents:
 
 func isDataType(tokenType TokenType) bool {
 	switch tokenType { //nolint:exhaustive
-	case TOKEN_BOOL,
+	case TOKEN_BOOL, //diff:ignore-line-postgres-cockroach
 		TOKEN_SMALLINT, TOKEN_INTEGER, TOKEN_BIGINT,
 		TOKEN_DECIMAL, TOKEN_NUMERIC,
 		TOKEN_REAL, TOKEN_DOUBLE, /* TOKEN_PRECISION, */
 		TOKEN_SMALLSERIAL, TOKEN_SERIAL, TOKEN_BIGSERIAL,
 		TOKEN_UUID, TOKEN_JSONB,
-		TOKEN_CHARACTER, TOKEN_VARYING, TOKEN_VARCHAR,
-		TOKEN_STRING,
+		TOKEN_CHARACTER, TOKEN_VARYING,
+		TOKEN_VARCHAR, TOKEN_STRING, //diff:ignore-line-postgres-cockroach
 		TOKEN_TIMESTAMP, TOKEN_TIMESTAMPTZ:
 		return true
 	default:
@@ -672,7 +673,8 @@ func isDataType(tokenType TokenType) bool {
 
 func isConstraint(tokenType TokenType) bool {
 	switch tokenType { //nolint:exhaustive
-	case TOKEN_CONSTRAINT, TOKEN_INDEX,
+	case TOKEN_CONSTRAINT,
+		TOKEN_INDEX, //diff:ignore-line-postgres-cockroach
 		TOKEN_PRIMARY, TOKEN_KEY,
 		TOKEN_FOREIGN, TOKEN_REFERENCES,
 		TOKEN_UNIQUE,
