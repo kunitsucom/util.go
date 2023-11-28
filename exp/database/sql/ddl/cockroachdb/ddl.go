@@ -36,7 +36,7 @@ const (
 
 type Stmt interface {
 	isStmt()
-	GetPlainName() string
+	GetNameForDiff() string
 	String() string
 }
 
@@ -93,12 +93,10 @@ func (i *ColumnIdent) String() string {
 
 func (i *ColumnIdent) StringForDiff() string {
 	str := i.Ident.StringForDiff()
-	if i.Order != nil {
-		if i.Order.Desc {
-			str += " DESC"
-		} else {
-			str += " ASC"
-		}
+	if i.Order != nil && i.Order.Desc {
+		str += " DESC"
+	} else {
+		str += " ASC"
 	}
 	return str
 }

@@ -11,7 +11,7 @@ type DropTableStmt struct {
 	Name     *ObjectName
 }
 
-func (s *DropTableStmt) GetPlainName() string {
+func (s *DropTableStmt) GetNameForDiff() string {
 	return s.Name.StringForDiff()
 }
 

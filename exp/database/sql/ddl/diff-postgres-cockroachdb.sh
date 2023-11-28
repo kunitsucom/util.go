@@ -26,4 +26,5 @@ diff_envs \
   --ignore-matching-lines="package postgres" \
   --ignore-matching-lines="package cockroachdb" \
   postgres \
-  cockroachdb
+  cockroachdb |
+  less -R -X

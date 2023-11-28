@@ -309,13 +309,13 @@ func TestAlterTableStmt_String(t *testing.T) {
 	})
 }
 
-func TestAlterTableStmt_GetPlainName(t *testing.T) {
+func TestAlterTableStmt_GetNameForDiff(t *testing.T) {
 	t.Parallel()
 
 	stmt := &AlterTableStmt{Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}}}
 
 	expected := `users`
-	actual := stmt.GetPlainName()
+	actual := stmt.GetNameForDiff()
 
 	require.Equal(t, expected, actual)
 }

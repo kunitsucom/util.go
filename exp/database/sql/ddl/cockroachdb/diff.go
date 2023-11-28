@@ -27,7 +27,7 @@ func Diff(before, after *DDL) (*DDL, error) {
 					Name: s.Name,
 				})
 			default:
-				return nil, errorz.Errorf("%s: %T: %w", s.GetPlainName(), s, ddl.ErrNotSupported)
+				return nil, errorz.Errorf("%s: %T: %w", s.GetNameForDiff(), s, ddl.ErrNotSupported)
 			}
 		}
 		return result, nil
@@ -47,7 +47,7 @@ func Diff(before, after *DDL) (*DDL, error) {
 				Name: beforeStmt.Name,
 			})
 		default:
-			return nil, errorz.Errorf("%s: %T: %w", beforeStmt.GetPlainName(), beforeStmt, ddl.ErrNotSupported)
+			return nil, errorz.Errorf("%s: %T: %w", beforeStmt.GetNameForDiff(), beforeStmt, ddl.ErrNotSupported)
 		}
 	}
 
@@ -59,7 +59,7 @@ func Diff(before, after *DDL) (*DDL, error) {
 		case *CreateIndexStmt:
 			result.Stmts = append(result.Stmts, afterStmt)
 		default:
-			return nil, errorz.Errorf("%s: %T: %w", afterStmt.GetPlainName(), afterStmt, ddl.ErrNotSupported)
+			return nil, errorz.Errorf("%s: %T: %w", afterStmt.GetNameForDiff(), afterStmt, ddl.ErrNotSupported)
 		}
 	}
 
@@ -109,7 +109,7 @@ func onlyLeftStmt(left, right *DDL) []Stmt {
 
 func findStmtByTypeAndName(stmt Stmt, stmts []Stmt) Stmt { //nolint:ireturn
 	for _, s := range stmts {
-		if reflect.TypeOf(stmt) == reflect.TypeOf(s) && stmt.GetPlainName() == s.GetPlainName() {
+		if reflect.TypeOf(stmt) == reflect.TypeOf(s) && stmt.GetNameForDiff() == s.GetNameForDiff() {
 			return s
 		}
 	}

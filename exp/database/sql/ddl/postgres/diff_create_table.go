@@ -51,7 +51,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		})
 		return result, nil
 	case (before == nil && after == nil) || reflect.DeepEqual(before, after) || before.String() == after.String():
-		return nil, errorz.Errorf("before: %s, after: %s: %w", before.GetPlainName(), after.GetPlainName(), ddl.ErrNoDifference)
+		return nil, errorz.Errorf("before: %s, after: %s: %w", before.GetNameForDiff(), after.GetNameForDiff(), ddl.ErrNoDifference)
 	}
 
 	if before.Name.StringForDiff() != after.Name.StringForDiff() {

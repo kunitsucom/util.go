@@ -20,17 +20,11 @@ func TestParser_Parse(t *testing.T) {
 	})
 	internal.TraceLog = log.New(os.Stderr, "TRACE: ", log.LstdFlags|log.Lshortfile)
 
-	successTests := []struct {
-		name    string
-		input   string
-		wantErr error
-		wantStr string
-	}{
-		{
-			name:    "success,CREATE_TABLE",
-			input:   `CREATE TABLE public.groups ("id" UUID NOT NULL PRIMARY KEY, description TEXT); CREATE TABLE public.users (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), birthday TIMESTAMP NOT NULL, description TEXT, PRIMARY KEY ("id"));`,
-			wantErr: nil,
-			wantStr: `CREATE TABLE public.groups (
+	t.Run("success,CREATE_TABLE", func(t *testing.T) {
+		t.Parallel()
+
+		input := `CREATE TABLE public.groups ("id" UUID NOT NULL PRIMARY KEY, description TEXT); CREATE TABLE public.users (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" VARCHAR(255) NOT NULL UNIQUE, "age" INT DEFAULT 0 CHECK ("age" >= 0), birthday TIMESTAMP NOT NULL, description TEXT, PRIMARY KEY ("id"));`
+		expected := `CREATE TABLE public.groups (
     "id" UUID NOT NULL,
     description TEXT,
     CONSTRAINT groups_pkey PRIMARY KEY ("id")
@@ -38,8 +32,8 @@ func TestParser_Parse(t *testing.T) {
 CREATE TABLE public.users (
     id UUID NOT NULL,
     group_id UUID NOT NULL,
-    "name" VARYING(255) NOT NULL,
-    "age" INTEGER DEFAULT 0,
+    "name" VARCHAR(255) NOT NULL,
+    "age" INT DEFAULT 0,
     birthday TIMESTAMP NOT NULL,
     description TEXT,
     CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id"),
@@ -47,11 +41,25 @@ CREATE TABLE public.users (
     CONSTRAINT users_age_check CHECK ("age" >= 0),
     CONSTRAINT users_pkey PRIMARY KEY ("id")
 );
-`,
-		},
-		{
-			name: "success,complex_defaults",
-			input: `-- table: complex_defaults
+`
+
+		l := NewLexer(input)
+		p := NewParser(l)
+		actual, err := p.Parse()
+		require.NoError(t, err)
+
+		if !assert.Equal(t, expected, actual.String()) {
+			t.Errorf("❌: %s: stmt: %%#v: \n%#v", t.Name(), actual)
+		}
+
+		t.Logf("ℹ️: %s: stmt: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("ℹ️: %s: stmt: %%s: \n%s", t.Name(), actual)
+	})
+
+	t.Run("success,complex_defaults", func(t *testing.T) {
+		t.Parallel()
+
+		input := `-- table: complex_defaults
 CREATE TABLE IF NOT EXISTS complex_defaults (
     -- id is the primary key.
     id SERIAL PRIMARY KEY,
@@ -63,9 +71,8 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
     json_data JSONB DEFAULT '{}',
     calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table)
 );
-`,
-			wantErr: nil,
-			wantStr: `CREATE TABLE IF NOT EXISTS complex_defaults (
+`
+		expected := `CREATE TABLE IF NOT EXISTS complex_defaults (
     id SERIAL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -76,29 +83,20 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
     calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table),
     CONSTRAINT complex_defaults_pkey PRIMARY KEY (id)
 );
-`,
-		},
-	}
+`
 
-	for _, tt := range successTests {
-		tt := tt
+		l := NewLexer(input)
+		p := NewParser(l)
+		actual, err := p.Parse()
+		require.NoError(t, err)
 
-		t.Run(tt.name, func(t *testing.T) {
-			// t.Parallel()
+		if !assert.Equal(t, expected, actual.String()) {
+			t.Errorf("❌: %s: stmt: %%#v: \n%#v", t.Name(), actual)
+		}
 
-			l := NewLexer(tt.input)
-			p := NewParser(l)
-			stmt, err := p.Parse()
-			require.ErrorIs(t, err, tt.wantErr)
-
-			if !assert.Equal(t, tt.wantStr, stmt.String()) {
-				t.Errorf("❌: %s: stmt: %%#v: \n%#v", t.Name(), stmt)
-			}
-
-			t.Logf("✅: %s: stmt: %%#v: \n%#v", t.Name(), stmt)
-			t.Logf("✅: %s: stmt: %%s: \n%s", t.Name(), stmt)
-		})
-	}
+		t.Logf("ℹ️: %s: stmt: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("ℹ️: %s: stmt: %%s: \n%s", t.Name(), actual)
+	})
 
 	failureTests := []struct {
 		name    string

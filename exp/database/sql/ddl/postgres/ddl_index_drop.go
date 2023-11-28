@@ -11,7 +11,7 @@ type DropIndexStmt struct {
 	Name     *ObjectName
 }
 
-func (s *DropIndexStmt) GetPlainName() string {
+func (s *DropIndexStmt) GetNameForDiff() string {
 	return s.Name.StringForDiff()
 }
 

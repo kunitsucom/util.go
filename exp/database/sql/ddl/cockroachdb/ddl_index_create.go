@@ -17,7 +17,7 @@ type CreateIndexStmt struct {
 	Columns     []*ColumnIdent
 }
 
-func (s *CreateIndexStmt) GetPlainName() string {
+func (s *CreateIndexStmt) GetNameForDiff() string {
 	return s.Name.StringForDiff()
 }
 

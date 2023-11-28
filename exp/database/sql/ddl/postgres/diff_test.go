@@ -342,4 +342,22 @@ CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (
 			t.Errorf("❌: %s: stmt: %%#v: \n%#v", t.Name(), actual)
 		}
 	})
+
+	t.Run("success,VARCHAR(10)->VARCHAR(11)", func(t *testing.T) {
+		t.Parallel()
+
+		before, err := NewParser(NewLexer(`CREATE TABLE public.users ( username VARCHAR(10) NOT NULL );`)).Parse()
+		require.NoError(t, err)
+
+		after, err := NewParser(NewLexer(`CREATE TABLE public.users ( username VARCHAR(11) NOT NULL );`)).Parse()
+		require.NoError(t, err)
+
+		expected := `ALTER TABLE public.users ALTER COLUMN username SET DATA TYPE VARCHAR(11);` + "\n"
+		actual, err := Diff(before, after)
+		require.NoError(t, err)
+
+		if !assert.Equal(t, expected, actual.String()) {
+			t.Errorf("❌: %s: stmt: %%#v: \n%#v", t.Name(), actual)
+		}
+	})
 }

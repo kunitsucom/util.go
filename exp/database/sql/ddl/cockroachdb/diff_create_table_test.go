@@ -615,4 +615,26 @@ CREATE UNIQUE INDEX users_unique_name ON "users" ("id" ASC, name ASC);
 
 		t.Logf("✅: %s:\n%s", t.Name(), ddls)
 	})
+
+	t.Run("success,NoAsc", func(t *testing.T) {
+		t.Parallel()
+
+		beforeDDL, err := NewParser(NewLexer(`CREATE TABLE "users" (id UUID NOT NULL, PRIMARY KEY ("id" ASC));`)).Parse()
+		require.NoError(t, err)
+
+		afterDDL, err := NewParser(NewLexer(`CREATE TABLE "users" (id UUID NOT NULL, PRIMARY KEY ("id"));`)).Parse()
+		require.NoError(t, err)
+
+		actual, err := DiffCreateTable(
+			beforeDDL.Stmts[0].(*CreateTableStmt),
+			afterDDL.Stmts[0].(*CreateTableStmt),
+			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
+		)
+
+		assert.ErrorIs(t, err, ddl.ErrNoDifference)
+		assert.Nil(t, actual)
+
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
+	})
 }

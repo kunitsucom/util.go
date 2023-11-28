@@ -36,7 +36,7 @@ const (
 
 type Stmt interface {
 	isStmt()
-	GetPlainName() string
+	GetNameForDiff() string
 	String() string
 }
 
@@ -105,8 +105,16 @@ func (s *DataType) StringForDiff() string {
 	if s == nil {
 		return ""
 	}
-	if s.Type == "" {
-		return string(TOKEN_ILLEGAL)
+	var str string
+	if s.Type != "" {
+		str += string(s.Type)
+	} else {
+		str += string(TOKEN_ILLEGAL)
 	}
-	return string(s.Type)
+
+	if s.Size != "" {
+		str += "(" + s.Size + ")"
+	}
+
+	return str
 }

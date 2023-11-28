@@ -39,7 +39,7 @@ LIKE parent_test;
 	})
 }
 
-func TestCreateTableStmt_GetPlainName(t *testing.T) {
+func TestCreateTableStmt_GetNameForDiff(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success,", func(t *testing.T) {
@@ -47,7 +47,7 @@ func TestCreateTableStmt_GetPlainName(t *testing.T) {
 
 		stmt := &CreateTableStmt{Name: &ObjectName{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}}}
 		expected := "test"
-		actual := stmt.GetPlainName()
+		actual := stmt.GetNameForDiff()
 
 		assert.Equal(t, expected, actual)
 

@@ -15,7 +15,7 @@ type CreateTableStmt struct {
 	Options     []*Option
 }
 
-func (s *CreateTableStmt) GetPlainName() string {
+func (s *CreateTableStmt) GetNameForDiff() string {
 	return s.Name.StringForDiff()
 }
 

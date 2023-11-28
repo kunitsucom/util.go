@@ -149,7 +149,7 @@ type AlterTableStmt struct {
 
 func (*AlterTableStmt) isStmt() {}
 
-func (s *AlterTableStmt) GetPlainName() string {
+func (s *AlterTableStmt) GetNameForDiff() string {
 	return s.Name.StringForDiff()
 }
 

@@ -436,8 +436,8 @@ ALTER TABLE "users" ADD CONSTRAINT users_unique_name UNIQUE ("id", name);
 		expectedStr := `CREATE TABLE "users" (
     id UUID NOT NULL,
     group_id UUID NOT NULL,
-    "name" VARYING(255) NOT NULL,
-    "age" INTEGER DEFAULT 0,
+    "name" VARCHAR(255) NOT NULL,
+    "age" INT DEFAULT 0,
     description TEXT,
     CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id"),
     CONSTRAINT users_unique_name UNIQUE ("name"),

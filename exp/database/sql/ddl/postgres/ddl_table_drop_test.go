@@ -6,7 +6,7 @@ import (
 	"github.com/kunitsucom/util.go/testing/require"
 )
 
-func TestDropTableStmt_GetPlainName(t *testing.T) {
+func TestDropTableStmt_GetNameForDiff(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success,", func(t *testing.T) {
@@ -14,7 +14,7 @@ func TestDropTableStmt_GetPlainName(t *testing.T) {
 
 		stmt := &DropTableStmt{Name: &ObjectName{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}}}
 		expected := "test"
-		actual := stmt.GetPlainName()
+		actual := stmt.GetNameForDiff()
 
 		require.Equal(t, expected, actual)
 

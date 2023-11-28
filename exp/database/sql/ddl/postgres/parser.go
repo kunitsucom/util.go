@@ -601,7 +601,7 @@ func (p *Parser) parseDataType() (*DataType, error) {
 		dataType.Name += " " + p.currentToken.Literal.String()
 		dataType.Type = TOKEN_CHARACTER_VARYING
 	default:
-		dataType.Name = string(p.currentToken.Type)
+		dataType.Name = p.currentToken.Literal.String()
 		dataType.Type = p.currentToken.Type
 	}
 
