@@ -188,7 +188,9 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_JSONB
 	case "CHARACTER":
 		return TOKEN_CHARACTER
-	case "VARYING", "VARCHAR":
+	case "VARYING":
+		return TOKEN_VARYING
+	case "VARCHAR":
 		return TOKEN_VARCHAR
 	case "STRING", "TEXT":
 		return TOKEN_STRING

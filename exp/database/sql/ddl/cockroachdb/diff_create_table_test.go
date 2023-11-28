@@ -100,7 +100,7 @@ ALTER TABLE "users" DROP COLUMN "age";
 		beforeDDL, err := NewParser(NewLexer(before)).Parse()
 		require.NoError(t, err)
 
-		after := `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" TEXT NOT NULL UNIQUE, "age" BIGINT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`
+		after := `CREATE TABLE "users" (id UUID NOT NULL, group_id UUID NOT NULL REFERENCES "groups" ("id"), "name" TEXT NOT NULL UNIQUE, "age" BIGINT DEFAULT 0 CHECK ("age" >= 0), description STRING, PRIMARY KEY ("id"));`
 
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
@@ -111,7 +111,7 @@ ALTER TABLE "users" DROP COLUMN "age";
 			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
 		)
 
-		expectedStr := `ALTER TABLE "users" ALTER COLUMN "name" SET DATA TYPE STRING;
+		expectedStr := `ALTER TABLE "users" ALTER COLUMN "name" SET DATA TYPE TEXT;
 ALTER TABLE "users" ALTER COLUMN "age" SET DATA TYPE BIGINT;
 CREATE UNIQUE INDEX users_unique_name ON "users" ("name");
 `
@@ -569,8 +569,8 @@ CREATE UNIQUE INDEX users_unique_name ON "users" ("id" ASC, name ASC);
     id UUID NOT NULL,
     group_id UUID NOT NULL,
     "name" VARCHAR(255) NOT NULL,
-    "age" INTEGER DEFAULT 0,
-    description STRING,
+    "age" INT DEFAULT 0,
+    description TEXT,
     CONSTRAINT users_pkey PRIMARY KEY ("id"),
     CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id"),
     UNIQUE INDEX users_unique_name ("name"),

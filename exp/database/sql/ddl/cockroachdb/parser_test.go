@@ -32,15 +32,15 @@ func TestParser_Parse(t *testing.T) {
 			wantErr: nil,
 			wantStr: `CREATE TABLE "groups" (
     "id" UUID NOT NULL,
-    description STRING,
+    description TEXT,
     CONSTRAINT groups_pkey PRIMARY KEY ("id")
 );
 CREATE TABLE "users" (
     id UUID NOT NULL,
     group_id UUID NOT NULL,
     "name" VARCHAR(255) NOT NULL,
-    "age" INTEGER DEFAULT 0,
-    description STRING,
+    "age" INT DEFAULT 0,
+    description TEXT,
     CONSTRAINT users_pkey PRIMARY KEY ("id"),
     CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id"),
     UNIQUE INDEX users_unique_name ("name"),
@@ -54,10 +54,10 @@ CREATE TABLE "users" (
 CREATE TABLE IF NOT EXISTS complex_defaults (
     -- id is the primary key.
     id SERIAL PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
-    status TEXT DEFAULT 'pending',
+    status CHARACTER VARYING DEFAULT 'pending',
     random_number INTEGER DEFAULT FLOOR(RANDOM() * 100::INTEGER)::INTEGER,
     json_data JSONB DEFAULT '{}',
     calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table)
@@ -66,10 +66,10 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 			wantErr: nil,
 			wantStr: `CREATE TABLE IF NOT EXISTS complex_defaults (
     id SERIAL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    unique_code STRING DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
-    status STRING DEFAULT 'pending',
+    unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
+    status CHARACTER VARYING DEFAULT 'pending',
     random_number INTEGER DEFAULT FLOOR(RANDOM() * 100::INTEGER)::INTEGER,
     json_data JSONB DEFAULT '{}',
     calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table),
@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 		},
 		{
 			name:    "failure,CREATE_TABLE_table_name_column_name_COMMA_INVALID",
-			input:   `CREATE TABLE "users" ("id" UUID,(;`,
+			input:   `CREATE TABLE "users" ("id" TIMESTAMP CREATE`,
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 		{

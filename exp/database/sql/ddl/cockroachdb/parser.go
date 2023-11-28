@@ -567,9 +567,6 @@ func (p *Parser) parseDataType() (*DataType, error) {
 	dataType := &DataType{Type: TOKEN_ILLEGAL}
 
 	switch p.currentToken.Type { //nolint:exhaustive
-	case TOKEN_TIMESTAMPTZ:
-		dataType.Name = p.currentToken.Literal.String()
-		dataType.Type = TOKEN_TIMESTAMPTZ
 	case TOKEN_TIMESTAMP:
 		dataType.Name = p.currentToken.Literal.String()
 		if p.peekToken.Type == TOKEN_WITH {
@@ -587,7 +584,6 @@ func (p *Parser) parseDataType() (*DataType, error) {
 			dataType.Name += " " + p.currentToken.Literal.String()
 			dataType.Type = TOKEN_TIMESTAMPTZ
 		} else {
-			dataType.Name = p.currentToken.Literal.String()
 			dataType.Type = TOKEN_TIMESTAMP
 		}
 	case TOKEN_DOUBLE:
@@ -605,9 +601,9 @@ func (p *Parser) parseDataType() (*DataType, error) {
 		}
 		p.nextToken() // current = VARYING
 		dataType.Name += " " + p.currentToken.Literal.String()
-		dataType.Type = TOKEN_CHARACTER_VARYING
+		dataType.Type = TOKEN_VARCHAR
 	default:
-		dataType.Name = string(p.currentToken.Type)
+		dataType.Name = p.currentToken.Literal.String()
 		dataType.Type = p.currentToken.Type
 	}
 
@@ -665,7 +661,8 @@ func isDataType(tokenType TokenType) bool {
 		TOKEN_REAL, TOKEN_DOUBLE, /* TOKEN_PRECISION, */
 		TOKEN_SMALLSERIAL, TOKEN_SERIAL, TOKEN_BIGSERIAL,
 		TOKEN_UUID, TOKEN_JSONB,
-		TOKEN_CHARACTER, TOKEN_VARCHAR, TOKEN_STRING,
+		TOKEN_CHARACTER, TOKEN_VARYING, TOKEN_VARCHAR,
+		TOKEN_STRING,
 		TOKEN_TIMESTAMP, TOKEN_TIMESTAMPTZ:
 		return true
 	default:

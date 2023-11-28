@@ -50,7 +50,7 @@ func Test_lookupIdent(t *testing.T) {
 		{name: "success,UUID", input: "UUID", want: TOKEN_UUID},
 		{name: "success,JSONB", input: "JSONB", want: TOKEN_JSONB},
 		{name: "success,CHARACTER", input: "CHARACTER", want: TOKEN_CHARACTER},
-		{name: "success,VARYING", input: "VARYING", want: TOKEN_VARCHAR},
+		{name: "success,VARYING", input: "VARYING", want: TOKEN_VARYING},
 		{name: "success,VARCHAR", input: "VARCHAR", want: TOKEN_VARCHAR},
 		{name: "success,TEXT", input: "TEXT", want: TOKEN_STRING},
 		{name: "success,TIMESTAMP", input: "TIMESTAMP", want: TOKEN_TIMESTAMP},
