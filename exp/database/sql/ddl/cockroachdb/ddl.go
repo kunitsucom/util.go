@@ -44,7 +44,12 @@ type DDL struct {
 	Stmts []Stmt
 }
 
-func (d *DDL) String() string { return stringz.JoinStringers("", d.Stmts...) }
+func (d *DDL) String() string {
+	if d == nil {
+		return ""
+	}
+	return stringz.JoinStringers("", d.Stmts...)
+}
 
 type Ident struct {
 	Name          string

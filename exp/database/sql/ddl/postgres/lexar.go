@@ -87,7 +87,6 @@ const (
 	TOKEN_CHARACTER_VARYING        TokenType = "CHARACTER VARYING"
 	TOKEN_CHARACTER                TokenType = "CHARACTER"
 	TOKEN_VARYING                  TokenType = "VARYING"
-	TOKEN_VARCHAR                  TokenType = "VARCHAR"
 	TOKEN_TEXT                     TokenType = "TEXT" //diff:ignore-line-postgres-cockroach
 	TOKEN_TIMESTAMPTZ              TokenType = "TIMESTAMPTZ"
 	TOKEN_TIMESTAMP_WITH_TIME_ZONE TokenType = "TIMESTAMP WITH TIME ZONE" //diff:ignore-line-postgres-cockroach
@@ -99,7 +98,6 @@ const (
 	// COLUMN.
 	TOKEN_DEFAULT TokenType = "DEFAULT"
 	TOKEN_NOT     TokenType = "NOT"
-	TOKEN_NULL    TokenType = "NULL"
 	TOKEN_ASC     TokenType = "ASC"
 	TOKEN_DESC    TokenType = "DESC"
 
@@ -114,6 +112,11 @@ const (
 
 	// FUNCTION.
 	TOKEN_NULLIF TokenType = "NULLIF"
+
+	// VALUE.
+	TOKEN_NULL  TokenType = "NULL"
+	TOKEN_TRUE  TokenType = "TRUE"
+	TOKEN_FALSE TokenType = "FALSE"
 
 	// LITERAL.
 	TOKEN_LITERAL TokenType = "LITERAL"
@@ -188,10 +191,8 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_JSONB
 	case "CHARACTER":
 		return TOKEN_CHARACTER
-	case "VARYING":
+	case "VARYING", "VARCHAR": //diff:ignore-line-postgres-cockroach
 		return TOKEN_VARYING
-	case "VARCHAR":
-		return TOKEN_VARCHAR
 	case "TEXT": //diff:ignore-line-postgres-cockroach
 		return TOKEN_TEXT //diff:ignore-line-postgres-cockroach
 	case "TIMESTAMP":
@@ -208,8 +209,6 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_DEFAULT
 	case "NOT":
 		return TOKEN_NOT
-	case "NULL":
-		return TOKEN_NULL
 	case "ASC":
 		return TOKEN_ASC
 	case "DESC":
@@ -230,6 +229,12 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_CHECK
 	case "NULLIF":
 		return TOKEN_NULLIF
+	case "NULL":
+		return TOKEN_NULL
+	case "TRUE":
+		return TOKEN_TRUE
+	case "FALSE":
+		return TOKEN_FALSE
 	default:
 		return TOKEN_IDENT
 	}

@@ -388,4 +388,22 @@ CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (
 			t.Errorf("❌: %s: stmt: %%#v: \n%#v", t.Name(), actual)
 		}
 	})
+
+	t.Run("success,SET_DEFAULT_TRUE_FALSE", func(t *testing.T) {
+		t.Parallel()
+
+		before, err := NewParser(NewLexer(`CREATE TABLE public.passwords ( user_id UUID NOT NULL, password TEXT NOT NULL, is_verified BOOLEAN NOT NULL DEFAULT false, is_expired BOOLEAN NOT NULL DEFAULT true );`)).Parse()
+		require.NoError(t, err)
+
+		after, err := NewParser(NewLexer(`CREATE TABLE public.passwords ( user_id UUID NOT NULL, password TEXT NOT NULL, is_verified BOOLEAN NOT NULL DEFAULT FALSE, is_expired BOOLEAN NOT NULL DEFAULT TRUE );`)).Parse()
+		require.NoError(t, err)
+
+		expected := ``
+		actual, err := Diff(before, after)
+		assert.ErrorIs(t, err, ddl.ErrNoDifference)
+
+		if !assert.Equal(t, expected, actual.String()) {
+			t.Errorf("❌: %s: stmt: %%#v: \n%#v", t.Name(), actual)
+		}
+	})
 }

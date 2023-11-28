@@ -196,12 +196,12 @@ func (c *CheckConstraint) StringForDiff() string {
 func NewObjectName(name string) *ObjectName {
 	objName := &ObjectName{}
 
-	tableName := NewIdent(name)
+	tableName := NewRawIdent(name)
 	switch name := strings.Split(tableName.Name, "."); len(name) { //nolint:exhaustive
 	case 2:
 		// CREATE TABLE "schema.table"
-		objName.Schema = NewIdent(tableName.QuotationMark + name[0] + tableName.QuotationMark)
-		objName.Name = NewIdent(tableName.QuotationMark + name[1] + tableName.QuotationMark)
+		objName.Schema = NewRawIdent(tableName.QuotationMark + name[0] + tableName.QuotationMark)
+		objName.Name = NewRawIdent(tableName.QuotationMark + name[1] + tableName.QuotationMark)
 	default:
 		// CREATE TABLE "table"
 		objName.Name = tableName

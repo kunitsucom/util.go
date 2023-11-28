@@ -92,6 +92,10 @@ func Diff(before, after *DDL) (*DDL, error) {
 		}
 	}
 
+	if len(result.Stmts) == 0 {
+		return nil, ddl.ErrNoDifference
+	}
+
 	return result, nil
 }
 

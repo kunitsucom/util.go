@@ -17,7 +17,7 @@ import (
 //nolint:gochecknoglobals
 var quotationMarks = []string{`"`}
 
-func NewIdent(raw string) *Ident {
+func NewRawIdent(raw string) *Ident {
 	for _, q := range quotationMarks {
 		if strings.HasPrefix(raw, q) && strings.HasSuffix(raw, q) {
 			return &Ident{
@@ -31,6 +31,14 @@ func NewIdent(raw string) *Ident {
 	return &Ident{
 		Name:          raw,
 		QuotationMark: "",
+		Raw:           raw,
+	}
+}
+
+func NewIdent(name, quotationMark, raw string) *Ident {
+	return &Ident{
+		Name:          name,
+		QuotationMark: quotationMark,
 		Raw:           raw,
 	}
 }
@@ -244,7 +252,7 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 		return nil, nil, errorz.Errorf("checkCurrentToken: %w", err)
 	}
 
-	column.Name = NewIdent(p.currentToken.Literal.Str)
+	column.Name = NewRawIdent(p.currentToken.Literal.Str)
 
 	p.nextToken() // current = DATA_TYPE
 
@@ -307,12 +315,7 @@ LabelDefault:
 	for {
 		switch p.currentToken.Type { //nolint:exhaustive
 		case TOKEN_IDENT:
-			def.Value = def.Value.Append(NewIdent(p.currentToken.Literal.Str))
-		case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS,
-			TOKEN_PLUS, TOKEN_MINUS, TOKEN_ASTERISK, TOKEN_SLASH,
-			TOKEN_TYPE_ANNOTATION, //diff:ignore-line-postgres-cockroach
-			TOKEN_STRING_CONCAT, TOKEN_TYPECAST:
-			def.Value = def.Value.Append(NewIdent(p.currentToken.Literal.Str))
+			def.Value = def.Value.Append(NewRawIdent(p.currentToken.Literal.String()))
 		case TOKEN_OPEN_PAREN:
 			ids, err := p.parseExpr()
 			if err != nil {
@@ -323,8 +326,18 @@ LabelDefault:
 		case TOKEN_NOT, TOKEN_NULL, TOKEN_COMMA, TOKEN_CLOSE_PAREN:
 			break LabelDefault
 		default:
+			if isReservedValue(p.currentToken.Type) {
+				def.Value = def.Value.Append(NewIdent(string(p.currentToken.Type), "", p.currentToken.Literal.String()))
+				p.nextToken()
+				continue
+			}
+			if isOperator(p.currentToken.Type) {
+				def.Value = def.Value.Append(NewRawIdent(p.currentToken.Literal.Str))
+				p.nextToken()
+				continue
+			}
 			if isDataType(p.currentToken.Type) {
-				def.Value.Idents = append(def.Value.Idents, NewIdent(p.currentToken.Literal.Str))
+				def.Value.Idents = append(def.Value.Idents, NewRawIdent(p.currentToken.Literal.Str))
 				p.nextToken()
 				continue
 			}
@@ -346,7 +359,7 @@ func (p *Parser) parseExpr() ([]*Ident, error) {
 	if err := p.checkCurrentToken(TOKEN_OPEN_PAREN); err != nil {
 		return nil, errorz.Errorf("checkCurrentToken: %w", err)
 	}
-	idents = append(idents, NewIdent(p.currentToken.Literal.Str))
+	idents = append(idents, NewRawIdent(p.currentToken.Literal.Str))
 	p.nextToken() // current = IDENT
 
 LabelExpr:
@@ -360,13 +373,13 @@ LabelExpr:
 			idents = append(idents, ids...)
 			continue
 		case TOKEN_CLOSE_PAREN:
-			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
+			idents = append(idents, NewRawIdent(p.currentToken.Literal.Str))
 			p.nextToken()
 			break LabelExpr
 		case TOKEN_EOF:
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
 		default:
-			idents = append(idents, NewIdent(p.currentToken.Literal.Str))
+			idents = append(idents, NewRawIdent(p.currentToken.Literal.Str))
 		}
 
 		p.nextToken()
@@ -388,7 +401,7 @@ LabelConstraints:
 			}
 			p.nextToken() // current = KEY
 			constraints = constraints.Append(&PrimaryKeyConstraint{
-				Name:    NewIdent(fmt.Sprintf("%s_pkey", tableName.StringForDiff())),
+				Name:    NewRawIdent(fmt.Sprintf("%s_pkey", tableName.StringForDiff())),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			})
 		case TOKEN_REFERENCES:
@@ -397,8 +410,8 @@ LabelConstraints:
 			}
 			p.nextToken() // current = table_name
 			constraint := &ForeignKeyConstraint{
-				Name:    NewIdent(fmt.Sprintf("%s_%s_fkey", tableName.StringForDiff(), column.Name.StringForDiff())),
-				Ref:     NewIdent(p.currentToken.Literal.Str),
+				Name:    NewRawIdent(fmt.Sprintf("%s_%s_fkey", tableName.StringForDiff(), column.Name.StringForDiff())),
+				Ref:     NewRawIdent(p.currentToken.Literal.Str),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			}
 			p.nextToken() // current = (
@@ -411,7 +424,7 @@ LabelConstraints:
 		case TOKEN_UNIQUE:
 			constraints = constraints.Append(&IndexConstraint{ //diff:ignore-line-postgres-cockroach
 				Unique:  true, //diff:ignore-line-postgres-cockroach
-				Name:    NewIdent(fmt.Sprintf("%s_unique_%s", tableName.StringForDiff(), column.Name.StringForDiff())),
+				Name:    NewRawIdent(fmt.Sprintf("%s_unique_%s", tableName.StringForDiff(), column.Name.StringForDiff())),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			})
 		case TOKEN_CHECK:
@@ -420,7 +433,7 @@ LabelConstraints:
 			}
 			p.nextToken() // current = (
 			constraint := &CheckConstraint{
-				Name: NewIdent(fmt.Sprintf("%s_%s_check", tableName.StringForDiff(), column.Name.StringForDiff())),
+				Name: NewRawIdent(fmt.Sprintf("%s_%s_check", tableName.StringForDiff(), column.Name.StringForDiff())),
 			}
 		LabelCheck:
 			for {
@@ -428,7 +441,7 @@ LabelConstraints:
 				case TOKEN_OPEN_PAREN:
 					// do nothing
 				case TOKEN_IDENT:
-					constraint.Expr = append(constraint.Expr, NewIdent(p.currentToken.Literal.Str))
+					constraint.Expr = append(constraint.Expr, NewRawIdent(p.currentToken.Literal.Str))
 				case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS:
 					value := p.currentToken.Literal.Str
 					switch p.peekToken.Type { //nolint:exhaustive
@@ -436,7 +449,7 @@ LabelConstraints:
 						value += p.peekToken.Literal.Str
 						p.nextToken()
 					}
-					constraint.Expr = append(constraint.Expr, NewIdent(value))
+					constraint.Expr = append(constraint.Expr, NewRawIdent(value))
 				case TOKEN_CLOSE_PAREN:
 					break LabelCheck
 				default:
@@ -466,7 +479,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 		if p.currentToken.Type != TOKEN_IDENT {
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
 		}
-		constraintName = NewIdent(p.currentToken.Literal.Str)
+		constraintName = NewRawIdent(p.currentToken.Literal.Str)
 		p.nextToken() // current = PRIMARY or CHECK //diff:ignore-line-postgres-cockroach
 	}
 
@@ -485,7 +498,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			return nil, errorz.Errorf("parseColumnIdents: %w", err)
 		}
 		if constraintName == nil {
-			constraintName = NewIdent(fmt.Sprintf("%s_pkey", tableName.StringForDiff()))
+			constraintName = NewRawIdent(fmt.Sprintf("%s_pkey", tableName.StringForDiff()))
 		}
 		return &PrimaryKeyConstraint{
 			Name:    constraintName,
@@ -511,7 +524,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 		if err := p.checkCurrentToken(TOKEN_IDENT); err != nil {
 			return nil, errorz.Errorf("checkCurrentToken: %w", err)
 		}
-		refName := NewIdent(p.currentToken.Literal.Str)
+		refName := NewRawIdent(p.currentToken.Literal.Str)
 
 		p.nextToken() // current = (
 		identsRef, err := p.parseColumnIdents()
@@ -524,7 +537,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 				name += fmt.Sprintf("_%s", ident.StringForDiff())
 			}
 			name += "_fkey"
-			constraintName = NewIdent(name)
+			constraintName = NewRawIdent(name)
 		}
 		return &ForeignKeyConstraint{
 			Name:       constraintName,
@@ -546,7 +559,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 		if err := p.checkCurrentToken(TOKEN_IDENT); err != nil { //diff:ignore-line-postgres-cockroach
 			return nil, errorz.Errorf("checkCurrentToken: %w", err) //diff:ignore-line-postgres-cockroach
 		} //diff:ignore-line-postgres-cockroach
-		constraintName := NewIdent(p.currentToken.Literal.Str) //diff:ignore-line-postgres-cockroach
+		constraintName := NewRawIdent(p.currentToken.Literal.Str) //diff:ignore-line-postgres-cockroach
 		if err := p.checkPeekToken(TOKEN_OPEN_PAREN); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
 		}
@@ -630,7 +643,7 @@ LabelIdents:
 		case TOKEN_OPEN_PAREN:
 			// do nothing
 		case TOKEN_IDENT:
-			ident := &ColumnIdent{Ident: NewIdent(p.currentToken.Literal.Str)}
+			ident := &ColumnIdent{Ident: NewRawIdent(p.currentToken.Literal.Str)}
 			switch p.peekToken.Type { //nolint:exhaustive //diff:ignore-line-postgres-cockroach
 			case TOKEN_ASC: //diff:ignore-line-postgres-cockroach
 				ident.Order = &Order{Desc: false} //diff:ignore-line-postgres-cockroach
@@ -652,6 +665,27 @@ LabelIdents:
 	}
 
 	return idents, nil
+}
+
+func isOperator(tokenType TokenType) bool {
+	switch tokenType { //nolint:exhaustive
+	case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS,
+		TOKEN_PLUS, TOKEN_MINUS, TOKEN_ASTERISK, TOKEN_SLASH,
+		TOKEN_TYPE_ANNOTATION, //diff:ignore-line-postgres-cockroach
+		TOKEN_STRING_CONCAT, TOKEN_TYPECAST:
+		return true
+	default:
+		return false
+	}
+}
+
+func isReservedValue(tokenType TokenType) bool {
+	switch tokenType { //nolint:exhaustive
+	case TOKEN_NULL, TOKEN_TRUE, TOKEN_FALSE:
+		return true
+	default:
+		return false
+	}
 }
 
 func isDataType(tokenType TokenType) bool {
