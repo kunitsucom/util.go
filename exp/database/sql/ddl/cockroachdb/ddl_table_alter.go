@@ -1,10 +1,6 @@
 package cockroachdb
 
-import (
-	"strings"
-
-	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
-)
+import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 
 // MEMO: https://www.cockroachlabs.com/docs/stable/alter-table //diff:ignore-line-postgres-cockroach
 
@@ -147,9 +143,8 @@ func (s *AlterConstraint) GoString() string { return internal.GoString(*s) }
 var _ Stmt = (*AlterTableStmt)(nil)
 
 type AlterTableStmt struct {
-	Comment string
-	Name    *ObjectName
-	Action  AlterTableAction
+	Name   *ObjectName
+	Action AlterTableAction
 }
 
 func (*AlterTableStmt) isStmt() {}
@@ -160,13 +155,7 @@ func (s *AlterTableStmt) GetNameForDiff() string {
 
 //nolint:cyclop,funlen
 func (s *AlterTableStmt) String() string {
-	var str string
-	if s.Comment != "" {
-		for _, s := range strings.Split(s.Comment, "\n") {
-			str += "-- " + s + "\n"
-		}
-	}
-	str += "ALTER TABLE "
+	str := "ALTER TABLE "
 	str += s.Name.String() + " "
 	switch a := s.Action.(type) {
 	case *RenameTable:

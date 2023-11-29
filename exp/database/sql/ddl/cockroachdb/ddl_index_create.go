@@ -1,8 +1,6 @@
 package cockroachdb
 
 import (
-	"strings"
-
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 	stringz "github.com/kunitsucom/util.go/strings"
 )
@@ -12,7 +10,6 @@ import (
 var _ Stmt = (*CreateIndexStmt)(nil)
 
 type CreateIndexStmt struct {
-	Comment     string
 	Unique      bool
 	IfNotExists bool
 	Name        *ObjectName
@@ -25,13 +22,7 @@ func (s *CreateIndexStmt) GetNameForDiff() string {
 }
 
 func (s *CreateIndexStmt) String() string {
-	var str string
-	if s.Comment != "" {
-		for _, s := range strings.Split(s.Comment, "\n") {
-			str += "-- " + s + "\n"
-		}
-	}
-	str += "CREATE "
+	str := "CREATE "
 	if s.Unique {
 		str += "UNIQUE " //nolint:goconst
 	}

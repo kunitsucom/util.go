@@ -1,17 +1,12 @@
 package cockroachdb
 
-import (
-	"strings"
-
-	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
-)
+import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 
 // MEMO: https://www.postgresql.jp/docs/11/sql-createtable.html
 
 var _ Stmt = (*DropTableStmt)(nil)
 
 type DropTableStmt struct {
-	Comment  string
 	IfExists bool
 	Name     *ObjectName
 }
@@ -21,13 +16,7 @@ func (s *DropTableStmt) GetNameForDiff() string {
 }
 
 func (s *DropTableStmt) String() string {
-	var str string
-	if s.Comment != "" {
-		for _, s := range strings.Split(s.Comment, "\n") {
-			str += "-- " + s + "\n"
-		}
-	}
-	str += "DROP TABLE "
+	str := "DROP TABLE "
 	if s.IfExists {
 		str += "IF EXISTS "
 	}
