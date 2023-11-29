@@ -10,6 +10,7 @@ import (
 var _ Stmt = (*CreateIndexStmt)(nil)
 
 type CreateIndexStmt struct {
+	Comment     string
 	Unique      bool
 	IfNotExists bool
 	Name        *ObjectName

@@ -1,12 +1,17 @@
 package cockroachdb
 
-import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+import (
+	"strings"
+
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+)
 
 // MEMO: https://www.cockroachlabs.com/docs/stable/create-table //diff:ignore-line-postgres-cockroach
 
 var _ Stmt = (*CreateTableStmt)(nil)
 
 type CreateTableStmt struct {
+	Comment     string
 	Indent      string
 	IfNotExists bool
 	Name        *ObjectName
@@ -21,7 +26,13 @@ func (s *CreateTableStmt) GetNameForDiff() string {
 
 //nolint:cyclop
 func (s *CreateTableStmt) String() string {
-	str := "CREATE TABLE "
+	var str string
+	if s.Comment != "" {
+		for _, s := range strings.Split(s.Comment, "\n") {
+			str += "-- " + s + "\n"
+		}
+	}
+	str += "CREATE TABLE "
 	if s.IfNotExists {
 		str += "IF NOT EXISTS "
 	}

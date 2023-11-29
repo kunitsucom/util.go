@@ -5,6 +5,7 @@ import (
 
 	errorz "github.com/kunitsucom/util.go/errors"
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
+	"github.com/kunitsucom/util.go/exp/diff/simplediff"
 )
 
 //nolint:funlen,cyclop,gocognit
@@ -20,11 +21,13 @@ func Diff(before, after *DDL) (*DDL, error) {
 			switch s := stmt.(type) {
 			case *CreateTableStmt:
 				result.Stmts = append(result.Stmts, &DropTableStmt{
-					Name: s.Name,
+					Comment: simplediff.Diff(before.String(), after.String()).String(),
+					Name:    s.Name,
 				})
 			case *CreateIndexStmt:
 				result.Stmts = append(result.Stmts, &DropIndexStmt{
-					Name: s.Name,
+					Comment: simplediff.Diff(before.String(), after.String()).String(),
+					Name:    s.Name,
 				})
 			default:
 				return nil, errorz.Errorf("%s: %T: %w", s.GetNameForDiff(), s, ddl.ErrNotSupported)
@@ -40,11 +43,13 @@ func Diff(before, after *DDL) (*DDL, error) {
 		switch beforeStmt := stmt.(type) {
 		case *CreateTableStmt:
 			result.Stmts = append(result.Stmts, &DropTableStmt{
-				Name: beforeStmt.Name,
+				Comment: simplediff.Diff(beforeStmt.String(), "").String(),
+				Name:    beforeStmt.Name,
 			})
 		case *CreateIndexStmt:
 			result.Stmts = append(result.Stmts, &DropIndexStmt{
-				Name: beforeStmt.Name,
+				Comment: simplediff.Diff(beforeStmt.String(), "").String(),
+				Name:    beforeStmt.Name,
 			})
 		default:
 			return nil, errorz.Errorf("%s: %T: %w", beforeStmt.GetNameForDiff(), beforeStmt, ddl.ErrNotSupported)
@@ -55,8 +60,10 @@ func Diff(before, after *DDL) (*DDL, error) {
 	for _, stmt := range onlyLeftStmt(after, before) {
 		switch afterStmt := stmt.(type) {
 		case *CreateTableStmt:
+			afterStmt.Comment = simplediff.Diff("", after.String()).String()
 			result.Stmts = append(result.Stmts, afterStmt)
 		case *CreateIndexStmt:
+			afterStmt.Comment = simplediff.Diff("", after.String()).String()
 			result.Stmts = append(result.Stmts, afterStmt)
 		default:
 			return nil, errorz.Errorf("%s: %T: %w", afterStmt.GetNameForDiff(), afterStmt, ddl.ErrNotSupported)
@@ -81,9 +88,11 @@ func Diff(before, after *DDL) (*DDL, error) {
 			if afterStmt := findStmtByTypeAndName(beforeStmt, after.Stmts); afterStmt != nil {
 				afterStmt := afterStmt.(*CreateIndexStmt) //nolint:forcetypeassert
 				if beforeStmt.StringForDiff() != afterStmt.StringForDiff() {
+					afterStmt.Comment = simplediff.Diff("", afterStmt.String()).String()
 					result.Stmts = append(result.Stmts,
 						&DropIndexStmt{
-							Name: beforeStmt.Name,
+							Comment: simplediff.Diff(beforeStmt.String(), "").String(),
+							Name:    beforeStmt.Name,
 						},
 						afterStmt,
 					)

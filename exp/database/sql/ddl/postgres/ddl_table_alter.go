@@ -143,8 +143,9 @@ func (s *AlterConstraint) GoString() string { return internal.GoString(*s) }
 var _ Stmt = (*AlterTableStmt)(nil)
 
 type AlterTableStmt struct {
-	Name   *ObjectName
-	Action AlterTableAction
+	Comment string
+	Name    *ObjectName
+	Action  AlterTableAction
 }
 
 func (*AlterTableStmt) isStmt() {}

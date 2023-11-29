@@ -7,6 +7,7 @@ import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 var _ Stmt = (*DropTableStmt)(nil)
 
 type DropTableStmt struct {
+	Comment  string
 	IfExists bool
 	Name     *ObjectName
 }

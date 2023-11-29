@@ -7,6 +7,7 @@ import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 var _ Stmt = (*CreateTableStmt)(nil)
 
 type CreateTableStmt struct {
+	Comment     string
 	Indent      string
 	IfNotExists bool
 	Name        *ObjectName
