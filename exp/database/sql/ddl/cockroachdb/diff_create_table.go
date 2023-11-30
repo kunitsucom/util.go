@@ -5,6 +5,7 @@ import (
 
 	errorz "github.com/kunitsucom/util.go/errors"
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
+	"github.com/kunitsucom/util.go/exp/diff/simplediff"
 )
 
 type DiffCreateTableConfig struct {
@@ -63,8 +64,9 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 			rename.NewName.Schema = before.Name.Schema
 		}
 		result.Stmts = append(result.Stmts, &AlterTableStmt{
-			Name:   before.Name,
-			Action: rename,
+			Comment: simplediff.Diff(before.Name.StringForDiff(), after.Name.StringForDiff()).String(),
+			Name:    before.Name,
+			Action:  rename,
 		})
 	}
 
@@ -75,6 +77,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 			case *IndexConstraint: //diff:ignore-line-postgres-cockroach
 				// DROP INDEX index_name; //diff:ignore-line-postgres-cockroach
 				result.Stmts = append(result.Stmts, &DropIndexStmt{ //diff:ignore-line-postgres-cockroach
+					Comment: simplediff.Diff(bc.StringForDiff(), "").String(), //diff:ignore-line-postgres-cockroach
 					Name: &ObjectName{ //diff:ignore-line-postgres-cockroach
 						Schema: before.Name.Schema, //diff:ignore-line-postgres-cockroach
 						Name:   bc.GetName(),       //diff:ignore-line-postgres-cockroach
@@ -83,7 +86,8 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 			default: //diff:ignore-line-postgres-cockroach
 				// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
 				result.Stmts = append(result.Stmts, &AlterTableStmt{
-					Name: after.Name, // ALTER TABLE RENAME TO で変更された後の可能性があるため after.Name を使用する
+					Comment: simplediff.Diff(beforeConstraint.StringForDiff(), "").String(),
+					Name:    after.Name, // ALTER TABLE RENAME TO で変更された後の可能性があるため after.Name を使用する
 					Action: &DropConstraint{
 						Name: beforeConstraint.GetName(),
 					},
@@ -127,13 +131,15 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 					result.Stmts = append(
 						result.Stmts,
 						&AlterTableStmt{
-							Name: after.Name, // ALTER TABLE RENAME TO で変更された後の可能性があるため after.Name を使用する
+							Comment: simplediff.Diff(beforeConstraint.StringForDiff(), "").String(),
+							Name:    after.Name, // ALTER TABLE RENAME TO で変更された後の可能性があるため after.Name を使用する
 							Action: &DropConstraint{
 								Name: beforeConstraint.GetName(),
 							},
 						},
 						&AlterTableStmt{
-							Name: after.Name,
+							Comment: simplediff.Diff("", afterConstraint.StringForDiff()).String(),
+							Name:    after.Name,
 							Action: &AddConstraint{
 								Constraint: afterConstraint,
 								NotValid:   config.UseAlterTableAddConstraintNotValid,
@@ -151,7 +157,8 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		case *IndexConstraint: //diff:ignore-line-postgres-cockroach
 			// CREATE INDEX index_name ON table_name (column_name); //diff:ignore-line-postgres-cockroach
 			result.Stmts = append(result.Stmts, &CreateIndexStmt{ //diff:ignore-line-postgres-cockroach
-				Unique: ac.Unique, //diff:ignore-line-postgres-cockroach
+				Comment: simplediff.Diff("", ac.StringForDiff()).String(), //diff:ignore-line-postgres-cockroach
+				Unique:  ac.Unique,                                        //diff:ignore-line-postgres-cockroach
 				Name: &ObjectName{ //diff:ignore-line-postgres-cockroach
 					Schema: after.Name.Schema, //diff:ignore-line-postgres-cockroach
 					Name:   ac.GetName(),      //diff:ignore-line-postgres-cockroach
@@ -162,7 +169,8 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		default: //diff:ignore-line-postgres-cockroach
 			// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
 			result.Stmts = append(result.Stmts, &AlterTableStmt{
-				Name: after.Name,
+				Comment: simplediff.Diff("", afterConstraint.StringForDiff()).String(),
+				Name:    after.Name,
 				Action: &AddConstraint{
 					Constraint: afterConstraint,
 					NotValid:   config.UseAlterTableAddConstraintNotValid,
@@ -185,7 +193,8 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 		if afterColumn == nil {
 			// ALTER TABLE table_name DROP COLUMN column_name;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Name: after.Name, // ALTER TABLE RENAME TO で変更された後の可能性があるため after.Name を使用する
+				Comment: simplediff.Diff(beforeColumn.String(), "").String(),
+				Name:    after.Name, // ALTER TABLE RENAME TO で変更された後の可能性があるため after.Name を使用する
 				Action: &DropColumn{
 					Name: beforeColumn.Name,
 				},
@@ -196,7 +205,8 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 		if beforeColumn.DataType.StringForDiff() != afterColumn.DataType.StringForDiff() {
 			// ALTER TABLE table_name ALTER COLUMN column_name SET DATA TYPE data_type;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Name: after.Name,
+				Comment: simplediff.Diff(beforeColumn.String(), afterColumn.String()).String(),
+				Name:    after.Name,
 				Action: &AlterColumn{
 					Name:   afterColumn.Name,
 					Action: &AlterColumnSetDataType{DataType: afterColumn.DataType},
@@ -208,7 +218,8 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 		case beforeColumn.Default != nil && afterColumn.Default == nil:
 			// ALTER TABLE table_name ALTER COLUMN column_name DROP DEFAULT;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Name: after.Name,
+				Comment: simplediff.Diff(beforeColumn.String(), afterColumn.String()).String(),
+				Name:    after.Name,
 				Action: &AlterColumn{
 					Name:   afterColumn.Name,
 					Action: &AlterColumnDropDefault{},
@@ -217,7 +228,8 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 		case afterColumn.Default != nil && beforeColumn.Default.StringForDiff() != afterColumn.Default.StringForDiff():
 			// ALTER TABLE table_name ALTER COLUMN column_name SET DEFAULT default_value;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Name: after.Name,
+				Comment: simplediff.Diff(beforeColumn.String(), afterColumn.String()).String(),
+				Name:    after.Name,
 				Action: &AlterColumn{
 					Name:   afterColumn.Name,
 					Action: &AlterColumnSetDefault{Default: afterColumn.Default},
@@ -229,7 +241,8 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 		case beforeColumn.NotNull && !afterColumn.NotNull:
 			// ALTER TABLE table_name ALTER COLUMN column_name DROP NOT NULL;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Name: after.Name,
+				Comment: simplediff.Diff(beforeColumn.String(), afterColumn.String()).String(),
+				Name:    after.Name,
 				Action: &AlterColumn{
 					Name:   afterColumn.Name,
 					Action: &AlterColumnDropNotNull{},
@@ -238,7 +251,8 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 		case !beforeColumn.NotNull && afterColumn.NotNull:
 			// ALTER TABLE table_name ALTER COLUMN column_name SET NOT NULL;
 			ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-				Name: after.Name,
+				Comment: simplediff.Diff(beforeColumn.String(), afterColumn.String()).String(),
+				Name:    after.Name,
 				Action: &AlterColumn{
 					Name:   afterColumn.Name,
 					Action: &AlterColumnSetNotNull{},
@@ -250,7 +264,8 @@ func (config *DiffCreateTableConfig) diffCreateTableColumn(ddls *DDL, before, af
 	for _, afterColumn := range onlyLeftColumn(after.Columns, before.Columns) {
 		// ALTER TABLE table_name ADD COLUMN column_name data_type;
 		ddls.Stmts = append(ddls.Stmts, &AlterTableStmt{
-			Name: after.Name,
+			Comment: simplediff.Diff("", afterColumn.String()).String(),
+			Name:    after.Name,
 			Action: &AddColumn{
 				Column: afterColumn,
 			},
