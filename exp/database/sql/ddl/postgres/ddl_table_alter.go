@@ -1,8 +1,89 @@
 package postgres
 
-import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+import (
+	"strings"
+
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+)
 
 // MEMO: https://www.postgresql.jp/docs/11/sql-altertable.html //diff:ignore-line-postgres-cockroach
+
+var _ Stmt = (*AlterTableStmt)(nil)
+
+type AlterTableStmt struct {
+	Comment string
+	Indent  string
+	Name    *ObjectName
+	Action  AlterTableAction
+}
+
+func (*AlterTableStmt) isStmt() {}
+
+func (s *AlterTableStmt) GetNameForDiff() string {
+	return s.Name.StringForDiff()
+}
+
+//nolint:cyclop,funlen
+func (s *AlterTableStmt) String() string {
+	var str string
+	if s.Comment != "" {
+		for _, v := range strings.Split(s.Comment, "\n") {
+			str += CommentPrefix + v + "\n"
+		}
+	}
+	str += "ALTER TABLE "
+	str += s.Name.String() + " "
+	switch a := s.Action.(type) {
+	case *RenameTable:
+		str += "RENAME TO "
+		str += a.NewName.String()
+	case *RenameColumn:
+		str += "RENAME COLUMN " + a.Name.String() + " TO " + a.NewName.String()
+	case *RenameConstraint:
+		str += "RENAME CONSTRAINT " + a.Name.String() + " TO " + a.NewName.String()
+	case *AddColumn:
+		str += "ADD COLUMN " + a.Column.String()
+	case *DropColumn:
+		str += "DROP COLUMN " + a.Name.String()
+	case *AlterColumn:
+		str += "ALTER COLUMN " + a.Name.String() + " "
+		switch ca := a.Action.(type) {
+		case *AlterColumnSetDataType:
+			str += "SET DATA TYPE " + ca.DataType.String()
+		case *AlterColumnSetDefault:
+			str += "SET " + ca.Default.String()
+		case *AlterColumnDropDefault:
+			str += "DROP DEFAULT"
+		case *AlterColumnSetNotNull:
+			str += "SET NOT NULL"
+		case *AlterColumnDropNotNull:
+			str += "DROP NOT NULL"
+		}
+	case *AddConstraint:
+		str += "ADD " + a.Constraint.String()
+		if a.NotValid {
+			str += " NOT VALID"
+		}
+	case *DropConstraint:
+		str += "DROP CONSTRAINT " + a.Name.String()
+	case *AlterConstraint:
+		str += "ALTER CONSTRAINT " + a.Name.String() + " "
+		if a.Deferrable {
+			str += "DEFERRABLE"
+		} else {
+			str += "NOT DEFERRABLE"
+		}
+		if a.InitiallyDeferred {
+			str += " INITIALLY DEFERRED"
+		} else {
+			str += " INITIALLY IMMEDIATE"
+		}
+	}
+
+	return str + ";\n"
+}
+
+func (s *AlterTableStmt) GoString() string { return internal.GoString(*s) }
 
 type AlterTableAction interface {
 	isAlterTableAction()
@@ -139,72 +220,3 @@ type AlterConstraint struct {
 func (*AlterConstraint) isAlterTableAction() {}
 
 func (s *AlterConstraint) GoString() string { return internal.GoString(*s) }
-
-var _ Stmt = (*AlterTableStmt)(nil)
-
-type AlterTableStmt struct {
-	Name   *ObjectName
-	Action AlterTableAction
-}
-
-func (*AlterTableStmt) isStmt() {}
-
-func (s *AlterTableStmt) GetNameForDiff() string {
-	return s.Name.StringForDiff()
-}
-
-//nolint:cyclop,funlen
-func (s *AlterTableStmt) String() string {
-	str := "ALTER TABLE "
-	str += s.Name.String() + " "
-	switch a := s.Action.(type) {
-	case *RenameTable:
-		str += "RENAME TO "
-		str += a.NewName.String()
-	case *RenameColumn:
-		str += "RENAME COLUMN " + a.Name.String() + " TO " + a.NewName.String()
-	case *RenameConstraint:
-		str += "RENAME CONSTRAINT " + a.Name.String() + " TO " + a.NewName.String()
-	case *AddColumn:
-		str += "ADD COLUMN " + a.Column.String()
-	case *DropColumn:
-		str += "DROP COLUMN " + a.Name.String()
-	case *AlterColumn:
-		str += "ALTER COLUMN " + a.Name.String() + " "
-		switch ca := a.Action.(type) {
-		case *AlterColumnSetDataType:
-			str += "SET DATA TYPE " + ca.DataType.String()
-		case *AlterColumnSetDefault:
-			str += "SET " + ca.Default.String()
-		case *AlterColumnDropDefault:
-			str += "DROP DEFAULT"
-		case *AlterColumnSetNotNull:
-			str += "SET NOT NULL"
-		case *AlterColumnDropNotNull:
-			str += "DROP NOT NULL"
-		}
-	case *AddConstraint:
-		str += "ADD " + a.Constraint.String()
-		if a.NotValid {
-			str += " NOT VALID"
-		}
-	case *DropConstraint:
-		str += "DROP CONSTRAINT " + a.Name.String()
-	case *AlterConstraint:
-		str += "ALTER CONSTRAINT " + a.Name.String() + " "
-		if a.Deferrable {
-			str += "DEFERRABLE"
-		} else {
-			str += "NOT DEFERRABLE"
-		}
-		if a.InitiallyDeferred {
-			str += " INITIALLY DEFERRED"
-		} else {
-			str += " INITIALLY IMMEDIATE"
-		}
-	}
-
-	return str + ";\n"
-}
-
-func (s *AlterTableStmt) GoString() string { return internal.GoString(*s) }

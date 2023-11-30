@@ -1,12 +1,17 @@
 package postgres
 
-import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+import (
+	"strings"
+
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+)
 
 // MEMO: https://www.postgresql.jp/docs/11/sql-createtable.html //diff:ignore-line-postgres-cockroach
 
 var _ Stmt = (*CreateTableStmt)(nil)
 
 type CreateTableStmt struct {
+	Comment     string
 	Indent      string
 	IfNotExists bool
 	Name        *ObjectName
@@ -21,7 +26,13 @@ func (s *CreateTableStmt) GetNameForDiff() string {
 
 //nolint:cyclop
 func (s *CreateTableStmt) String() string {
-	str := "CREATE TABLE "
+	var str string
+	if s.Comment != "" {
+		for _, v := range strings.Split(s.Comment, "\n") {
+			str += CommentPrefix + v + "\n"
+		}
+	}
+	str += "CREATE TABLE "
 	if s.IfNotExists {
 		str += "IF NOT EXISTS "
 	}

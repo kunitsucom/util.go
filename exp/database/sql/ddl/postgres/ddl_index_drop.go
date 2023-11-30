@@ -1,12 +1,17 @@
 package postgres
 
-import "github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+import (
+	"strings"
+
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+)
 
 // MEMO: https://www.cockroachlabs.com/docs/stable/drop-index
 
 var _ Stmt = (*DropIndexStmt)(nil)
 
 type DropIndexStmt struct {
+	Comment  string
 	IfExists bool
 	Name     *ObjectName
 }
@@ -16,7 +21,13 @@ func (s *DropIndexStmt) GetNameForDiff() string {
 }
 
 func (s *DropIndexStmt) String() string {
-	str := "DROP INDEX "
+	var str string
+	if s.Comment != "" {
+		for _, v := range strings.Split(s.Comment, "\n") {
+			str += CommentPrefix + v + "\n"
+		}
+	}
+	str += "DROP INDEX "
 	if s.IfExists {
 		str += "IF EXISTS " //nolint:goconst
 	}

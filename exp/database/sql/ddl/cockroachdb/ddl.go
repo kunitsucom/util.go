@@ -5,7 +5,10 @@ import (
 	stringz "github.com/kunitsucom/util.go/strings"
 )
 
-const Indent = "    "
+const (
+	Indent        = "    "
+	CommentPrefix = "-- "
+)
 
 type Verb string
 
