@@ -3,7 +3,7 @@ module github.com/kunitsucom/util.go/integrationtest
 go 1.21
 
 require (
-	cloud.google.com/go/spanner v1.53.0
+	cloud.google.com/go/spanner v1.53.1
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/googleapis/go-sql-spanner v1.1.1
 	github.com/jmoiron/sqlx v1.3.5
