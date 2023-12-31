@@ -314,7 +314,10 @@ CREATE TABLE public.users (
 `)).Parse()
 		require.NoError(t, err)
 
-		expected := `ALTER TABLE public.users ADD COLUMN description TEXT NOT NULL;
+		expected := `-- -
+-- +description TEXT NOT NULL
+-- 
+ALTER TABLE public.users ADD COLUMN description TEXT NOT NULL;
 `
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
@@ -352,7 +355,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (
 		after, err := NewParser(NewLexer(`CREATE TABLE public.users ( username VARCHAR(11) NOT NULL );`)).Parse()
 		require.NoError(t, err)
 
-		expected := `ALTER TABLE public.users ALTER COLUMN username SET DATA TYPE VARCHAR(11);` + "\n"
+		expected := `-- -username VARCHAR(10) NOT NULL
+-- +username VARCHAR(11) NOT NULL
+-- 
+ALTER TABLE public.users ALTER COLUMN username SET DATA TYPE VARCHAR(11);` + "\n"
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
 
