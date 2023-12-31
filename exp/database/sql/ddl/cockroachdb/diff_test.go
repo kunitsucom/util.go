@@ -301,7 +301,10 @@ func TestDiff(t *testing.T) {
 `)).Parse()
 		require.NoError(t, err)
 
-		expected := `ALTER TABLE public.users ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ);
+		expected := `-- -
+-- +updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ)
+-- 
+ALTER TABLE public.users ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ);
 `
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
@@ -380,7 +383,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (
 		after, err := NewParser(NewLexer(`CREATE TABLE public.users ( username VARCHAR(11) NOT NULL );`)).Parse()
 		require.NoError(t, err)
 
-		expected := `ALTER TABLE public.users ALTER COLUMN username SET DATA TYPE VARCHAR(11);` + "\n"
+		expected := `-- -username VARCHAR(10) NOT NULL
+-- +username VARCHAR(11) NOT NULL
+-- 
+ALTER TABLE public.users ALTER COLUMN username SET DATA TYPE VARCHAR(11);
+`
 		actual, err := Diff(before, after)
 		require.NoError(t, err)
 
