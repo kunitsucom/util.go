@@ -71,9 +71,9 @@ const (
 
 	// DATA TYPE.
 	TOKEN_BOOL              TokenType = "BOOL" //diff:ignore-line-postgres-cockroach
-	TOKEN_SMALLINT          TokenType = "SMALLINT"
-	TOKEN_INTEGER           TokenType = "INTEGER"
-	TOKEN_BIGINT            TokenType = "BIGINT"
+	TOKEN_INT2              TokenType = "INT2"
+	TOKEN_INT4              TokenType = "INT4"
+	TOKEN_INT8              TokenType = "INT8"
 	TOKEN_DECIMAL           TokenType = "DECIMAL"
 	TOKEN_NUMERIC           TokenType = "NUMERIC"
 	TOKEN_REAL              TokenType = "REAL"
@@ -164,12 +164,12 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_TO
 	case "BOOLEAN", "BOOL": //diff:ignore-line-postgres-cockroach
 		return TOKEN_BOOL //diff:ignore-line-postgres-cockroach
-	case "SMALLINT":
-		return TOKEN_SMALLINT
-	case "INTEGER", "INT":
-		return TOKEN_INTEGER
-	case "BIGINT":
-		return TOKEN_BIGINT
+	case "INT2", "SMALLINT":
+		return TOKEN_INT2
+	case "INT4", "INTEGER", "INT":
+		return TOKEN_INT4
+	case "INT8", "BIGINT":
+		return TOKEN_INT8
 	case "DECIMAL":
 		return TOKEN_DECIMAL
 	case "NUMERIC":

@@ -691,7 +691,7 @@ func isReservedValue(tokenType TokenType) bool {
 func isDataType(tokenType TokenType) bool {
 	switch tokenType { //nolint:exhaustive
 	case TOKEN_BOOL, //diff:ignore-line-postgres-cockroach
-		TOKEN_SMALLINT, TOKEN_INTEGER, TOKEN_BIGINT,
+		TOKEN_INT2, TOKEN_INT4, TOKEN_INT8,
 		TOKEN_DECIMAL, TOKEN_NUMERIC,
 		TOKEN_REAL, TOKEN_DOUBLE, /* TOKEN_PRECISION, */
 		TOKEN_SMALLSERIAL, TOKEN_SERIAL, TOKEN_BIGSERIAL,
