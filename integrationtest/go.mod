@@ -3,7 +3,7 @@ module github.com/kunitsucom/util.go/integrationtest
 go 1.21
 
 require (
-	cloud.google.com/go/spanner v1.53.1
+	cloud.google.com/go/spanner v1.54.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/googleapis/go-sql-spanner v1.1.1
 	github.com/jmoiron/sqlx v1.3.5
@@ -39,7 +39,10 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/gotestyourself/gotestyourself v2.2.0+incompatible // indirect
+	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/lib/pq v1.10.9 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/opencontainers/runc v1.1.9 // indirect
