@@ -15,7 +15,7 @@ func NoError(tb testing.TB, printf func(format string, args ...any), err error) 
 	tb.Helper()
 
 	if err != nil {
-		printf("❌: err != nil: %+v", err)
+		printf("❌: %s: err != nil: %+v", tb.Name(), err)
 		return false
 	}
 	return true
@@ -25,7 +25,7 @@ func Error(tb testing.TB, printf func(format string, args ...any), err error) (s
 	tb.Helper()
 
 	if err == nil {
-		printf("❌: err == nil")
+		printf("❌: %s: err == nil", tb.Name())
 		return false
 	}
 	return true
@@ -35,7 +35,8 @@ func ErrorIs(tb testing.TB, printf func(format string, args ...any), err, target
 	tb.Helper()
 
 	if !errors.Is(err, target) {
-		printf("❌: err != target:\n--- TARGET\n+++ ERROR\n%s\n%s",
+		printf("❌: %s: err != target:\n--- TARGET\n+++ ERROR\n%s\n%s",
+			tb.Name(),
 			stringz.AddPrefix("-", fmt.Sprintf("%v", target), "\n"), //nolint:perfsprint
 			stringz.AddPrefix("+", fmt.Sprintf("%+v", err), "\n"),
 		)
@@ -48,7 +49,8 @@ func ErrorContains(tb testing.TB, printf func(format string, args ...any), err e
 	tb.Helper()
 
 	if !errorz.Contains(err, substr) {
-		printf("❌: err != target:\n--- TARGET\n+++ ERROR\n%s\n%s",
+		printf("❌: %s: err != target:\n--- TARGET\n+++ ERROR\n%s\n%s",
+			tb.Name(),
 			stringz.AddPrefix("-", fmt.Sprintf("%v", substr), "\n"), //nolint:perfsprint
 			stringz.AddPrefix("+", fmt.Sprintf("%+v", err), "\n"),
 		)
@@ -61,7 +63,7 @@ func True(tb testing.TB, printf func(format string, args ...any), value bool) (s
 	tb.Helper()
 
 	if !value {
-		printf("❌: value == false")
+		printf("❌: %s: value == false", tb.Name())
 		return false
 	}
 	return true
@@ -71,7 +73,7 @@ func False(tb testing.TB, printf func(format string, args ...any), value bool) (
 	tb.Helper()
 
 	if value {
-		printf("❌: value == true")
+		printf("❌: %s: value == true", tb.Name())
 		return false
 	}
 	return true
@@ -81,7 +83,7 @@ func Equal(tb testing.TB, printf func(format string, args ...any), expected, act
 	tb.Helper()
 
 	if !reflect.DeepEqual(expected, actual) {
-		printf("❌: expected != actual:\n--- EXPECTED\n+++ ACTUAL\n%s", simplediff.Diff(fmt.Sprintf("%+v", expected), fmt.Sprintf("%+v", actual)))
+		printf("❌: %s: expected != actual:\n--- EXPECTED\n+++ ACTUAL\n%s", tb.Name(), simplediff.Diff(fmt.Sprintf("%+v", expected), fmt.Sprintf("%+v", actual)))
 		return false
 	}
 	return true
@@ -91,7 +93,7 @@ func NotEqual(tb testing.TB, printf func(format string, args ...any), expected, 
 	tb.Helper()
 
 	if reflect.DeepEqual(expected, actual) {
-		printf("❌: expected == actual:\n--- EXPECTED\n+++ ACTUAL\n%s", simplediff.Diff(fmt.Sprintf("%+v", expected), fmt.Sprintf("%+v", actual)))
+		printf("❌: %s: expected == actual:\n--- EXPECTED\n+++ ACTUAL\n%s", tb.Name(), simplediff.Diff(fmt.Sprintf("%+v", expected), fmt.Sprintf("%+v", actual)))
 		return false
 	}
 	return true
@@ -101,13 +103,13 @@ func Nil(tb testing.TB, printf func(format string, args ...any), value interface
 	tb.Helper()
 	defer func() {
 		if r := recover(); r != nil {
-			printf("❌: value != nil:\n--- EXPECTED\n+++ ACTUAL\n%s", simplediff.Diff(fmt.Sprintf("%+v", nil), fmt.Sprintf("%+v", value)))
+			printf("❌: %s: value != nil:\n--- EXPECTED\n+++ ACTUAL\n%s", tb.Name(), simplediff.Diff(fmt.Sprintf("%+v", nil), fmt.Sprintf("%+v", value)))
 			success = false
 		}
 	}()
 
 	if !(value == nil || reflect.ValueOf(value).IsNil()) {
-		printf("❌: value != nil:\n--- EXPECTED\n+++ ACTUAL\n%s", simplediff.Diff(fmt.Sprintf("%+v", nil), fmt.Sprintf("%+v", value)))
+		printf("❌: %s: value != nil:\n--- EXPECTED\n+++ ACTUAL\n%s", tb.Name(), simplediff.Diff(fmt.Sprintf("%+v", nil), fmt.Sprintf("%+v", value)))
 		return false
 	}
 	return true
@@ -117,13 +119,13 @@ func NotNil(tb testing.TB, printf func(format string, args ...any), value interf
 	tb.Helper()
 	defer func() {
 		if r := recover(); r != nil {
-			printf("❌: value == nil:\n--- EXPECTED\n+++ ACTUAL\n%s", simplediff.Diff(fmt.Sprintf("%+v", nil), fmt.Sprintf("%+v", value)))
+			printf("❌: %s: value == nil:\n--- EXPECTED\n+++ ACTUAL\n%s", tb.Name(), simplediff.Diff(fmt.Sprintf("%+v", nil), fmt.Sprintf("%+v", value)))
 			success = false
 		}
 	}()
 
 	if value == nil || reflect.ValueOf(value).IsNil() {
-		printf("❌: value == nil:\n--- EXPECTED\n+++ ACTUAL\n%s", simplediff.Diff(fmt.Sprintf("%+v", nil), fmt.Sprintf("%+v", value)))
+		printf("❌: %s: value == nil:\n--- EXPECTED\n+++ ACTUAL\n%s", tb.Name(), simplediff.Diff(fmt.Sprintf("%+v", nil), fmt.Sprintf("%+v", value)))
 		return false
 	}
 	return true

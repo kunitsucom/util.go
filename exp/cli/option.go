@@ -159,7 +159,7 @@ func (cmd *Command) getOptionString(name string) (string, error) {
 			}
 		}
 	}
-	return "", errorz.Errorf("%s: %s: %w", cmd.Name, name, ErrUnknownOption)
+	return "", errorz.Errorf("%s: %s: %w", cmd.GetName(), name, ErrUnknownOption)
 }
 
 func (cmd *Command) GetOptionBool(name string) (bool, error) {
@@ -185,7 +185,7 @@ func (cmd *Command) getOptionBool(name string) (bool, error) {
 	if len(cmd.calledCommands) > 0 { //nolint:nestif
 		for _, opt := range cmd.Options {
 			if o, ok := opt.(*BoolOption); ok {
-				TraceLog.Printf("getOptionBool: %s: option: %#v", cmd.Name, o)
+				TraceLog.Printf("getOptionBool: %s: option: %#v", cmd.GetName(), o)
 				// If Name, Short, or Environment is matched, return the value.
 				if (o.Name != "" && o.Name == name) || (o.Short != "" && o.Short == name) || (o.Environment != "" && o.Environment == name) {
 					if o.value != nil {
@@ -195,7 +195,7 @@ func (cmd *Command) getOptionBool(name string) (bool, error) {
 			}
 		}
 	}
-	return false, errorz.Errorf("%s: %s: %w", cmd.Name, name, ErrUnknownOption)
+	return false, errorz.Errorf("%s: %s: %w", cmd.GetName(), name, ErrUnknownOption)
 }
 
 func (cmd *Command) GetOptionInt(name string) (int, error) {
@@ -229,7 +229,7 @@ func (cmd *Command) getOptionInt(name string) (int, error) {
 			}
 		}
 	}
-	return 0, errorz.Errorf("%s: %s: %w", cmd.Name, name, ErrUnknownOption)
+	return 0, errorz.Errorf("%s: %s: %w", cmd.GetName(), name, ErrUnknownOption)
 }
 
 func (cmd *Command) GetOptionFloat64(name string) (float64, error) {
@@ -263,5 +263,5 @@ func (cmd *Command) getOptionFloat64(name string) (float64, error) {
 			}
 		}
 	}
-	return 0, errorz.Errorf("%s: %s: %w", cmd.Name, name, ErrUnknownOption)
+	return 0, errorz.Errorf("%s: %s: %w", cmd.GetName(), name, ErrUnknownOption)
 }

@@ -4,21 +4,22 @@ import errorz "github.com/kunitsucom/util.go/errors"
 
 func (cmd *Command) preCheckOptions() error {
 	// NOTE: duplicate check
-	if err := cmd.preCheckDuplicateOptions(make(map[string]bool)); err != nil {
-		return errorz.Errorf("%s: %w", cmd.Name, err)
+	if err := cmd.preCheckDuplicateOptions(); err != nil {
+		return errorz.Errorf("%s: %w", cmd.GetName(), err)
 	}
 
 	return nil
 }
 
 //nolint:cyclop
-func (cmd *Command) preCheckDuplicateOptions(envs map[string]bool) error {
+func (cmd *Command) preCheckDuplicateOptions() error {
+	envs := make(map[string]bool)
 	names := make(map[string]bool)
 	shorts := make(map[string]bool)
 
 	for _, opt := range cmd.Options {
 		if name := opt.GetName(); name != "" {
-			TraceLog.Printf("preCheckDuplicateOptions: %s: option: %s", cmd.Name, name)
+			TraceLog.Printf("preCheckDuplicateOptions: %s: option: %s", cmd.GetName(), name)
 			if names[name] {
 				err := ErrDuplicateOptionName
 				return errorz.Errorf("option: %s%s: %w", longOptionPrefix, name, err)
@@ -42,8 +43,8 @@ func (cmd *Command) preCheckDuplicateOptions(envs map[string]bool) error {
 	}
 
 	for _, subcmd := range cmd.SubCommands {
-		if err := subcmd.preCheckDuplicateOptions(envs); err != nil {
-			return errorz.Errorf("%s: %w", subcmd.Name, err)
+		if err := subcmd.preCheckDuplicateOptions(); err != nil {
+			return errorz.Errorf("%s: %w", subcmd.GetName(), err)
 		}
 	}
 

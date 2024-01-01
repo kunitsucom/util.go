@@ -30,6 +30,8 @@ type (
 	Command struct {
 		// Name is the name of the command.
 		Name string
+		// Short is the short name of the command.
+		Short string
 		// Usage is the usage of the command.
 		//
 		// If you want to use the default usage, remain empty.
@@ -75,9 +77,35 @@ type (
 	}
 )
 
+func (cmd *Command) GetName() string {
+	if cmd == nil {
+		return ""
+	}
+	return cmd.Name
+}
+
+func (cmd *Command) IsCommand(cmdName string) bool {
+	if cmd == nil || cmdName == "" {
+		return false
+	}
+	if cmd.Name == cmdName {
+		return true
+	}
+	if cmd.Short == cmdName {
+		return true
+	}
+	return false
+}
+
 func (cmd *Command) getDescription() string {
+	if cmd == nil {
+		return ""
+	}
 	if cmd.Description != "" {
 		return cmd.Description
+	}
+	if len(cmd.calledCommands) == 0 {
+		return fmt.Sprintf("command %q description", cmd.GetName())
 	}
 	return fmt.Sprintf("command %q description", strings.Join(cmd.calledCommands, " "))
 }
@@ -118,7 +146,7 @@ func (cmd *Command) getSubcommand(arg string) (subcmd *Command) {
 	}
 
 	for _, subcmd := range cmd.SubCommands {
-		if subcmd.Name == arg {
+		if subcmd.IsCommand(arg) {
 			return subcmd
 		}
 	}
@@ -144,7 +172,7 @@ func hasOptionValue(args []string, i int) bool {
 
 //nolint:funlen,gocognit,cyclop
 func (cmd *Command) parseArgs(args []string) (remaining []string, err error) {
-	cmd.calledCommands = append(cmd.calledCommands, cmd.Name)
+	cmd.calledCommands = append(cmd.calledCommands, cmd.GetName())
 	cmd.remainingArgs = make([]string, 0)
 
 	i := 0
@@ -162,41 +190,41 @@ argsLoop:
 				case *StringOption:
 					switch {
 					case equalOptionArg(o, arg):
-						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
+						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
 						if hasOptionValue(args, i) {
 							return nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
 						}
 						o.value = ptr(args[i+1])
 						i++
-						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
 					case hasPrefixOptionEqualArg(o, arg):
-						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
+						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
 						o.value = ptr(extractValueOptionEqualArg(arg))
-						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
 					}
 				case *BoolOption:
 					switch {
 					case equalOptionArg(o, arg):
-						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
+						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
 						o.value = ptr(true)
-						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
 					case hasPrefixOptionEqualArg(o, arg):
-						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
+						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
 						optVal, err := strconv.ParseBool(extractValueOptionEqualArg(arg))
 						if err != nil {
 							return nil, errorz.Errorf("%s: %w", arg, err)
 						}
 						o.value = &optVal
-						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
 					}
 				case *IntOption:
 					switch {
 					case equalOptionArg(o, arg):
-						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
+						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
 						if hasOptionValue(args, i) {
 							return nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
 						}
@@ -206,22 +234,22 @@ argsLoop:
 						}
 						o.value = &optVal
 						i++
-						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
 					case hasPrefixOptionEqualArg(o, arg):
-						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
+						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
 						optVal, err := strconv.Atoi(extractValueOptionEqualArg(arg))
 						if err != nil {
 							return nil, errorz.Errorf("%s: %w", arg, err)
 						}
 						o.value = &optVal
-						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
 					}
 				case *Float64Option:
 					switch {
 					case equalOptionArg(o, arg):
-						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
+						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
 						if hasOptionValue(args, i) {
 							return nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
 						}
@@ -231,16 +259,16 @@ argsLoop:
 						}
 						o.value = &optVal
 						i++
-						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
 					case hasPrefixOptionEqualArg(o, arg):
-						DebugLog.Printf("%s: option: %s: %s", cmd.Name, o.Name, arg)
+						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
 						optVal, err := strconv.ParseFloat(extractValueOptionEqualArg(arg), 64)
 						if err != nil {
 							return nil, errorz.Errorf("%s: %w", arg, err)
 						}
 						o.value = &optVal
-						TraceLog.Printf("%s: parsed option: %s: %v", cmd.Name, o.Name, *o.value)
+						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
 					}
 				default:
@@ -250,7 +278,7 @@ argsLoop:
 			return nil, errorz.Errorf("%s: %w", arg, ErrUnknownOption)
 		default:
 			if subcmd := cmd.getSubcommand(arg); subcmd != nil {
-				TraceLog.Printf("parse: subcommand: %s", subcmd.Name)
+				TraceLog.Printf("parse: subcommand: %s", subcmd.GetName())
 				subcmd.calledCommands = append(subcmd.calledCommands, cmd.calledCommands...)
 				cmd.remainingArgs, err = subcmd.parseArgs(args[i+1:])
 				if err != nil {
@@ -289,7 +317,7 @@ func (cmd *Command) initCommand() {
 //
 //nolint:cyclop
 func (cmd *Command) Parse(args []string) (remainingArgs []string, err error) {
-	if len(args) > 0 && (args[0] == os.Args[0] || args[0] == cmd.Name) {
+	if len(args) > 0 && (args[0] == os.Args[0] || cmd.IsCommand(args[0])) {
 		args = args[1:]
 	}
 

@@ -44,7 +44,7 @@ func showUsage(w io.Writer, cmd *Command) {
 			usage += "\n"
 			usage += "sub commands:\n"
 			for _, subcmd := range cmd.SubCommands {
-				usage += indent + fmt.Sprintf("%s: %s", subcmd.Name, subcmd.getDescription()) + "\n"
+				usage += indent + fmt.Sprintf("%s: %s", subcmd.GetName(), subcmd.getDescription()) + "\n"
 			}
 		}
 		if len(cmd.Options) > 0 { //nolint:nestif
