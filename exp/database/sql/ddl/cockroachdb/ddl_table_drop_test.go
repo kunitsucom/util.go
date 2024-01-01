@@ -29,10 +29,12 @@ func TestDropTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &DropTableStmt{
+			Comment:  "test comment content",
 			IfExists: true,
 			Name:     &ObjectName{Name: &Ident{Name: "test", Raw: "test"}},
 		}
-		expected := `DROP TABLE IF EXISTS test;` + "\n"
+		expected := `-- test comment content
+DROP TABLE IF EXISTS test;` + "\n"
 		actual := stmt.String()
 
 		require.Equal(t, expected, actual)

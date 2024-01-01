@@ -13,8 +13,9 @@ func TestCreateTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &CreateTableStmt{
-			Indent: "  ",
-			Name:   &ObjectName{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}},
+			Comment: "test comment content",
+			Indent:  "  ",
+			Name:    &ObjectName{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}},
 			Columns: []*Column{
 				{Name: &Ident{Name: "id", Raw: "id"}, DataType: &DataType{Name: "INTEGER"}},
 				{Name: &Ident{Name: "name", Raw: "name"}, DataType: &DataType{Name: "VARYING", Size: "255"}},
@@ -25,7 +26,8 @@ func TestCreateTableStmt_String(t *testing.T) {
 			},
 		}
 
-		expected := `CREATE TABLE "test" (
+		expected := `-- test comment content
+CREATE TABLE "test" (
     id INTEGER,
     name VARYING(255)
 )

@@ -27,6 +27,7 @@ func TestCreateIndexStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &CreateIndexStmt{
+			Comment:     "test comment content",
 			IfNotExists: true,
 			Name:        &ObjectName{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}},
 			TableName:   &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
@@ -37,7 +38,9 @@ func TestCreateIndexStmt_String(t *testing.T) {
 				},
 			},
 		}
-		expected := `CREATE INDEX IF NOT EXISTS "test" ON "users" ("id" ASC);` + "\n"
+		expected := `-- test comment content
+CREATE INDEX IF NOT EXISTS "test" ON "users" ("id" ASC);
+`
 		actual := stmt.String()
 
 		require.Equal(t, expected, actual)

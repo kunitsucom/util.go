@@ -39,11 +39,14 @@ func TestAlterTableStmt_String(t *testing.T) {
 		t.Parallel()
 
 		stmt := &AlterTableStmt{
-			Name:   &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
-			Action: &RenameTable{NewName: &ObjectName{Name: &Ident{Name: "accounts", QuotationMark: `"`, Raw: `"accounts"`}}},
+			Comment: "test comment content",
+			Name:    &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
+			Action:  &RenameTable{NewName: &ObjectName{Name: &Ident{Name: "accounts", QuotationMark: `"`, Raw: `"accounts"`}}},
 		}
 
-		expected := `ALTER TABLE "users" RENAME TO "accounts";` + "\n"
+		expected := `-- test comment content
+ALTER TABLE "users" RENAME TO "accounts";
+`
 		actual := stmt.String()
 
 		if !assert.Equal(t, expected, actual) {
