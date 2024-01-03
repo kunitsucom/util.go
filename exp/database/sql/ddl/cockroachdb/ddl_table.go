@@ -54,7 +54,7 @@ func (c *PrimaryKeyConstraint) GoString() string { return internal.GoString(*c) 
 func (c *PrimaryKeyConstraint) String() string {
 	var str string
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.String() + " " //nolint:goconst
+		str += "CONSTRAINT " + c.Name.String() + " "
 	}
 	str += "PRIMARY KEY"
 	str += " (" + stringz.JoinStringers(", ", c.Columns...) + ")"
@@ -64,7 +64,7 @@ func (c *PrimaryKeyConstraint) String() string {
 func (c *PrimaryKeyConstraint) StringForDiff() string {
 	var str string
 	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.StringForDiff() + " " //nolint:goconst
+		str += "CONSTRAINT " + c.Name.StringForDiff() + " "
 	}
 	str += "PRIMARY KEY"
 	str += " ("
@@ -188,7 +188,7 @@ func (c *CheckConstraint) String() string {
 	if c.Name != nil {
 		str += "CONSTRAINT " + c.Name.String() + " "
 	}
-	str += "CHECK" //nolint:goconst
+	str += "CHECK"
 	str += " (" + stringz.JoinStringers(" ", c.Expr...) + ")"
 	return str
 }
@@ -310,7 +310,7 @@ func (d *Default) String() string {
 		return ""
 	}
 	if d.Value != nil {
-		return "DEFAULT " + d.Value.String() //nolint:goconst
+		return "DEFAULT " + d.Value.String()
 	}
 	return ""
 }

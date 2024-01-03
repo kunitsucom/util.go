@@ -33,11 +33,11 @@ func (s *CreateIndexStmt) String() string {
 	}
 	str += "CREATE "
 	if s.Unique {
-		str += "UNIQUE " //nolint:goconst
+		str += "UNIQUE "
 	}
-	str += "INDEX " //nolint:goconst
+	str += "INDEX "
 	if s.IfNotExists {
-		str += "IF NOT EXISTS " //nolint:goconst
+		str += "IF NOT EXISTS "
 	}
 	str += s.Name.String() + " ON " + s.TableName.String() + " (" + stringz.JoinStringers(", ", s.Columns...) + ");\n"
 	return str
@@ -46,11 +46,11 @@ func (s *CreateIndexStmt) String() string {
 func (s *CreateIndexStmt) StringForDiff() string {
 	str := "CREATE "
 	if s.Unique {
-		str += "UNIQUE " //nolint:goconst
+		str += "UNIQUE "
 	}
-	str += "INDEX " //nolint:goconst
+	str += "INDEX "
 	if s.IfNotExists {
-		str += "IF NOT EXISTS " //nolint:goconst
+		str += "IF NOT EXISTS "
 	}
 	str += s.Name.StringForDiff() + " ON " + s.TableName.StringForDiff() + " ("
 	for i, c := range s.Columns {

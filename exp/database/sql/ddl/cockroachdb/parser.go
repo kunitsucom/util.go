@@ -137,11 +137,12 @@ func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) {
 	}
 
 	createTableStmt.Name = NewObjectName(p.currentToken.Literal.Str)
+	errFmtPrefix := fmt.Sprintf("table_name=%s: ", createTableStmt.Name.StringForDiff())
 
 	p.nextToken() // current = (
 
 	if err := p.checkCurrentToken(TOKEN_OPEN_PAREN); err != nil {
-		return nil, errorz.Errorf("checkCurrentToken: %w", err)
+		return nil, errorz.Errorf(errFmtPrefix+"checkCurrentToken: %w", err)
 	}
 
 	p.nextToken() // current = column_name
@@ -152,7 +153,7 @@ LabelColumns:
 		case p.currentToken.Type == TOKEN_IDENT:
 			column, constraints, err := p.parseColumn(createTableStmt.Name.Name)
 			if err != nil {
-				return nil, errorz.Errorf("parseColumn: %w", err)
+				return nil, errorz.Errorf(errFmtPrefix+"parseColumn: %w", err)
 			}
 			createTableStmt.Columns = append(createTableStmt.Columns, column)
 			if len(constraints) > 0 {
@@ -163,7 +164,7 @@ LabelColumns:
 		case isConstraint(p.currentToken.Type):
 			constraint, err := p.parseTableConstraint(createTableStmt.Name.Name)
 			if err != nil {
-				return nil, errorz.Errorf("parseConstraint: %w", err)
+				return nil, errorz.Errorf(errFmtPrefix+"parseConstraint: %w", err)
 			}
 			createTableStmt.Constraints = createTableStmt.Constraints.Append(constraint)
 		case p.currentToken.Type == TOKEN_COMMA:
@@ -174,10 +175,10 @@ LabelColumns:
 			case TOKEN_SEMICOLON, TOKEN_EOF:
 				break LabelColumns
 			default:
-				return nil, errorz.Errorf("peekToken=%#v: %w", p.peekToken, ddl.ErrUnexpectedToken)
+				return nil, errorz.Errorf(errFmtPrefix+"peekToken=%#v: %w", p.peekToken, ddl.ErrUnexpectedToken)
 			}
 		default:
-			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
+			return nil, errorz.Errorf(errFmtPrefix+"currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
 		}
 	}
 
@@ -212,17 +213,18 @@ func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 	}
 
 	createIndexStmt.Name = NewObjectName(p.currentToken.Literal.Str)
+	errFmtPrefix := fmt.Sprintf("index_name=%s: ", createIndexStmt.Name.StringForDiff())
 
 	p.nextToken() // current = ON
 
 	if err := p.checkCurrentToken(TOKEN_ON); err != nil {
-		return nil, errorz.Errorf("checkCurrentToken: %w", err)
+		return nil, errorz.Errorf(errFmtPrefix+"checkCurrentToken: %w", err)
 	}
 
 	p.nextToken() // current = table_name
 
 	if err := p.checkCurrentToken(TOKEN_IDENT); err != nil {
-		return nil, errorz.Errorf("checkCurrentToken: %w", err)
+		return nil, errorz.Errorf(errFmtPrefix+"checkCurrentToken: %w", err)
 	}
 
 	createIndexStmt.TableName = NewObjectName(p.currentToken.Literal.Str)
@@ -230,12 +232,12 @@ func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 	p.nextToken() // current = (
 
 	if err := p.checkCurrentToken(TOKEN_OPEN_PAREN); err != nil {
-		return nil, errorz.Errorf("checkCurrentToken: %w", err)
+		return nil, errorz.Errorf(errFmtPrefix+"checkCurrentToken: %w", err)
 	}
 
 	idents, err := p.parseColumnIdents()
 	if err != nil {
-		return nil, errorz.Errorf("parseColumnIdents: %w", err)
+		return nil, errorz.Errorf(errFmtPrefix+"parseColumnIdents: %w", err)
 	}
 
 	createIndexStmt.Columns = idents
@@ -253,6 +255,7 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 	}
 
 	column.Name = NewRawIdent(p.currentToken.Literal.Str)
+	errFmtPrefix := fmt.Sprintf("column_name=%s: ", column.Name.StringForDiff())
 
 	p.nextToken() // current = DATA_TYPE
 
@@ -260,7 +263,7 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 	case isDataType(p.currentToken.Type):
 		dataType, err := p.parseDataType()
 		if err != nil {
-			return nil, nil, errorz.Errorf("parseDataType: %w", err)
+			return nil, nil, errorz.Errorf(errFmtPrefix+"parseDataType: %w", err)
 		}
 		column.DataType = dataType
 
@@ -270,7 +273,7 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 			switch p.currentToken.Type { //nolint:exhaustive
 			case TOKEN_NOT:
 				if err := p.checkPeekToken(TOKEN_NULL); err != nil {
-					return nil, nil, errorz.Errorf("checkPeekToken: %w", err)
+					return nil, nil, errorz.Errorf(errFmtPrefix+"checkPeekToken: %w", err)
 				}
 				p.nextToken() // current = NULL
 				column.NotNull = true
@@ -280,7 +283,7 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 				p.nextToken() // current = DEFAULT
 				def, err := p.parseColumnDefault()
 				if err != nil {
-					return nil, nil, errorz.Errorf("parseColumnDefault: %w", err)
+					return nil, nil, errorz.Errorf(errFmtPrefix+"parseColumnDefault: %w", err)
 				}
 				column.Default = def
 				continue
@@ -293,7 +296,7 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 
 		cs, err := p.parseColumnConstraints(tableName, column)
 		if err != nil {
-			return nil, nil, errorz.Errorf("parseColumnConstraints: %w", err)
+			return nil, nil, errorz.Errorf(errFmtPrefix+"parseColumnConstraints: %w", err)
 		}
 		if len(cs) > 0 {
 			for _, c := range cs {
@@ -301,7 +304,7 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 			}
 		}
 	default:
-		return nil, nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
+		return nil, nil, errorz.Errorf(errFmtPrefix+"currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
 	}
 
 	return column, constraints, nil
@@ -691,7 +694,7 @@ func isReservedValue(tokenType TokenType) bool {
 func isDataType(tokenType TokenType) bool {
 	switch tokenType { //nolint:exhaustive
 	case TOKEN_BOOL, //diff:ignore-line-postgres-cockroach
-		TOKEN_INT2, TOKEN_INT4, TOKEN_INT8,
+		TOKEN_INT2, TOKEN_INT4, TOKEN_INT8, //diff:ignore-line-postgres-cockroach
 		TOKEN_DECIMAL, TOKEN_NUMERIC,
 		TOKEN_REAL, TOKEN_DOUBLE, /* TOKEN_PRECISION, */
 		TOKEN_SMALLSERIAL, TOKEN_SERIAL, TOKEN_BIGSERIAL,
