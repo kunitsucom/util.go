@@ -13,6 +13,7 @@ linters:
     - exhaustruct # https://github.com/GaijinEntertainment/go-exhaustruct
     - exhaustivestruct # https://github.com/mbilski/exhaustivestruct
     - gci # unnecessary
+    - goconst # unnecessary
     - godox # unnecessary
     - golint # deprecated https://github.com/golang/lint
     - gomnd # https://github.com/tommy-muehle/go-mnd

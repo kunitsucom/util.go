@@ -29,7 +29,7 @@ func (s *DropIndexStmt) String() string {
 	}
 	str += "DROP INDEX "
 	if s.IfExists {
-		str += "IF EXISTS " //nolint:goconst
+		str += "IF EXISTS "
 	}
 	str += s.Name.String() + ";\n"
 	return str
