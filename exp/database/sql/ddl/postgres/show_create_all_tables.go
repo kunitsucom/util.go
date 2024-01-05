@@ -129,7 +129,7 @@ func ShowCreateAllTables(ctx context.Context, db sqlQueryerContext, opts ...Show
 		return "", errorz.Errorf("dbz.QueryContext: %w", err)
 	}
 	for _, stmt := range *createTableStmts {
-		query += stmt.CreateStatement
+		query += stmt.CreateStatement + "\n"
 	}
 
 	createIndexStmts := new([]*CreateStatement)
@@ -137,7 +137,7 @@ func ShowCreateAllTables(ctx context.Context, db sqlQueryerContext, opts ...Show
 		return "", errorz.Errorf("dbz.QueryContext: %w", err)
 	}
 	for _, stmt := range *createIndexStmts {
-		query += stmt.CreateStatement
+		query += stmt.CreateStatement + ";\n"
 	}
 
 	return query, nil

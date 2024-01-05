@@ -31,7 +31,7 @@ func ShowCreateAllTables(ctx context.Context, db sqlQueryerContext) (query strin
 		return "", errorz.Errorf("dbz.QueryContext: %w", err)
 	}
 	for _, stmt := range *createTableStmts {
-		query += stmt.CreateStatement
+		query += stmt.CreateStatement + "\n"
 	}
 
 	return query, nil
