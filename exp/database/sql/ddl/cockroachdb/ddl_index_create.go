@@ -55,9 +55,6 @@ func (s *CreateIndexStmt) StringForDiff() string {
 		str += "UNIQUE "
 	}
 	str += "INDEX "
-	if s.IfNotExists {
-		str += "IF NOT EXISTS "
-	}
 	str += s.Name.StringForDiff() + " ON " + s.TableName.StringForDiff() + " ("
 	for i, c := range s.Columns {
 		if i > 0 {
