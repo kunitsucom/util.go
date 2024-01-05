@@ -35,7 +35,7 @@ FROM
         FROM
             information_schema.columns c
         WHERE
-            c.table_schema = %s
+            c.table_schema = '%s'
         GROUP BY
             c.table_schema, c.table_name
     ) clmn
@@ -83,10 +83,10 @@ SELECT
 FROM
     pg_indexes
 WHERE
-    schemaname = %s AND indexname NOT IN (
+    schemaname = '%s' AND indexname NOT IN (
         SELECT constraint_name
         FROM information_schema.table_constraints
-        WHERE constraint_type = 'PRIMARY KEY' AND table_schema = %s
+        WHERE constraint_type = 'PRIMARY KEY' AND table_schema = '%s'
     )
 ;
 `

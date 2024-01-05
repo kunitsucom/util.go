@@ -45,7 +45,7 @@ func ShowCreateAllTables(ctx context.Context, db sqlQueryerContext, opts ...Show
 
 	q := "SELECT table_name FROM information_schema.tables"
 	if cfg.database != "" {
-		q += fmt.Sprintf(" WHERE table_schema = %s", cfg.database)
+		q += fmt.Sprintf(" WHERE table_schema = `%s`", cfg.database)
 	}
 
 	tableNames := new([]*TableName)
@@ -58,7 +58,7 @@ func ShowCreateAllTables(ctx context.Context, db sqlQueryerContext, opts ...Show
 	}
 	for _, tableName := range *tableNames {
 		createTableStmt := new(CreateStatement)
-		q := fmt.Sprintf("SHOW CREATE TABLE %s", tableName.TableName)
+		q := fmt.Sprintf("SHOW CREATE TABLE `%s`", tableName.TableName)
 		if err := dbz.QueryContext(ctx, createTableStmt, q); err != nil {
 			return "", errorz.Errorf("dbz.QueryContext: q=%s: %w", q, err)
 		}
