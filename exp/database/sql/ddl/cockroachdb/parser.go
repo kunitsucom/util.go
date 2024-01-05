@@ -233,13 +233,10 @@ func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 
 	p.nextToken() // current = USING or (
 
-	switch p.currentToken.Type { //nolint:exhaustive
-	case TOKEN_USING:
+	if p.currentToken.Type == TOKEN_USING {
 		p.nextToken() // current = using_def
 		createIndexStmt.Using = append(createIndexStmt.Using, NewIdent(p.currentToken.Literal.Str, "", p.currentToken.Literal.Str))
 		p.nextToken() // current = (
-	case TOKEN_OPEN_PAREN:
-		createIndexStmt.Using = append(createIndexStmt.Using, NewIdent(defaultIndexMethod, "", defaultIndexMethod))
 	}
 
 	if err := p.checkCurrentToken(TOKEN_OPEN_PAREN); err != nil {
