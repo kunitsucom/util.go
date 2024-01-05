@@ -160,6 +160,8 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_IF
 	case "EXISTS":
 		return TOKEN_EXISTS
+	case "USING":
+		return TOKEN_USING
 	case "ON":
 		return TOKEN_ON
 	case "TO":
