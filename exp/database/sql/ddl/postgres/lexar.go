@@ -60,11 +60,14 @@ const (
 	TOKEN_TRUNCATE TokenType = "TRUNCATE"
 
 	// OBJECT.
-	TOKEN_TABLE  TokenType = "TABLE"
-	TOKEN_INDEX  TokenType = "INDEX"
-	TOKEN_VIEW   TokenType = "VIEW"
+	TOKEN_TABLE TokenType = "TABLE"
+	TOKEN_INDEX TokenType = "INDEX"
+	TOKEN_VIEW  TokenType = "VIEW"
+
+	// OTHER.
 	TOKEN_IF     TokenType = "IF"
 	TOKEN_EXISTS TokenType = "EXISTS"
+	TOKEN_USING  TokenType = "USING"
 	TOKEN_ON     TokenType = "ON"
 	TOKEN_TO     TokenType = "TO"
 
