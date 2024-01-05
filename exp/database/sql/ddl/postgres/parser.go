@@ -14,8 +14,6 @@ import (
 	filepathz "github.com/kunitsucom/util.go/path/filepath"
 )
 
-const defaultIndexMethod = "btree"
-
 //nolint:gochecknoglobals
 var quotationMarks = []string{`"`}
 
