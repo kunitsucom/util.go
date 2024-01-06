@@ -335,7 +335,10 @@ ALTER TABLE public.users ADD COLUMN description TEXT NOT NULL;
 		after, err := NewParser(NewLexer(`CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username, age);`)).Parse()
 		require.NoError(t, err)
 
-		expected := `DROP INDEX public.users_idx_by_username;
+		expected := `-- -CREATE UNIQUE INDEX public.users_idx_by_username ON public.users (username);
+-- +CREATE UNIQUE INDEX public.users_idx_by_username ON public.users (username, age);
+--  
+DROP INDEX public.users_idx_by_username;
 CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username, age);
 `
 		actual, err := Diff(before, after)

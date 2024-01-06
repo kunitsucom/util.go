@@ -319,8 +319,18 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 		{
-			name:    "failure,CREATE_INDEX_index_name_ON_table_name_INVALID",
-			input:   `CREATE INDEX users_idx_username ON users (NOT)`,
+			name:    "failure,CREATE_INDEX_index_name_ON_table_name_USING_INVALID",
+			input:   `CREATE INDEX users_idx_username ON users USING NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_INDEX_index_name_ON_table_name_USING_method_INVALID",
+			input:   `CREATE INDEX users_idx_username ON users USING btree NOT`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_INDEX_index_name_ON_table_name_USING_method_OPEN_INVALID",
+			input:   `CREATE INDEX users_idx_username ON users USING btree (NOT)`,
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 	}

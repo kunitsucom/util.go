@@ -361,7 +361,10 @@ CREATE INDEX public.users_idx_by_username ON public.users (username ASC);
 		after, err := NewParser(NewLexer(`CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username ASC, age ASC);`)).Parse()
 		require.NoError(t, err)
 
-		expected := `DROP INDEX public.users_idx_by_username;
+		expected := `-- -CREATE UNIQUE INDEX public.users_idx_by_username ON public.users (username DESC);
+-- +CREATE UNIQUE INDEX public.users_idx_by_username ON public.users (username ASC, age ASC);
+--  
+DROP INDEX public.users_idx_by_username;
 CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username ASC, age ASC);
 `
 		actual, err := Diff(before, after)

@@ -46,7 +46,7 @@ func (s *CreateIndexStmt) String() string {
 	str += s.Name.String() + " ON " + s.TableName.String()
 	if len(s.Using) > 0 {
 		str += " USING "
-		stringz.JoinStringers(" ", s.Using...)
+		str += stringz.JoinStringers(" ", s.Using...)
 	}
 	str += " (" + stringz.JoinStringers(", ", s.Columns...) + ");\n"
 	return str
