@@ -28,8 +28,11 @@ func (s *CreateIndexStmt) GetNameForDiff() string {
 func (s *CreateIndexStmt) String() string {
 	var str string
 	if s.Comment != "" {
-		for _, v := range strings.Split(s.Comment, "\n") {
-			str += CommentPrefix + v + "\n"
+		comments := strings.Split(s.Comment, "\n")
+		for i := range comments {
+			if comments[i] != "" {
+				str += CommentPrefix + comments[i] + "\n"
+			}
 		}
 	}
 	str += "CREATE "
