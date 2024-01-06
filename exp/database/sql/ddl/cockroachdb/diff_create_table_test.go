@@ -55,11 +55,9 @@ func TestDiffCreateTable(t *testing.T) {
 
 		expectedStr := `-- -
 -- +"age" INTEGER NOT NULL DEFAULT 0
--- 
 ALTER TABLE "users" ADD COLUMN "age" INTEGER NOT NULL DEFAULT 0;
 -- -
 -- +CONSTRAINT users_age_check CHECK (age >= 0)
--- 
 ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" >= 0);
 `
 
@@ -89,15 +87,12 @@ ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" >= 0);
 
 		expectedStr := `-- -UNIQUE INDEX users_unique_name (name ASC)
 -- +
--- 
 DROP INDEX users_unique_name;
 -- -CONSTRAINT users_age_check CHECK (age >= 0)
 -- +
--- 
 ALTER TABLE "users" DROP CONSTRAINT users_age_check;
 -- -"age" INTEGER NOT NULL DEFAULT 0
 -- +
--- 
 ALTER TABLE "users" DROP COLUMN "age";
 `
 
@@ -127,15 +122,12 @@ ALTER TABLE "users" DROP COLUMN "age";
 
 		expectedStr := `-- -"name" VARCHAR(255) NOT NULL
 -- +"name" TEXT NOT NULL
--- 
 ALTER TABLE "users" ALTER COLUMN "name" SET DATA TYPE TEXT;
 -- -"age" INT DEFAULT 0
 -- +"age" BIGINT DEFAULT 0
--- 
 ALTER TABLE "users" ALTER COLUMN "age" SET DATA TYPE BIGINT;
 -- -
 -- +UNIQUE INDEX users_unique_name (name ASC)
--- 
 CREATE UNIQUE INDEX users_unique_name ON "users" ("name");
 `
 
@@ -156,7 +148,6 @@ CREATE UNIQUE INDEX users_unique_name ON "users" ("name");
 
 		expectedStr := `-- -"age" INT DEFAULT 0
 -- +"age" INT
--- 
 ALTER TABLE "users" ALTER COLUMN "age" DROP DEFAULT;
 `
 
@@ -182,15 +173,12 @@ ALTER TABLE "users" ALTER COLUMN "age" DROP DEFAULT;
 
 		expectedStr := `-- -"age" INT
 -- +"age" INT DEFAULT 0
--- 
 ALTER TABLE "users" ALTER COLUMN "age" SET DEFAULT 0;
 -- -CONSTRAINT users_age_check CHECK (age >= 0)
 -- +
--- 
 ALTER TABLE "users" DROP CONSTRAINT users_age_check;
 -- -
 -- +CONSTRAINT users_age_check CHECK (age <> 0)
--- 
 ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" <> 0);
 `
 
@@ -218,39 +206,30 @@ ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" <> 0);
 
 		expectedStr := `-- -public.users
 -- +public.app_users
--- 
 ALTER TABLE "public.users" RENAME TO "public.app_users";
 -- -CONSTRAINT users_pkey PRIMARY KEY (id ASC)
 -- +
--- 
 ALTER TABLE "public.app_users" DROP CONSTRAINT users_pkey;
 -- -CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id ASC) REFERENCES groups (id ASC)
 -- +
--- 
 ALTER TABLE "public.app_users" DROP CONSTRAINT users_group_id_fkey;
 -- -UNIQUE INDEX users_unique_name (name ASC)
 -- +
--- 
 DROP INDEX public.users_unique_name;
 -- -CONSTRAINT users_age_check CHECK (age >= 0)
 -- +
--- 
 ALTER TABLE "public.app_users" DROP CONSTRAINT users_age_check;
 -- -
 -- +CONSTRAINT app_users_pkey PRIMARY KEY (id ASC)
--- 
 ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_pkey PRIMARY KEY ("id");
 -- -
 -- +CONSTRAINT app_users_group_id_fkey FOREIGN KEY (group_id ASC) REFERENCES groups (id ASC)
--- 
 ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id");
 -- -
 -- +UNIQUE INDEX app_users_unique_name (name ASC)
--- 
 CREATE UNIQUE INDEX public.app_users_unique_name ON "public.app_users" ("name");
 -- -
 -- +CONSTRAINT app_users_age_check CHECK (age >= 0)
--- 
 ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_age_check CHECK ("age" >= 0);
 `
 
@@ -279,7 +258,6 @@ ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_age_check CHECK ("age" >
 
 		expectedStr := `-- -"age" INT DEFAULT 0
 -- +"age" INTEGER NOT NULL DEFAULT 0
--- 
 ALTER TABLE "users" ALTER COLUMN "age" SET NOT NULL;
 `
 
@@ -307,7 +285,6 @@ ALTER TABLE "users" ALTER COLUMN "age" SET NOT NULL;
 
 		expectedStr := `-- -"age" INT NOT NULL DEFAULT 0
 -- +"age" INT DEFAULT 0
--- 
 ALTER TABLE "users" ALTER COLUMN "age" DROP NOT NULL;
 `
 
@@ -335,11 +312,9 @@ ALTER TABLE "users" ALTER COLUMN "age" DROP NOT NULL;
 
 		expectedStr := `-- -CONSTRAINT users_pkey PRIMARY KEY (id ASC)
 -- +
--- 
 ALTER TABLE "users" DROP CONSTRAINT users_pkey;
 -- -
 -- +CONSTRAINT users_pkey PRIMARY KEY (id ASC, name ASC)
--- 
 ALTER TABLE "users" ADD CONSTRAINT users_pkey PRIMARY KEY ("id", name);
 `
 
@@ -367,11 +342,9 @@ ALTER TABLE "users" ADD CONSTRAINT users_pkey PRIMARY KEY ("id", name);
 
 		expectedStr := `-- -CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id ASC) REFERENCES groups (id ASC)
 -- +
--- 
 ALTER TABLE "users" DROP CONSTRAINT users_group_id_fkey;
 -- -
 -- +CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id ASC, name ASC) REFERENCES groups (id ASC, name ASC)
--- 
 ALTER TABLE "users" ADD CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id, name) REFERENCES "groups" ("id", name);
 `
 
@@ -425,7 +398,6 @@ CREATE UNIQUE INDEX users_unique_name ON "users" ("id" ASC, name ASC);
 
 		expectedStr := `-- -"age" INT NOT NULL DEFAULT 0
 -- +"age" INT NOT NULL DEFAULT ((0 + 3) - 1 * 4 / 2)
--- 
 ALTER TABLE "users" ALTER COLUMN "age" SET DEFAULT ((0 + 3) - 1 * 4 / 2);
 `
 
@@ -473,7 +445,6 @@ ALTER TABLE "users" ALTER COLUMN "age" SET DEFAULT ((0 + 3) - 1 * 4 / 2);
 
 		expectedStr := `-- -unique_code TEXT
 -- +unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0')
--- 
 ALTER TABLE complex_defaults ALTER COLUMN unique_code SET DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0');
 `
 
@@ -499,7 +470,6 @@ ALTER TABLE complex_defaults ALTER COLUMN unique_code SET DEFAULT 'CODE-' || TO_
 
 		expected := `-- -
 -- +CONSTRAINT users_age_check CHECK (age >= 0)
--- 
 ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" >= 0) NOT VALID;
 `
 		actual, err := DiffCreateTable(

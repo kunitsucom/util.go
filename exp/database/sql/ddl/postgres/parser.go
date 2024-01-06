@@ -229,7 +229,13 @@ func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 
 	createIndexStmt.TableName = NewObjectName(p.currentToken.Literal.Str)
 
-	p.nextToken() // current = (
+	p.nextToken() // current = USING or (
+
+	if p.currentToken.Type == TOKEN_USING {
+		p.nextToken() // current = using_def
+		createIndexStmt.Using = append(createIndexStmt.Using, NewIdent(p.currentToken.Literal.Str, "", p.currentToken.Literal.Str))
+		p.nextToken() // current = (
+	}
 
 	if err := p.checkCurrentToken(TOKEN_OPEN_PAREN); err != nil {
 		return nil, errorz.Errorf(errFmtPrefix+"checkCurrentToken: %w", err)

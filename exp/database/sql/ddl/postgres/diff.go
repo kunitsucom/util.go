@@ -5,6 +5,7 @@ import (
 
 	errorz "github.com/kunitsucom/util.go/errors"
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
+	"github.com/kunitsucom/util.go/exp/diff/simplediff"
 )
 
 //nolint:funlen,cyclop,gocognit
@@ -83,7 +84,8 @@ func Diff(before, after *DDL) (*DDL, error) {
 				if beforeStmt.StringForDiff() != afterStmt.StringForDiff() {
 					result.Stmts = append(result.Stmts,
 						&DropIndexStmt{
-							Name: beforeStmt.Name,
+							Comment: simplediff.Diff(beforeStmt.StringForDiff(), afterStmt.StringForDiff()).String(),
+							Name:    beforeStmt.Name,
 						},
 						afterStmt,
 					)

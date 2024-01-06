@@ -23,8 +23,11 @@ func (s *DropIndexStmt) GetNameForDiff() string {
 func (s *DropIndexStmt) String() string {
 	var str string
 	if s.Comment != "" {
-		for _, v := range strings.Split(s.Comment, "\n") {
-			str += CommentPrefix + v + "\n"
+		comments := strings.Split(s.Comment, "\n")
+		for i := range comments {
+			if comments[i] != "" {
+				str += CommentPrefix + comments[i] + "\n"
+			}
 		}
 	}
 	str += "DROP INDEX "

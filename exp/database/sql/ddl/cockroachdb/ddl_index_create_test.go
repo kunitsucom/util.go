@@ -31,6 +31,7 @@ func TestCreateIndexStmt_String(t *testing.T) {
 			IfNotExists: true,
 			Name:        &ObjectName{Name: &Ident{Name: "test", QuotationMark: `"`, Raw: `"test"`}},
 			TableName:   &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
+			Using:       []*Ident{{Name: "btree", QuotationMark: ``, Raw: `btree`}},
 			Columns: []*ColumnIdent{
 				{
 					Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`},
@@ -39,7 +40,7 @@ func TestCreateIndexStmt_String(t *testing.T) {
 			},
 		}
 		expected := `-- test comment content
-CREATE INDEX IF NOT EXISTS "test" ON "users" ("id" ASC);
+CREATE INDEX IF NOT EXISTS "test" ON "users" USING btree ("id" ASC);
 `
 		actual := stmt.String()
 

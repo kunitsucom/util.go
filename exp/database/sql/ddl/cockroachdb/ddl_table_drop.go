@@ -23,8 +23,11 @@ func (s *DropTableStmt) GetNameForDiff() string {
 func (s *DropTableStmt) String() string {
 	var str string
 	if s.Comment != "" {
-		for _, v := range strings.Split(s.Comment, "\n") {
-			str += CommentPrefix + v + "\n"
+		comments := strings.Split(s.Comment, "\n")
+		for i := range comments {
+			if comments[i] != "" {
+				str += CommentPrefix + comments[i] + "\n"
+			}
 		}
 	}
 	str += "DROP TABLE "

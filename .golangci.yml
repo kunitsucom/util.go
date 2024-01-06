@@ -10,6 +10,7 @@ linters:
   disable:
     - deadcode # deprecated (since v1.49.0) due to: The owner seems to have abandoned the linter. Replaced by unused.
     - depguard # unnecessary
+    - dupl # too many unnecessary detections
     - exhaustruct # https://github.com/GaijinEntertainment/go-exhaustruct
     - exhaustivestruct # https://github.com/mbilski/exhaustivestruct
     - gci # unnecessary

@@ -303,7 +303,6 @@ func TestDiff(t *testing.T) {
 
 		expected := `-- -
 -- +updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ)
--- 
 ALTER TABLE public.users ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT timezone('UTC':::STRING, current_timestamp():::TIMESTAMPTZ);
 `
 		actual, err := Diff(before, after)
@@ -362,7 +361,10 @@ CREATE INDEX public.users_idx_by_username ON public.users (username ASC);
 		after, err := NewParser(NewLexer(`CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username ASC, age ASC);`)).Parse()
 		require.NoError(t, err)
 
-		expected := `DROP INDEX public.users_idx_by_username;
+		expected := `-- -CREATE UNIQUE INDEX public.users_idx_by_username ON public.users (username DESC);
+-- +CREATE UNIQUE INDEX public.users_idx_by_username ON public.users (username ASC, age ASC);
+--  
+DROP INDEX public.users_idx_by_username;
 CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username ASC, age ASC);
 `
 		actual, err := Diff(before, after)
@@ -385,7 +387,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (
 
 		expected := `-- -username VARCHAR(10) NOT NULL
 -- +username VARCHAR(11) NOT NULL
--- 
 ALTER TABLE public.users ALTER COLUMN username SET DATA TYPE VARCHAR(11);
 `
 		actual, err := Diff(before, after)
