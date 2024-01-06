@@ -46,6 +46,8 @@ func ShowCreateAllTables(ctx context.Context, db sqlQueryerContext, opts ...Show
 	q := "SELECT table_name FROM information_schema.tables"
 	if cfg.database != "" {
 		q += fmt.Sprintf(" WHERE table_schema = `%s`", cfg.database)
+	} else {
+		q += " WHERE table_schema = database()"
 	}
 
 	tableNames := new([]*TableName)
