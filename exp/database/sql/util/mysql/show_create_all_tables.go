@@ -40,10 +40,10 @@ func ShowCreateAllTables(ctx context.Context, db sqlQueryerContext, opts ...Show
 	}
 
 	type TableName struct {
-		TableName string `db:"table_name"`
+		TableName string `db:"TABLE_NAME"`
 	}
 
-	q := "SELECT table_name FROM information_schema.tables"
+	q := "SELECT TABLE_NAME FROM information_schema.tables"
 	if cfg.database != "" {
 		q += fmt.Sprintf(" WHERE table_schema = `%s`", cfg.database)
 	} else {
@@ -56,6 +56,7 @@ func ShowCreateAllTables(ctx context.Context, db sqlQueryerContext, opts ...Show
 	}
 
 	type CreateStatement struct {
+		TableName       string `db:"Table"`
 		CreateStatement string `db:"Create Table"`
 	}
 	for _, tableName := range *tableNames {
