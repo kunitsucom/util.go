@@ -728,17 +728,20 @@ func isConstraint(tokenType TokenType) bool {
 	}
 }
 
-//nolint:unused
-func (p *Parser) checkCurrentToken(expected TokenType) error {
-	if expected != p.currentToken.Type {
-		return errorz.Errorf("currentToken: expected=%s, but got=%#v: %w", expected, p.currentToken, ddl.ErrUnexpectedToken)
+func (p *Parser) checkCurrentToken(expectedTypes ...TokenType) error {
+	for _, expected := range expectedTypes {
+		if expected == p.currentToken.Type {
+			return nil
+		}
 	}
-	return nil
+	return errorz.Errorf("currentToken: expected=%v, but got=%#v: %w", expectedTypes, p.currentToken, ddl.ErrUnexpectedToken)
 }
 
-func (p *Parser) checkPeekToken(expected TokenType) error {
-	if expected != p.peekToken.Type {
-		return errorz.Errorf("peekToken: expected=%s, but got=%#v: %w", expected, p.peekToken, ddl.ErrUnexpectedToken)
+func (p *Parser) checkPeekToken(expectedTypes ...TokenType) error {
+	for _, expected := range expectedTypes {
+		if expected == p.peekToken.Type {
+			return nil
+		}
 	}
-	return nil
+	return errorz.Errorf("peekToken: expected=%v, but got=%#v: %w", expectedTypes, p.peekToken, ddl.ErrUnexpectedToken)
 }
