@@ -31,6 +31,10 @@ func (l *Literal) StringForDiff() string {
 
 type TokenType string
 
+func (t TokenType) String() string {
+	return string(t)
+}
+
 //nolint:revive,stylecheck
 const (
 	// SPECIAL TOKENS.

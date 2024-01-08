@@ -12,6 +12,7 @@ import (
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
 	filepathz "github.com/kunitsucom/util.go/path/filepath"
+	stringz "github.com/kunitsucom/util.go/strings"
 )
 
 //nolint:gochecknoglobals
@@ -721,7 +722,7 @@ func (p *Parser) checkCurrentToken(expectedTypes ...TokenType) error {
 			return nil
 		}
 	}
-	return errorz.Errorf("currentToken: expected=%v, but got=%#v: %w", expectedTypes, p.currentToken, ddl.ErrUnexpectedToken)
+	return errorz.Errorf("currentToken: expected=%s, but got=%#v: %w", stringz.JoinStringers(",", expectedTypes...), p.currentToken, ddl.ErrUnexpectedToken)
 }
 
 func (p *Parser) checkPeekToken(expectedTypes ...TokenType) error {
@@ -730,5 +731,5 @@ func (p *Parser) checkPeekToken(expectedTypes ...TokenType) error {
 			return nil
 		}
 	}
-	return errorz.Errorf("peekToken: expected=%v, but got=%#v: %w", expectedTypes, p.peekToken, ddl.ErrUnexpectedToken)
+	return errorz.Errorf("peekToken: expected=%s, but got=%#v: %w", stringz.JoinStringers(",", expectedTypes...), p.peekToken, ddl.ErrUnexpectedToken)
 }
