@@ -783,8 +783,8 @@ func isReservedValue(tokenType TokenType) bool {
 
 func isDataType(tokenType TokenType) bool {
 	switch tokenType { //nolint:exhaustive
-	case TOKEN_BOOL,
-		TOKEN_INT2, TOKEN_INT4, TOKEN_INT8,
+	case TOKEN_TINYINT,
+		TOKEN_SMALLINT, TOKEN_INTEGER, TOKEN_BIGINT,
 		TOKEN_DECIMAL, TOKEN_NUMERIC,
 		TOKEN_REAL, TOKEN_DOUBLE, /* TOKEN_PRECISION, */
 		TOKEN_SMALLSERIAL, TOKEN_SERIAL, TOKEN_BIGSERIAL,

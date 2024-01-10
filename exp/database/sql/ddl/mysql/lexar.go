@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-// MEMO: https://www.postgresql.jp/docs/11/datatype.html
+// MEMO: https://dev.mysql.com/doc/refman/8.0/ja/data-types.html
 
 // Token はSQL文のトークンを表す型です。
 type Token struct {
@@ -72,10 +72,11 @@ const (
 	TOKEN_TO     TokenType = "TO"
 
 	// DATA TYPE.
-	TOKEN_BOOL              TokenType = "BOOL"
-	TOKEN_INT2              TokenType = "INT2"
-	TOKEN_INT4              TokenType = "INT4"
-	TOKEN_INT8              TokenType = "INT8"
+	TOKEN_TINYINT           TokenType = "TINYINT"
+	TOKEN_SMALLINT          TokenType = "SMALLINT"
+	TOKEN_MEDIUMINT         TokenType = "MEDIUMINT"
+	TOKEN_INTEGER           TokenType = "INTEGER"
+	TOKEN_BIGINT            TokenType = "BIGINT"
 	TOKEN_DECIMAL           TokenType = "DECIMAL"
 	TOKEN_NUMERIC           TokenType = "NUMERIC"
 	TOKEN_REAL              TokenType = "REAL"
@@ -170,14 +171,16 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_ON
 	case "TO":
 		return TOKEN_TO
-	case "BOOLEAN", "BOOL":
-		return TOKEN_BOOL
-	case "INT2", "SMALLINT":
-		return TOKEN_INT2
-	case "INT4", "INTEGER", "INT":
-		return TOKEN_INT4
-	case "INT8", "BIGINT":
-		return TOKEN_INT8
+	case "TINYINT", "BOOLEAN":
+		return TOKEN_TINYINT
+	case "SMALLINT":
+		return TOKEN_SMALLINT
+	case "MEDIUMINT":
+		return TOKEN_MEDIUMINT
+	case "INTEGER", "INT":
+		return TOKEN_INTEGER
+	case "BIGINT":
+		return TOKEN_BIGINT
 	case "DECIMAL":
 		return TOKEN_DECIMAL
 	case "NUMERIC":

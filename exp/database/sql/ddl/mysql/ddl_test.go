@@ -71,8 +71,8 @@ func TestDataType_StringForDiff(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		dataType := &DataType{Name: "integer", Type: TOKEN_INT4}
-		expected := string(TOKEN_INT4)
+		dataType := &DataType{Name: "integer", Type: TOKEN_INTEGER}
+		expected := string(TOKEN_INTEGER)
 		actual := dataType.StringForDiff()
 
 		require.Equal(t, expected, actual)
