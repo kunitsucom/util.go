@@ -9,7 +9,7 @@ import (
 
 	errorz "github.com/kunitsucom/util.go/errors"
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
-	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/logs"
 	filepathz "github.com/kunitsucom/util.go/path/filepath"
 	stringz "github.com/kunitsucom/util.go/strings"
 )
@@ -65,7 +65,7 @@ func (p *Parser) nextToken() {
 	p.peekToken = p.l.NextToken()
 
 	_, file, line, _ := runtime.Caller(1)
-	internal.TraceLog.Printf("🪲: nextToken: caller=%s:%d currentToken: %#v, peekToken: %#v", filepathz.Short(file), line, p.currentToken, p.peekToken)
+	logs.TraceLog.Printf("🪲: nextToken: caller=%s:%d currentToken: %#v, peekToken: %#v", filepathz.Short(file), line, p.currentToken, p.peekToken)
 }
 
 // Parse はSQL文を解析します。
@@ -311,6 +311,7 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 
 	p.nextToken() // current = DATA_TYPE
 
+LabelColumn:
 	switch { //nolint:exhaustive
 	case isDataType(p.currentToken.Type):
 		dataType, err := p.parseDataType()
@@ -332,7 +333,7 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 			case TOKEN_NULL:
 				column.NotNull = false
 			case TOKEN_DEFAULT:
-				p.nextToken() // current = DEFAULT
+				p.nextToken() // current = default_value
 				def, err := p.parseColumnDefault()
 				if err != nil {
 					return nil, nil, errorz.Errorf(errFmtPrefix+"parseColumnDefault: %w", err)
@@ -355,6 +356,9 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 				constraints = constraints.Append(c)
 			}
 		}
+	case p.currentToken.Type == TOKEN_COMMA:
+		// do nothing
+		break LabelColumn
 	default:
 		return nil, nil, errorz.Errorf(errFmtPrefix+"currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
 	}
@@ -456,7 +460,7 @@ LabelConstraints:
 			}
 			p.nextToken() // current = KEY
 			constraints = constraints.Append(&PrimaryKeyConstraint{
-				Name:    NewRawIdent(fmt.Sprintf("%s_pkey", tableName.StringForDiff())),
+				Name:    NewRawIdent("PRIMARY KEY"),
 				Columns: []*ColumnIdent{{Ident: column.Name}},
 			})
 		case TOKEN_REFERENCES:
@@ -552,11 +556,8 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 		if err != nil {
 			return nil, errorz.Errorf("parseColumnIdents: %w", err)
 		}
-		if constraintName == nil {
-			constraintName = NewRawIdent(fmt.Sprintf("%s_pkey", tableName.StringForDiff()))
-		}
 		return &PrimaryKeyConstraint{
-			Name:    constraintName,
+			Name:    NewRawIdent("PRIMARY KEY"),
 			Columns: idents,
 		}, nil
 	case TOKEN_FOREIGN:
@@ -605,7 +606,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 		c := &IndexConstraint{}
 		if p.currentToken.Type == TOKEN_UNIQUE {
 			c.Unique = true
-			p.nextToken() // current = INDEX or KEY
+			p.nextToken() // current = KEY or INDEX
 		}
 		if err := p.checkCurrentToken(TOKEN_INDEX, TOKEN_KEY); err != nil {
 			return nil, errorz.Errorf("checkCurrentToken: %w", err)
@@ -681,6 +682,9 @@ func (p *Parser) parseDataType() (*DataType, error) {
 		p.nextToken() // current = VARYING
 		dataType.Name += " " + p.currentToken.Literal.String()
 		dataType.Type = TOKEN_VARCHAR
+	case TOKEN_ENUM:
+		dataType.Name = p.currentToken.Literal.String()
+		dataType.Type = TOKEN_ENUM
 	default:
 		dataType.Name = p.currentToken.Literal.String()
 		dataType.Type = p.currentToken.Type
@@ -688,12 +692,11 @@ func (p *Parser) parseDataType() (*DataType, error) {
 
 	if p.peekToken.Type == TOKEN_OPEN_PAREN {
 		p.nextToken() // current = (
-		p.nextToken() // current = 128
-		dataType.Size = p.currentToken.Literal.Str
-		if err := p.checkPeekToken(TOKEN_CLOSE_PAREN); err != nil {
-			return nil, errorz.Errorf("checkPeekToken: %w", err)
+		idents, err := p.parseIdents()
+		if err != nil {
+			return nil, errorz.Errorf("parseIdents: %w", err)
 		}
-		p.nextToken() // current = )
+		dataType.Idents = idents
 	}
 
 	return dataType, nil
@@ -716,12 +719,37 @@ LabelIdents:
 			case TOKEN_DESC:
 				ident.Order = &Order{Desc: true}
 				p.nextToken() // current = DESC
+			default:
+				// do nothing
 			}
 			idents = append(idents, ident)
 		case TOKEN_COMMA:
 			// do nothing
 		case TOKEN_CLOSE_PAREN:
 			p.nextToken()
+			break LabelIdents
+		default:
+			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
+		}
+		p.nextToken()
+	}
+
+	return idents, nil
+}
+
+func (p *Parser) parseIdents() ([]*Ident, error) {
+	idents := make([]*Ident, 0)
+
+LabelIdents:
+	for {
+		switch p.currentToken.Type { //nolint:exhaustive
+		case TOKEN_OPEN_PAREN:
+			// do nothing
+		case TOKEN_IDENT:
+			idents = append(idents, NewRawIdent(p.currentToken.Literal.Str))
+		case TOKEN_COMMA:
+			// do nothing
+		case TOKEN_CLOSE_PAREN:
 			break LabelIdents
 		default:
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
@@ -762,9 +790,10 @@ func isDataType(tokenType TokenType) bool {
 		TOKEN_SMALLSERIAL, TOKEN_SERIAL, TOKEN_BIGSERIAL,
 		TOKEN_JSON,
 		TOKEN_CHARACTER, TOKEN_VARYING,
-		TOKEN_VARCHAR, TOKEN_STRING,
+		TOKEN_VARCHAR, TOKEN_TEXT,
 		TOKEN_TIMESTAMP, TOKEN_DATE, TOKEN_TIME,
-		TOKEN_DATETIME:
+		TOKEN_DATETIME,
+		TOKEN_ENUM:
 		return true
 	default:
 		return false

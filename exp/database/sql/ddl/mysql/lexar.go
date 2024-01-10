@@ -90,11 +90,12 @@ const (
 	TOKEN_CHARACTER         TokenType = "CHARACTER"
 	TOKEN_VARYING           TokenType = "VARYING"
 	TOKEN_VARCHAR           TokenType = "VARCHAR"
-	TOKEN_STRING            TokenType = "STRING"
+	TOKEN_TEXT              TokenType = "TEXT"
 	TOKEN_DATETIME          TokenType = "DATETIME"
 	TOKEN_TIMESTAMP         TokenType = "TIMESTAMP"
 	TOKEN_DATE              TokenType = "DATE"
 	TOKEN_TIME              TokenType = "TIME"
+	TOKEN_ENUM              TokenType = "ENUM"
 
 	// COLUMN.
 	TOKEN_DEFAULT TokenType = "DEFAULT"
@@ -201,8 +202,8 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_VARYING
 	case "VARCHAR":
 		return TOKEN_VARCHAR
-	case "TEXT", "STRING":
-		return TOKEN_STRING
+	case "TEXT":
+		return TOKEN_TEXT
 	case "TIMESTAMP":
 		return TOKEN_TIMESTAMP
 	case "DATETIME":
@@ -211,6 +212,8 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_DATE
 	case "TIME":
 		return TOKEN_TIME
+	case "ENUM":
+		return TOKEN_ENUM
 	case "DEFAULT":
 		return TOKEN_DEFAULT
 	case "NOT":

@@ -103,16 +103,18 @@ func (i *ColumnIdent) StringForDiff() string {
 	str := i.Ident.StringForDiff()
 	if i.Order != nil && i.Order.Desc {
 		str += " DESC"
-	} else {
-		str += " ASC"
 	}
+	// MEMO: If not DESC, it is ASC by default.
+	// else {
+	// str += " ASC"
+	// }
 	return str
 }
 
 type DataType struct {
-	Name string
-	Type TokenType
-	Size string
+	Name   string
+	Type   TokenType
+	Idents []*Ident
 }
 
 func (s *DataType) String() string {
@@ -120,8 +122,8 @@ func (s *DataType) String() string {
 		return ""
 	}
 	str := s.Name
-	if s.Size != "" {
-		str += "(" + s.Size + ")"
+	if len(s.Idents) > 0 {
+		str += "(" + stringz.JoinStringers(", ", s.Idents...) + ")"
 	}
 	return str
 }
@@ -137,8 +139,15 @@ func (s *DataType) StringForDiff() string {
 		str += string(TOKEN_ILLEGAL)
 	}
 
-	if s.Size != "" {
-		str += "(" + s.Size + ")"
+	if len(s.Idents) > 0 {
+		str += "("
+		for i, ident := range s.Idents {
+			if i > 0 {
+				str += ", "
+			}
+			str += ident.StringForDiff()
+		}
+		str += ")"
 	}
 
 	return str

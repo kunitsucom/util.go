@@ -51,7 +51,7 @@ func Test_lookupIdent(t *testing.T) {
 		{name: "success,CHARACTER", input: "CHARACTER", want: TOKEN_CHARACTER},
 		{name: "success,VARYING", input: "VARYING", want: TOKEN_VARYING},
 		{name: "success,VARCHAR", input: "VARCHAR", want: TOKEN_VARCHAR},
-		{name: "success,TEXT", input: "TEXT", want: TOKEN_STRING},
+		{name: "success,TEXT", input: "TEXT", want: TOKEN_TEXT},
 		{name: "success,TIMESTAMP", input: "TIMESTAMP", want: TOKEN_TIMESTAMP},
 		{name: "success,DATETIME", input: "DATETIME", want: TOKEN_DATETIME},
 		{name: "success,DATE", input: "DATE", want: TOKEN_DATE},

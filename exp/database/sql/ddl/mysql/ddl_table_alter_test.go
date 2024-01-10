@@ -242,7 +242,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 			},
 		}
 
-		expected := `ALTER TABLE "groups" ADD CONSTRAINT "groups_pkey" PRIMARY KEY ("id");` + "\n"
+		expected := `ALTER TABLE "groups" ADD PRIMARY KEY ("id");` + "\n"
 		actual := stmt.String()
 
 		if !assert.Equal(t, expected, actual) {

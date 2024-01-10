@@ -68,7 +68,12 @@ func (s *AlterTableStmt) String() string {
 			str += " NOT VALID"
 		}
 	case *DropConstraint:
-		str += "DROP CONSTRAINT " + a.Name.String()
+		str += "DROP "
+		if a.Name.String() == "PRIMARY KEY" {
+			str += "PRIMARY KEY"
+		} else {
+			str += "CONSTRAINT " + a.Name.String()
+		}
 	case *AlterConstraint:
 		str += "ALTER CONSTRAINT " + a.Name.String() + " "
 		if a.Deferrable {

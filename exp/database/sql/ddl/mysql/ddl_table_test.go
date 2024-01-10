@@ -38,7 +38,7 @@ func TestPrimaryKeyConstraint(t *testing.T) {
 		t.Parallel()
 
 		primaryKeyConstraint := &PrimaryKeyConstraint{Name: &Ident{Name: "pk_users", QuotationMark: `"`, Raw: `"pk_users"`}, Columns: []*ColumnIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}}}
-		expected := "CONSTRAINT \"pk_users\" PRIMARY KEY (\"id\")"
+		expected := "PRIMARY KEY (\"id\")"
 		actual := primaryKeyConstraint.String()
 		require.Equal(t, expected, actual)
 
@@ -87,7 +87,7 @@ func TestUniqueConstraint(t *testing.T) {
 			Columns: []*ColumnIdent{{Ident: &Ident{Name: "email", QuotationMark: `"`, Raw: `"email"`}}},
 		}
 
-		expected := `UNIQUE INDEX "uq_users_email" ("email")`
+		expected := `UNIQUE KEY "uq_users_email" ("email")`
 		actual := indexConstraint.String()
 		require.Equal(t, expected, actual)
 

@@ -10,7 +10,7 @@ import (
 
 	errorz "github.com/kunitsucom/util.go/errors"
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
-	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/logs"
 	filepathz "github.com/kunitsucom/util.go/path/filepath"
 	stringz "github.com/kunitsucom/util.go/strings"
 )
@@ -66,7 +66,7 @@ func (p *Parser) nextToken() {
 	p.peekToken = p.l.NextToken()
 
 	_, file, line, _ := runtime.Caller(1)
-	internal.TraceLog.Printf("🪲: nextToken: caller=%s:%d currentToken: %#v, peekToken: %#v", filepathz.Short(file), line, p.currentToken, p.peekToken)
+	logs.TraceLog.Printf("🪲: nextToken: caller=%s:%d currentToken: %#v, peekToken: %#v", filepathz.Short(file), line, p.currentToken, p.peekToken)
 }
 
 // Parse はSQL文を解析します。

@@ -85,7 +85,7 @@ ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" >= 0);
 			DiffCreateTableUseAlterTableAddConstraintNotValid(false),
 		)
 
-		expectedStr := `-- -UNIQUE INDEX users_unique_name (name ASC)
+		expectedStr := `-- -UNIQUE KEY users_unique_name (name)
 -- +
 DROP INDEX users_unique_name;
 -- -CONSTRAINT users_age_check CHECK (age >= 0)
@@ -109,7 +109,7 @@ ALTER TABLE "users" DROP COLUMN "age";
 		beforeDDL, err := NewParser(NewLexer(before)).Parse()
 		require.NoError(t, err)
 
-		after := `CREATE TABLE "users" (id VARCHAR(36) NOT NULL, group_id VARCHAR(36) NOT NULL REFERENCES "groups" ("id"), "name" TEXT NOT NULL UNIQUE, "age" BIGINT DEFAULT 0 CHECK ("age" >= 0), description STRING, PRIMARY KEY ("id"));`
+		after := `CREATE TABLE "users" (id VARCHAR(36) NOT NULL, group_id VARCHAR(36) NOT NULL REFERENCES "groups" ("id"), "name" TEXT NOT NULL UNIQUE, "age" BIGINT DEFAULT 0 CHECK ("age" >= 0), description TEXT, PRIMARY KEY ("id"));`
 
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
@@ -127,7 +127,7 @@ ALTER TABLE "users" ALTER COLUMN "name" SET DATA TYPE TEXT;
 -- +"age" BIGINT DEFAULT 0
 ALTER TABLE "users" ALTER COLUMN "age" SET DATA TYPE BIGINT;
 -- -
--- +UNIQUE INDEX users_unique_name (name ASC)
+-- +UNIQUE KEY users_unique_name (name)
 CREATE UNIQUE INDEX users_unique_name ON "users" ("name");
 `
 
@@ -207,26 +207,20 @@ ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" <> 0);
 		expectedStr := `-- -public.users
 -- +public.app_users
 ALTER TABLE "public.users" RENAME TO "public.app_users";
--- -CONSTRAINT users_pkey PRIMARY KEY (id ASC)
--- +
-ALTER TABLE "public.app_users" DROP CONSTRAINT users_pkey;
--- -CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id ASC) REFERENCES groups (id ASC)
+-- -CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES groups (id)
 -- +
 ALTER TABLE "public.app_users" DROP CONSTRAINT users_group_id_fkey;
--- -UNIQUE INDEX users_unique_name (name ASC)
+-- -UNIQUE KEY users_unique_name (name)
 -- +
 DROP INDEX public.users_unique_name;
 -- -CONSTRAINT users_age_check CHECK (age >= 0)
 -- +
 ALTER TABLE "public.app_users" DROP CONSTRAINT users_age_check;
 -- -
--- +CONSTRAINT app_users_pkey PRIMARY KEY (id ASC)
-ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_pkey PRIMARY KEY ("id");
--- -
--- +CONSTRAINT app_users_group_id_fkey FOREIGN KEY (group_id ASC) REFERENCES groups (id ASC)
+-- +CONSTRAINT app_users_group_id_fkey FOREIGN KEY (group_id) REFERENCES groups (id)
 ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id");
 -- -
--- +UNIQUE INDEX app_users_unique_name (name ASC)
+-- +UNIQUE KEY app_users_unique_name (name)
 CREATE UNIQUE INDEX public.app_users_unique_name ON "public.app_users" ("name");
 -- -
 -- +CONSTRAINT app_users_age_check CHECK (age >= 0)
@@ -310,12 +304,12 @@ ALTER TABLE "users" ALTER COLUMN "age" DROP NOT NULL;
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
 
-		expectedStr := `-- -CONSTRAINT users_pkey PRIMARY KEY (id ASC)
+		expectedStr := `-- -PRIMARY KEY (id)
 -- +
-ALTER TABLE "users" DROP CONSTRAINT users_pkey;
+ALTER TABLE "users" DROP PRIMARY KEY;
 -- -
--- +CONSTRAINT users_pkey PRIMARY KEY (id ASC, name ASC)
-ALTER TABLE "users" ADD CONSTRAINT users_pkey PRIMARY KEY ("id", name);
+-- +PRIMARY KEY (id, name)
+ALTER TABLE "users" ADD PRIMARY KEY ("id", name);
 `
 
 		actual, err := DiffCreateTable(
@@ -340,11 +334,11 @@ ALTER TABLE "users" ADD CONSTRAINT users_pkey PRIMARY KEY ("id", name);
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
 
-		expectedStr := `-- -CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id ASC) REFERENCES groups (id ASC)
+		expectedStr := `-- -CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES groups (id)
 -- +
 ALTER TABLE "users" DROP CONSTRAINT users_group_id_fkey;
 -- -
--- +CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id ASC, name ASC) REFERENCES groups (id ASC, name ASC)
+-- +CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id, name) REFERENCES groups (id, name)
 ALTER TABLE "users" ADD CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id, name) REFERENCES "groups" ("id", name);
 `
 
@@ -497,9 +491,9 @@ ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" >= 0) NOT VALID;
     "name" VARCHAR(255) NOT NULL,
     "age" INT DEFAULT 0,
     description TEXT,
-    CONSTRAINT users_pkey PRIMARY KEY ("id"),
+    PRIMARY KEY ("id"),
     CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id"),
-    UNIQUE INDEX users_unique_name ("name"),
+    UNIQUE KEY users_unique_name ("name"),
     CONSTRAINT users_age_check CHECK ("age" >= 0)
 );
 `
@@ -545,7 +539,7 @@ ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" >= 0) NOT VALID;
 	t.Run("success,NoAsc", func(t *testing.T) {
 		t.Parallel()
 
-		beforeDDL, err := NewParser(NewLexer(`CREATE TABLE "users" (id VARCHAR(36) NOT NULL, PRIMARY KEY ("id" ASC));`)).Parse()
+		beforeDDL, err := NewParser(NewLexer(`CREATE TABLE "users" (id VARCHAR(36) NOT NULL, PRIMARY KEY ("id"));`)).Parse()
 		require.NoError(t, err)
 
 		afterDDL, err := NewParser(NewLexer(`CREATE TABLE "users" (id VARCHAR(36) NOT NULL, PRIMARY KEY ("id"));`)).Parse()

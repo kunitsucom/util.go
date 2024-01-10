@@ -7,33 +7,31 @@ import (
 	"testing"
 
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
-	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/logs"
 	"github.com/kunitsucom/util.go/testing/assert"
 	"github.com/kunitsucom/util.go/testing/require"
 )
 
 //nolint:paralleltest,tparallel
 func TestParser_Parse(t *testing.T) {
-	backup := internal.TraceLog
+	backup := logs.TraceLog
 	t.Cleanup(func() {
-		internal.TraceLog = backup
+		logs.TraceLog = backup
 	})
-	internal.TraceLog = log.New(os.Stderr, "TRACE: ", log.LstdFlags|log.Lshortfile)
+	logs.TraceLog = log.New(os.Stderr, "TRACE: ", log.LstdFlags|log.Lshortfile)
 
-	successTests := []struct {
-		name    string
-		input   string
-		wantErr error
-		wantStr string
-	}{
-		{
-			name:    "success,CREATE_TABLE",
-			input:   "CREATE TABLE `groups` (`group_id` VARCHAR(36) NOT NULL PRIMARY KEY, description TEXT) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci; CREATE TABLE `users` (user_id VARCHAR(36) NOT NULL, group_id VARCHAR(36) NOT NULL REFERENCES `groups` (`group_id`), `name` VARCHAR(255) NOT NULL UNIQUE, `age` INT DEFAULT 0 CHECK (`age` >= 0), description TEXT, PRIMARY KEY (`user_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;",
-			wantErr: nil,
-			wantStr: `CREATE TABLE ` + "`" + `groups` + "`" + ` (
+	t.Run("success,CREATE_TABLE", func(t *testing.T) {
+		// t.Parallel()
+
+		l := NewLexer("CREATE TABLE `groups` (`group_id` VARCHAR(36) NOT NULL PRIMARY KEY, description TEXT) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci; CREATE TABLE `users` (user_id VARCHAR(36) NOT NULL, group_id VARCHAR(36) NOT NULL REFERENCES `groups` (`group_id`), `name` VARCHAR(255) NOT NULL UNIQUE, `age` INT DEFAULT 0 CHECK (`age` >= 0), description TEXT, PRIMARY KEY (`user_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;")
+		p := NewParser(l)
+		actual, err := p.Parse()
+		require.NoError(t, err)
+
+		expected := `CREATE TABLE ` + "`" + `groups` + "`" + ` (
     ` + "`" + `group_id` + "`" + ` VARCHAR(36) NOT NULL,
     description TEXT,
-    CONSTRAINT groups_pkey PRIMARY KEY (` + "`" + `group_id` + "`" + `)
+    PRIMARY KEY (` + "`" + `group_id` + "`" + `)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 CREATE TABLE ` + "`" + `users` + "`" + ` (
     user_id VARCHAR(36) NOT NULL,
@@ -41,45 +39,66 @@ CREATE TABLE ` + "`" + `users` + "`" + ` (
     ` + "`" + `name` + "`" + ` VARCHAR(255) NOT NULL,
     ` + "`" + `age` + "`" + ` INT DEFAULT 0,
     description TEXT,
-    CONSTRAINT users_pkey PRIMARY KEY (` + "`" + `user_id` + "`" + `),
+    PRIMARY KEY (` + "`" + `user_id` + "`" + `),
     CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES ` + "`" + `groups` + "`" + ` (` + "`" + `group_id` + "`" + `),
-    UNIQUE INDEX users_unique_name (` + "`" + `name` + "`" + `),
+    UNIQUE KEY users_unique_name (` + "`" + `name` + "`" + `),
     CONSTRAINT users_age_check CHECK (` + "`" + `age` + "`" + ` >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-`,
-		},
-		// 		{
-		// 			name: "success,complex_defaults",
-		// 			input: `-- table: complex_defaults
-		// CREATE TABLE IF NOT EXISTS complex_defaults (
-		//     -- id is the primary key.
-		//     id SERIAL PRIMARY KEY,
-		//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		//     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-		//     unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
-		//     status CHARACTER VARYING DEFAULT 'pending',
-		//     random_number INTEGER DEFAULT FLOOR(RANDOM() * 100::INTEGER)::INTEGER,
-		//     json_data JSONB DEFAULT '{}',
-		//     calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table)
-		// );
-		// `,
-		// 			wantErr: nil,
-		// 			wantStr: `CREATE TABLE IF NOT EXISTS complex_defaults (
-		//     id SERIAL,
-		//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-		//     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-		//     unique_code TEXT DEFAULT 'CODE-' || TO_CHAR(NOW(), 'YYYYMMDDHH24MISS') || '-' || LPAD(TO_CHAR(NEXTVAL('seq_complex_default')), 5, '0'),
-		//     status CHARACTER VARYING DEFAULT 'pending',
-		//     random_number INTEGER DEFAULT FLOOR(RANDOM() * 100::INTEGER)::INTEGER,
-		//     json_data JSONB DEFAULT '{}',
-		//     calculated_value INTEGER DEFAULT (SELECT COUNT(*) FROM another_table),
-		//     CONSTRAINT complex_defaults_pkey PRIMARY KEY (id)
-		// );
-		// `,
-		// 		},
-		{
-			name: "success,CREATE_TABLE_TYPE_ANNOTATION",
-			input: `CREATE TABLE IF NOT EXISTS public.users (
+`
+		if !assert.Equal(t, expected, actual.String()) {
+			t.Fail()
+		}
+
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
+	})
+
+	t.Run("success,complex_defaults", func(t *testing.T) {
+		// t.Parallel()
+
+		l := NewLexer(`-- table: complex_defaults
+CREATE TABLE IF NOT EXISTS complex_defaults (
+    id INT NOT NULL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    age INT DEFAULT 25,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('Active', 'Inactive') DEFAULT 'Active',
+    salary DECIMAL(10, 2) DEFAULT (10000+1),
+    notes VARCHAR(1024) DEFAULT 'This is a note for ',
+    is_admin BOOLEAN DEFAULT false,
+	PRIMARY KEY (id),
+	KEY complex_defaults_idx_on_name (name)
+);
+`)
+		p := NewParser(l)
+		actual, err := p.Parse()
+		require.NoError(t, err)
+
+		expected := `CREATE TABLE IF NOT EXISTS complex_defaults (
+    id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    age INT DEFAULT 25,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('Active', 'Inactive') DEFAULT 'Active',
+    salary DECIMAL(10, 2) DEFAULT (10000 + 1),
+    notes VARCHAR(1024) DEFAULT 'This is a note for ',
+    is_admin BOOLEAN DEFAULT false,
+    PRIMARY KEY (id),
+    KEY complex_defaults_idx_on_name (name)
+);
+`
+		if !assert.Equal(t, expected, actual.String()) {
+			t.Fail()
+		}
+
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
+	})
+
+	t.Run("success,CREATE_TABLE_TYPE_ANNOTATION", func(t *testing.T) {
+		// t.Parallel()
+
+		l := NewLexer(`CREATE TABLE IF NOT EXISTS public.users (
     user_id VARCHAR(36) NOT NULL,
     username VARCHAR(256) NOT NULL,
     is_verified BOOL NOT NULL DEFAULT false,
@@ -88,40 +107,45 @@ CREATE TABLE ` + "`" + `users` + "`" + ` (
     CONSTRAINT users_pkey PRIMARY KEY (user_id),
     INDEX users_idx_by_username (username DESC)
 );
-`,
-			wantErr: nil,
-			wantStr: `CREATE TABLE IF NOT EXISTS public.users (
+`)
+		p := NewParser(l)
+		actual, err := p.Parse()
+		require.NoError(t, err)
+
+		expected := `CREATE TABLE IF NOT EXISTS public.users (
     user_id VARCHAR(36) NOT NULL,
     username VARCHAR(256) NOT NULL,
     is_verified BOOL NOT NULL DEFAULT false,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT users_pkey PRIMARY KEY (user_id),
-    INDEX users_idx_by_username (username DESC)
+    PRIMARY KEY (user_id),
+    KEY users_idx_by_username (username DESC)
 );
-`,
-		},
-	}
+`
+		if !assert.Equal(t, expected, actual.String()) {
+			t.Fail()
+		}
 
-	for _, tt := range successTests {
-		tt := tt
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
+	})
 
-		t.Run(tt.name, func(t *testing.T) {
-			// t.Parallel()
+	t.Run("success,SEMICOLON", func(t *testing.T) {
+		// t.Parallel()
 
-			l := NewLexer(tt.input)
-			p := NewParser(l)
-			actual, err := p.Parse()
-			require.ErrorIs(t, err, tt.wantErr)
+		l := NewLexer(`;`)
+		p := NewParser(l)
+		actual, err := p.Parse()
+		require.NoError(t, err)
 
-			if !assert.Equal(t, tt.wantStr, actual.String()) {
-				t.Fail()
-			}
+		expected := ``
+		if !assert.Equal(t, expected, actual.String()) {
+			t.Fail()
+		}
 
-			t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
-			t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
-		})
-	}
+		t.Logf("✅: %s: actual: %%#v: \n%#v", t.Name(), actual)
+		t.Logf("✅: %s: actual: %%s: \n%s", t.Name(), actual)
+	})
 
 	failureTests := []struct {
 		name    string

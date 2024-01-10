@@ -53,9 +53,10 @@ func (c *PrimaryKeyConstraint) GetName() *Ident  { return c.Name }
 func (c *PrimaryKeyConstraint) GoString() string { return internal.GoString(*c) }
 func (c *PrimaryKeyConstraint) String() string {
 	var str string
-	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.String() + " "
-	}
+	// MEMO: MySQL does not support naming PRIMARY KEY constraints.
+	// if c.Name != nil {
+	// 	str += "CONSTRAINT " + c.Name.String() + " "
+	// }
 	str += "PRIMARY KEY"
 	str += " (" + stringz.JoinStringers(", ", c.Columns...) + ")"
 	return str
@@ -63,9 +64,10 @@ func (c *PrimaryKeyConstraint) String() string {
 
 func (c *PrimaryKeyConstraint) StringForDiff() string {
 	var str string
-	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.StringForDiff() + " "
-	}
+	// MEMO: MySQL does not support naming PRIMARY KEY constraints.
+	// if c.Name != nil {
+	// 	str += "CONSTRAINT " + c.Name.StringForDiff() + " "
+	// }
 	str += "PRIMARY KEY"
 	str += " ("
 	for i, v := range c.Columns {
@@ -147,7 +149,7 @@ func (c *IndexConstraint) String() string {
 		str += "UNIQUE "
 	}
 	if c.Name != nil {
-		str += "INDEX " + c.Name.String() + " "
+		str += "KEY " + c.Name.String() + " "
 	}
 	str += "(" + stringz.JoinStringers(", ", c.Columns...) + ")"
 	return str
@@ -159,7 +161,7 @@ func (c *IndexConstraint) StringForDiff() string {
 		str += "UNIQUE "
 	}
 	if c.Name != nil {
-		str += "INDEX " + c.Name.StringForDiff() + " "
+		str += "KEY " + c.Name.StringForDiff() + " "
 	}
 	str += "("
 	for i, v := range c.Columns {

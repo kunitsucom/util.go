@@ -362,7 +362,7 @@ CREATE INDEX public.users_idx_by_username ON public.users (username DESC);
 		require.NoError(t, err)
 
 		expected := `-- -CREATE UNIQUE INDEX public.users_idx_by_username ON public.users (username DESC);
--- +CREATE UNIQUE INDEX public.users_idx_by_username ON public.users (username ASC, age ASC);
+-- +CREATE UNIQUE INDEX public.users_idx_by_username ON public.users (username, age);
 --  
 DROP INDEX public.users_idx_by_username;
 CREATE UNIQUE INDEX IF NOT EXISTS public.users_idx_by_username ON public.users (username, age);

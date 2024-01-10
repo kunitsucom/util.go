@@ -7,18 +7,18 @@ import (
 	"testing"
 
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
-	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/logs"
 	"github.com/kunitsucom/util.go/testing/assert"
 	"github.com/kunitsucom/util.go/testing/require"
 )
 
 //nolint:paralleltest,tparallel
 func TestParser_Parse(t *testing.T) {
-	backup := internal.TraceLog
+	backup := logs.TraceLog
 	t.Cleanup(func() {
-		internal.TraceLog = backup
+		logs.TraceLog = backup
 	})
-	internal.TraceLog = log.New(os.Stderr, "TRACE: ", log.LstdFlags|log.Lshortfile)
+	logs.TraceLog = log.New(os.Stderr, "TRACE: ", log.LstdFlags|log.Lshortfile)
 
 	successTests := []struct {
 		name    string
