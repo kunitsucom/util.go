@@ -18,7 +18,7 @@ func TestCreateTableStmt_String(t *testing.T) {
 			Name:    &ObjectName{Name: &Ident{Name: "test", Raw: "test"}},
 			Columns: []*Column{
 				{Name: &Ident{Name: "id", Raw: "id"}, DataType: &DataType{Name: "INTEGER"}},
-				{Name: &Ident{Name: "name", Raw: "name"}, DataType: &DataType{Name: "VARYING", Size: "255"}},
+				{Name: &Ident{Name: "name", Raw: "name"}, DataType: &DataType{Name: "VARYING", Expr: &Expr{Idents: []*Ident{NewRawIdent("255")}}}},
 			},
 			Options: []*Option{
 				{Name: "TABLESPACE", Value: &Ident{Name: "default_tablespace", Raw: "default_tablespace"}},

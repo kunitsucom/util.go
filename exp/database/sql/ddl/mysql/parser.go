@@ -118,7 +118,7 @@ func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) {
 		Indent: Indent,
 	}
 
-	if p.peekToken.Type == TOKEN_IF {
+	if p.isPeekToken(TOKEN_IF) {
 		p.nextToken() // current = IF
 		if err := p.checkPeekToken(TOKEN_NOT); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
@@ -150,7 +150,7 @@ func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) {
 LabelColumns:
 	for {
 		switch { //nolint:exhaustive
-		case p.currentToken.Type == TOKEN_IDENT:
+		case p.isCurrentToken(TOKEN_IDENT):
 			column, constraints, err := p.parseColumn(createTableStmt.Name.Name)
 			if err != nil {
 				return nil, errorz.Errorf(errFmtPrefix+"parseColumn: %w", err)
@@ -167,10 +167,10 @@ LabelColumns:
 				return nil, errorz.Errorf(errFmtPrefix+"parseConstraint: %w", err)
 			}
 			createTableStmt.Constraints = createTableStmt.Constraints.Append(constraint)
-		case p.currentToken.Type == TOKEN_COMMA:
+		case p.isCurrentToken(TOKEN_COMMA):
 			p.nextToken()
 			continue
-		case p.currentToken.Type == TOKEN_CLOSE_PAREN:
+		case p.isCurrentToken(TOKEN_CLOSE_PAREN):
 			p.nextToken()
 			break LabelColumns
 		default:
@@ -235,12 +235,12 @@ LabelTableOptions:
 func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 	createIndexStmt := &CreateIndexStmt{}
 
-	if p.currentToken.Type == TOKEN_UNIQUE {
+	if p.isCurrentToken(TOKEN_UNIQUE) {
 		createIndexStmt.Unique = true
 		p.nextToken() // current = INDEX
 	}
 
-	if p.peekToken.Type == TOKEN_IF {
+	if p.isPeekToken(TOKEN_IF) {
 		p.nextToken() // current = IF
 		if err := p.checkPeekToken(TOKEN_NOT); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
@@ -277,7 +277,7 @@ func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 
 	p.nextToken() // current = USING or (
 
-	if p.currentToken.Type == TOKEN_USING {
+	if p.isCurrentToken(TOKEN_USING) {
 		p.nextToken() // current = using_def
 		createIndexStmt.Using = append(createIndexStmt.Using, NewIdent(p.currentToken.Literal.Str, "", p.currentToken.Literal.Str))
 		p.nextToken() // current = (
@@ -297,7 +297,7 @@ func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 	return createIndexStmt, nil
 }
 
-//nolint:funlen,cyclop
+//nolint:funlen,cyclop,gocognit
 func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 	column := &Column{}
 	constraints := make(Constraints, 0)
@@ -311,7 +311,6 @@ func (p *Parser) parseColumn(tableName *Ident) (*Column, []Constraint, error) {
 
 	p.nextToken() // current = DATA_TYPE
 
-LabelColumn:
 	switch { //nolint:exhaustive
 	case isDataType(p.currentToken.Type):
 		dataType, err := p.parseDataType()
@@ -356,9 +355,6 @@ LabelColumn:
 				constraints = constraints.Append(c)
 			}
 		}
-	case p.currentToken.Type == TOKEN_COMMA:
-		// do nothing
-		break LabelColumn
 	default:
 		return nil, nil, errorz.Errorf(errFmtPrefix+"currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
 	}
@@ -500,7 +496,7 @@ LabelConstraints:
 				case TOKEN_OPEN_PAREN:
 					// do nothing
 				case TOKEN_IDENT:
-					constraint.Expr = append(constraint.Expr, NewRawIdent(p.currentToken.Literal.Str))
+					constraint.Expr = constraint.Expr.Append(NewRawIdent(p.currentToken.Literal.Str))
 				case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS:
 					value := p.currentToken.Literal.Str
 					switch p.peekToken.Type { //nolint:exhaustive
@@ -508,7 +504,7 @@ LabelConstraints:
 						value += p.peekToken.Literal.Str
 						p.nextToken()
 					}
-					constraint.Expr = append(constraint.Expr, NewRawIdent(value))
+					constraint.Expr = constraint.Expr.Append(NewRawIdent(value))
 				case TOKEN_CLOSE_PAREN:
 					break LabelCheck
 				default:
@@ -533,7 +529,7 @@ LabelConstraints:
 //nolint:funlen,cyclop,gocognit
 func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //nolint:ireturn
 	var constraintName *Ident
-	if p.currentToken.Type == TOKEN_CONSTRAINT {
+	if p.isCurrentToken(TOKEN_CONSTRAINT) {
 		p.nextToken() // current = constraint_name
 		if p.currentToken.Type != TOKEN_IDENT {
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
@@ -604,7 +600,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 
 	case TOKEN_UNIQUE, TOKEN_INDEX, TOKEN_KEY:
 		c := &IndexConstraint{}
-		if p.currentToken.Type == TOKEN_UNIQUE {
+		if p.isCurrentToken(TOKEN_UNIQUE) {
 			c.Unique = true
 			p.nextToken() // current = KEY or INDEX
 		}
@@ -628,7 +624,7 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 		c.Columns = idents
 		return c, nil
 	case TOKEN_CHECK:
-		c := &CheckConstraint{}
+		constraint := &CheckConstraint{}
 		if err := p.checkPeekToken(TOKEN_OPEN_PAREN); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
 		}
@@ -641,9 +637,9 @@ func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //
 			// TODO: handle CONSTRAINT name
 			constraintName = NewRawIdent(tableName.StringForDiff() + "_chk")
 		}
-		c.Name = constraintName
-		c.Expr = idents
-		return c, nil
+		constraint.Name = constraintName
+		constraint.Expr = constraint.Expr.Append(idents...)
+		return constraint, nil
 	default:
 		return nil, errorz.Errorf("currentToken=%s: %w", p.currentToken.Type, ddl.ErrUnexpectedToken)
 	}
@@ -654,6 +650,10 @@ func (p *Parser) parseDataType() (*DataType, error) {
 	dataType := &DataType{Type: TOKEN_ILLEGAL}
 
 	switch p.currentToken.Type { //nolint:exhaustive
+	case TOKEN_BOOLEAN:
+		dataType.Name = "TINYINT"
+		dataType.Type = TOKEN_BOOLEAN
+		dataType.Expr = dataType.Expr.Append(NewRawIdent("1"))
 	case TOKEN_TIMESTAMP:
 		dataType.Name = p.currentToken.Literal.String()
 		dataType.Type = TOKEN_TIMESTAMP
@@ -690,13 +690,13 @@ func (p *Parser) parseDataType() (*DataType, error) {
 		dataType.Type = p.currentToken.Type
 	}
 
-	if p.peekToken.Type == TOKEN_OPEN_PAREN {
+	if p.isPeekToken(TOKEN_OPEN_PAREN) {
 		p.nextToken() // current = (
 		idents, err := p.parseIdents()
 		if err != nil {
 			return nil, errorz.Errorf("parseIdents: %w", err)
 		}
-		dataType.Idents = idents
+		dataType.Expr = dataType.Expr.Append(idents...)
 	}
 
 	return dataType, nil
@@ -747,12 +747,12 @@ LabelIdents:
 			// do nothing
 		case TOKEN_IDENT:
 			idents = append(idents, NewRawIdent(p.currentToken.Literal.Str))
-		case TOKEN_COMMA:
-			// do nothing
 		case TOKEN_CLOSE_PAREN:
 			break LabelIdents
-		default:
+		case TOKEN_EOF, TOKEN_ILLEGAL:
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
+		default:
+			idents = append(idents, NewRawIdent(p.currentToken.Literal.Str))
 		}
 		p.nextToken()
 	}
@@ -783,7 +783,8 @@ func isReservedValue(tokenType TokenType) bool {
 
 func isDataType(tokenType TokenType) bool {
 	switch tokenType { //nolint:exhaustive
-	case TOKEN_TINYINT,
+	case TOKEN_BOOLEAN,
+		TOKEN_TINYINT,
 		TOKEN_SMALLINT, TOKEN_INTEGER, TOKEN_BIGINT,
 		TOKEN_DECIMAL, TOKEN_NUMERIC,
 		TOKEN_REAL, TOKEN_DOUBLE, /* TOKEN_PRECISION, */
@@ -814,6 +815,15 @@ func isConstraint(tokenType TokenType) bool {
 	}
 }
 
+func (p *Parser) isCurrentToken(expectedTypes ...TokenType) bool {
+	for _, expected := range expectedTypes {
+		if expected == p.currentToken.Type {
+			return true
+		}
+	}
+	return false
+}
+
 func (p *Parser) checkCurrentToken(expectedTypes ...TokenType) error {
 	for _, expected := range expectedTypes {
 		if expected == p.currentToken.Type {
@@ -821,6 +831,15 @@ func (p *Parser) checkCurrentToken(expectedTypes ...TokenType) error {
 		}
 	}
 	return errorz.Errorf("currentToken: expected=%s, but got=%#v: %w", stringz.JoinStringers(",", expectedTypes...), p.currentToken, ddl.ErrUnexpectedToken)
+}
+
+func (p *Parser) isPeekToken(expectedTypes ...TokenType) bool {
+	for _, expected := range expectedTypes {
+		if expected == p.peekToken.Type {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *Parser) checkPeekToken(expectedTypes ...TokenType) error {

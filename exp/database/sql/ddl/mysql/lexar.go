@@ -72,6 +72,7 @@ const (
 	TOKEN_TO     TokenType = "TO"
 
 	// DATA TYPE.
+	TOKEN_BOOLEAN           TokenType = "BOOLEAN"
 	TOKEN_TINYINT           TokenType = "TINYINT"
 	TOKEN_SMALLINT          TokenType = "SMALLINT"
 	TOKEN_MEDIUMINT         TokenType = "MEDIUMINT"
@@ -171,7 +172,9 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_ON
 	case "TO":
 		return TOKEN_TO
-	case "TINYINT", "BOOLEAN":
+	case "BOOLEAN":
+		return TOKEN_BOOLEAN
+	case "TINYINT":
 		return TOKEN_TINYINT
 	case "SMALLINT":
 		return TOKEN_SMALLINT

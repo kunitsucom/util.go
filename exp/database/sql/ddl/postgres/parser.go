@@ -119,7 +119,7 @@ func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) {
 		Indent: Indent,
 	}
 
-	if p.peekToken.Type == TOKEN_IF {
+	if p.isPeekToken(TOKEN_IF) {
 		p.nextToken() // current = IF
 		if err := p.checkPeekToken(TOKEN_NOT); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
@@ -151,7 +151,7 @@ func (p *Parser) parseCreateTableStmt() (*CreateTableStmt, error) {
 LabelColumns:
 	for {
 		switch { //nolint:exhaustive
-		case p.currentToken.Type == TOKEN_IDENT:
+		case p.isCurrentToken(TOKEN_IDENT):
 			column, constraints, err := p.parseColumn(createTableStmt.Name.Name)
 			if err != nil {
 				return nil, errorz.Errorf(errFmtPrefix+"parseColumn: %w", err)
@@ -168,10 +168,10 @@ LabelColumns:
 				return nil, errorz.Errorf(errFmtPrefix+"parseConstraint: %w", err)
 			}
 			createTableStmt.Constraints = createTableStmt.Constraints.Append(constraint)
-		case p.currentToken.Type == TOKEN_COMMA:
+		case p.isCurrentToken(TOKEN_COMMA):
 			p.nextToken()
 			continue
-		case p.currentToken.Type == TOKEN_CLOSE_PAREN:
+		case p.isCurrentToken(TOKEN_CLOSE_PAREN):
 			switch p.peekToken.Type { //nolint:exhaustive
 			case TOKEN_SEMICOLON, TOKEN_EOF:
 				break LabelColumns
@@ -190,12 +190,12 @@ LabelColumns:
 func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 	createIndexStmt := &CreateIndexStmt{}
 
-	if p.currentToken.Type == TOKEN_UNIQUE {
+	if p.isCurrentToken(TOKEN_UNIQUE) {
 		createIndexStmt.Unique = true
 		p.nextToken() // current = INDEX
 	}
 
-	if p.peekToken.Type == TOKEN_IF {
+	if p.isPeekToken(TOKEN_IF) {
 		p.nextToken() // current = IF
 		if err := p.checkPeekToken(TOKEN_NOT); err != nil {
 			return nil, errorz.Errorf("checkPeekToken: %w", err)
@@ -232,7 +232,7 @@ func (p *Parser) parseCreateIndexStmt() (*CreateIndexStmt, error) {
 
 	p.nextToken() // current = USING or (
 
-	if p.currentToken.Type == TOKEN_USING {
+	if p.isCurrentToken(TOKEN_USING) {
 		p.nextToken() // current = using_def
 		createIndexStmt.Using = append(createIndexStmt.Using, NewIdent(p.currentToken.Literal.Str, "", p.currentToken.Literal.Str))
 		p.nextToken() // current = (
@@ -450,7 +450,7 @@ LabelConstraints:
 				case TOKEN_OPEN_PAREN:
 					// do nothing
 				case TOKEN_IDENT:
-					constraint.Expr = append(constraint.Expr, NewRawIdent(p.currentToken.Literal.Str))
+					constraint.Expr = constraint.Expr.Append(NewRawIdent(p.currentToken.Literal.Str))
 				case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS:
 					value := p.currentToken.Literal.Str
 					switch p.peekToken.Type { //nolint:exhaustive
@@ -458,7 +458,7 @@ LabelConstraints:
 						value += p.peekToken.Literal.Str
 						p.nextToken()
 					}
-					constraint.Expr = append(constraint.Expr, NewRawIdent(value))
+					constraint.Expr = constraint.Expr.Append(NewRawIdent(value))
 				case TOKEN_CLOSE_PAREN:
 					break LabelCheck
 				default:
@@ -483,7 +483,7 @@ LabelConstraints:
 //nolint:funlen,cyclop,gocognit
 func (p *Parser) parseTableConstraint(tableName *Ident) (Constraint, error) { //nolint:ireturn
 	var constraintName *Ident
-	if p.currentToken.Type == TOKEN_CONSTRAINT {
+	if p.isCurrentToken(TOKEN_CONSTRAINT) {
 		p.nextToken() // current = constraint_name
 		if p.currentToken.Type != TOKEN_IDENT {
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
@@ -590,7 +590,7 @@ func (p *Parser) parseDataType() (*DataType, error) {
 		dataType.Type = TOKEN_TIMESTAMP_WITH_TIME_ZONE  //diff:ignore-line-postgres-cockroach
 	case TOKEN_TIMESTAMP:
 		dataType.Name = p.currentToken.Literal.String()
-		if p.peekToken.Type == TOKEN_WITH {
+		if p.isPeekToken(TOKEN_WITH) {
 			p.nextToken() // current = WITH
 			dataType.Name += " " + p.currentToken.Literal.String()
 			if err := p.checkPeekToken(TOKEN_TIME); err != nil {
@@ -628,14 +628,13 @@ func (p *Parser) parseDataType() (*DataType, error) {
 		dataType.Type = p.currentToken.Type
 	}
 
-	if p.peekToken.Type == TOKEN_OPEN_PAREN {
+	if p.isPeekToken(TOKEN_OPEN_PAREN) {
 		p.nextToken() // current = (
-		p.nextToken() // current = 128
-		dataType.Size = p.currentToken.Literal.Str
-		if err := p.checkPeekToken(TOKEN_CLOSE_PAREN); err != nil {
-			return nil, errorz.Errorf("checkPeekToken: %w", err)
+		idents, err := p.parseIdents()
+		if err != nil {
+			return nil, errorz.Errorf("parseIdents: %w", err)
 		}
-		p.nextToken() // current = )
+		dataType.Expr = dataType.Expr.Append(idents...)
 	}
 
 	return dataType, nil
@@ -663,6 +662,28 @@ LabelIdents:
 		p.nextToken()
 	}
 
+	return idents, nil
+}
+
+func (p *Parser) parseIdents() ([]*Ident, error) {
+	idents := make([]*Ident, 0)
+
+LabelIdents:
+	for {
+		switch p.currentToken.Type { //nolint:exhaustive
+		case TOKEN_OPEN_PAREN:
+			// do nothing
+		case TOKEN_IDENT:
+			idents = append(idents, NewRawIdent(p.currentToken.Literal.Str))
+		case TOKEN_CLOSE_PAREN:
+			break LabelIdents
+		case TOKEN_EOF, TOKEN_ILLEGAL:
+			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
+		default:
+			idents = append(idents, NewRawIdent(p.currentToken.Literal.Str))
+		}
+		p.nextToken()
+	}
 	return idents, nil
 }
 
@@ -716,6 +737,15 @@ func isConstraint(tokenType TokenType) bool {
 	}
 }
 
+func (p *Parser) isCurrentToken(expectedTypes ...TokenType) bool {
+	for _, expected := range expectedTypes {
+		if expected == p.currentToken.Type {
+			return true
+		}
+	}
+	return false
+}
+
 func (p *Parser) checkCurrentToken(expectedTypes ...TokenType) error {
 	for _, expected := range expectedTypes {
 		if expected == p.currentToken.Type {
@@ -723,6 +753,15 @@ func (p *Parser) checkCurrentToken(expectedTypes ...TokenType) error {
 		}
 	}
 	return errorz.Errorf("currentToken: expected=%s, but got=%#v: %w", stringz.JoinStringers(",", expectedTypes...), p.currentToken, ddl.ErrUnexpectedToken)
+}
+
+func (p *Parser) isPeekToken(expectedTypes ...TokenType) bool {
+	for _, expected := range expectedTypes {
+		if expected == p.peekToken.Type {
+			return true
+		}
+	}
+	return false
 }
 
 func (p *Parser) checkPeekToken(expectedTypes ...TokenType) error {

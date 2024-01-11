@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
     status ENUM('Active', 'Inactive') DEFAULT 'Active',
     salary DECIMAL(10, 2) DEFAULT (10000 + 1),
     notes VARCHAR(1024) DEFAULT 'This is a note for ',
-    is_admin BOOLEAN DEFAULT false,
+    is_admin TINYINT(1) DEFAULT false,
     PRIMARY KEY (id),
     KEY complex_defaults_idx_on_name (name)
 );
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 		l := NewLexer(`CREATE TABLE IF NOT EXISTS public.users (
     user_id VARCHAR(36) NOT NULL,
     username VARCHAR(256) NOT NULL,
-    is_verified BOOL NOT NULL DEFAULT false,
+    is_verified BOOLEAN NOT NULL DEFAULT false,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT users_pkey PRIMARY KEY (user_id),
@@ -115,7 +115,7 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 		expected := `CREATE TABLE IF NOT EXISTS public.users (
     user_id VARCHAR(36) NOT NULL,
     username VARCHAR(256) NOT NULL,
-    is_verified BOOL NOT NULL DEFAULT false,
+    is_verified TINYINT(1) NOT NULL DEFAULT false,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id),
@@ -338,6 +338,41 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_KEY_IDENTS_ENGINE_INVALID",
+			input:   `CREATE TABLE "users" ("id" VARCHAR(36), name TEXT, UNIQUE KEY users_idx_on_id_name ("id", name)) ENGINE`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_KEY_IDENTS_ENGINE_EQUAL_INVALID",
+			input:   `CREATE TABLE "users" ("id" VARCHAR(36), name TEXT, UNIQUE KEY users_idx_on_id_name ("id", name)) ENGINE=`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_KEY_IDENTS_DEFAULT_INVALID",
+			input:   `CREATE TABLE "users" ("id" VARCHAR(36), name TEXT, UNIQUE KEY users_idx_on_id_name ("id", name)) DEFAULT=`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_KEY_IDENTS_DEFAULT_CHARSET_INVALID",
+			input:   `CREATE TABLE "users" ("id" VARCHAR(36), name TEXT, UNIQUE KEY users_idx_on_id_name ("id", name)) DEFAULT CHARSET`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_KEY_IDENTS_DEFAULT_CHARSET_EQUAL_INVALID",
+			input:   `CREATE TABLE "users" ("id" VARCHAR(36), name TEXT, UNIQUE KEY users_idx_on_id_name ("id", name)) DEFAULT CHARSET=`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_KEY_IDENTS_COLLATE_INVALID",
+			input:   `CREATE TABLE "users" ("id" VARCHAR(36), name TEXT, UNIQUE KEY users_idx_on_id_name ("id", name)) COLLATE`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_KEY_IDENTS_COLLATE_EQUAL_INVALID",
+			input:   `CREATE TABLE "users" ("id" VARCHAR(36), name TEXT, UNIQUE KEY users_idx_on_id_name ("id", name)) COLLATE=`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
 			name:    "failure,CREATE_INDEX_INVALID",
 			input:   `CREATE INDEX NOT`,
 			wantErr: ddl.ErrUnexpectedToken,
@@ -404,10 +439,32 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 func TestParser_parseColumn(t *testing.T) {
 	t.Parallel()
 
+	t.Run("success,TOKEN_COMMA", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer("( id VARCHAR(36),"))
+		p.nextToken()
+		p.nextToken()
+		p.nextToken()
+		_, _, err := p.parseColumn(&Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`})
+		require.NoError(t, err)
+	})
+
 	t.Run("failure,invalid", func(t *testing.T) {
 		t.Parallel()
 
 		_, _, err := NewParser(NewLexer(`NOT`)).parseColumn(&Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`})
+		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
+	})
+
+	t.Run("failure,parseDataType", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer("( id VARCHAR("))
+		p.nextToken()
+		p.nextToken()
+		p.nextToken()
+		_, _, err := p.parseColumn(&Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`})
 		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
 	})
 }

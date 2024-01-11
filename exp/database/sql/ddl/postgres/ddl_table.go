@@ -158,7 +158,7 @@ func (c *UniqueConstraint) StringForDiff() string { //diff:ignore-line-postgres-
 // CheckConstraint represents a CHECK constraint.
 type CheckConstraint struct {
 	Name *Ident
-	Expr []*Ident
+	Expr *Expr
 }
 
 var _ Constraint = (*CheckConstraint)(nil)
@@ -172,7 +172,7 @@ func (c *CheckConstraint) String() string {
 		str += "CONSTRAINT " + c.Name.String() + " "
 	}
 	str += "CHECK"
-	str += " (" + stringz.JoinStringers(" ", c.Expr...) + ")"
+	str += " (" + c.Expr.String() + ")"
 	return str
 }
 
@@ -181,9 +181,8 @@ func (c *CheckConstraint) StringForDiff() string {
 	if c.Name != nil {
 		str += "CONSTRAINT " + c.Name.StringForDiff() + " "
 	}
-	str += "CHECK"
-	str += " ("
-	for i, v := range c.Expr {
+	str += "CHECK ("
+	for i, v := range c.Expr.Idents {
 		if i != 0 {
 			str += " "
 		}
@@ -243,24 +242,24 @@ type Column struct {
 }
 
 type Default struct {
-	Value *DefaultValue
+	Value *Expr
 }
 
-func (d *DefaultValue) Append(idents ...*Ident) *DefaultValue {
+func (d *Expr) Append(idents ...*Ident) *Expr {
 	if d == nil {
-		d = &DefaultValue{Idents: idents}
+		d = &Expr{Idents: idents}
 		return d
 	}
 	d.Idents = append(d.Idents, idents...)
 	return d
 }
 
-type DefaultValue struct {
+type Expr struct {
 	Idents []*Ident
 }
 
 //nolint:cyclop
-func (d *DefaultValue) String() string {
+func (d *Expr) String() string {
 	if d == nil || len(d.Idents) == 0 {
 		return ""
 	}

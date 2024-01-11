@@ -71,7 +71,7 @@ func TestDataType_StringForDiff(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		dataType := &DataType{Name: "integer", Type: TOKEN_INTEGER, Size: ""}
+		dataType := &DataType{Name: "integer", Type: TOKEN_INTEGER}
 		expected := string(TOKEN_INTEGER)
 		actual := dataType.StringForDiff()
 
@@ -89,7 +89,7 @@ func TestDataType_StringForDiff(t *testing.T) {
 
 	t.Run("success,TOKEN_ILLEGAL", func(t *testing.T) {
 		t.Parallel()
-		dataType := &DataType{Name: "unknown", Type: TOKEN_ILLEGAL, Size: ""}
+		dataType := &DataType{Name: "unknown", Type: TOKEN_ILLEGAL}
 		expected := string(TOKEN_ILLEGAL)
 		actual := dataType.StringForDiff()
 
@@ -98,7 +98,7 @@ func TestDataType_StringForDiff(t *testing.T) {
 
 	t.Run("success,empty", func(t *testing.T) {
 		t.Parallel()
-		dataType := &DataType{Name: "unknown", Type: "", Size: ""}
+		dataType := &DataType{Name: "unknown", Type: ""}
 		expected := string(TOKEN_ILLEGAL)
 		actual := dataType.StringForDiff()
 

@@ -95,7 +95,7 @@ func (i *ColumnIdent) StringForDiff() string {
 type DataType struct {
 	Name string
 	Type TokenType
-	Size string
+	Expr *Expr
 }
 
 func (s *DataType) String() string {
@@ -103,8 +103,8 @@ func (s *DataType) String() string {
 		return ""
 	}
 	str := s.Name
-	if s.Size != "" {
-		str += "(" + s.Size + ")"
+	if s.Expr != nil && len(s.Expr.Idents) > 0 {
+		str += "(" + s.Expr.String() + ")"
 	}
 	return str
 }
@@ -120,8 +120,12 @@ func (s *DataType) StringForDiff() string {
 		str += string(TOKEN_ILLEGAL)
 	}
 
-	if s.Size != "" {
-		str += "(" + s.Size + ")"
+	if s.Expr != nil && len(s.Expr.Idents) > 0 {
+		str += "("
+		for _, ident := range s.Expr.Idents {
+			str += ident.StringForDiff()
+		}
+		str += ")"
 	}
 
 	return str

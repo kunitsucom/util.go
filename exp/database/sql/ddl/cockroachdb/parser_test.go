@@ -380,10 +380,32 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 func TestParser_parseColumn(t *testing.T) {
 	t.Parallel()
 
+	t.Run("success,TOKEN_COMMA", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer("( id VARCHAR(36),"))
+		p.nextToken()
+		p.nextToken()
+		p.nextToken()
+		_, _, err := p.parseColumn(&Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`})
+		require.NoError(t, err)
+	})
+
 	t.Run("failure,invalid", func(t *testing.T) {
 		t.Parallel()
 
 		_, _, err := NewParser(NewLexer(`NOT`)).parseColumn(&Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`})
+		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
+	})
+
+	t.Run("failure,parseDataType", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer("( id VARCHAR("))
+		p.nextToken()
+		p.nextToken()
+		p.nextToken()
+		_, _, err := p.parseColumn(&Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`})
 		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
 	})
 }

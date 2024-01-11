@@ -281,7 +281,7 @@ func TestDiff(t *testing.T) {
 		before, err := NewParser(NewLexer(`CREATE TABLE public.users (
     user_id VARCHAR(36) NOT NULL,
     username VARCHAR(256) NOT NULL,
-    is_verified BOOL NOT NULL DEFAULT false,
+    is_verified BOOLEAN NOT NULL DEFAULT false,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
     INDEX users_idx_by_username (username DESC)
@@ -292,7 +292,7 @@ func TestDiff(t *testing.T) {
 		after, err := NewParser(NewLexer(`CREATE TABLE public.users (
     user_id VARCHAR(36) NOT NULL,
     username VARCHAR(256) NOT NULL,
-    is_verified BOOL NOT NULL DEFAULT false,
+    is_verified BOOLEAN NOT NULL DEFAULT false,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
@@ -320,7 +320,7 @@ ALTER TABLE public.users ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT
 		before, err := NewParser(NewLexer(`CREATE TABLE public.users (
     user_id VARCHAR(36) NOT NULL,
     username VARCHAR(256) NOT NULL,
-    is_verified BOOL NOT NULL DEFAULT false,
+    is_verified BOOLEAN NOT NULL DEFAULT false,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
@@ -332,7 +332,7 @@ ALTER TABLE public.users ADD COLUMN updated_at DATETIME NOT NULL DEFAULT CURRENT
 		after, err := NewParser(NewLexer(`CREATE TABLE public.users (
     user_id VARCHAR(36) NOT NULL,
     username VARCHAR(256) NOT NULL,
-    is_verified BOOL NOT NULL DEFAULT false,
+    is_verified BOOLEAN NOT NULL DEFAULT false,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT users_pkey PRIMARY KEY (user_id ASC),
