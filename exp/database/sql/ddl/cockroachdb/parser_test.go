@@ -7,18 +7,18 @@ import (
 	"testing"
 
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl"
-	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
+	"github.com/kunitsucom/util.go/exp/database/sql/ddl/logs"
 	"github.com/kunitsucom/util.go/testing/assert"
 	"github.com/kunitsucom/util.go/testing/require"
 )
 
 //nolint:paralleltest,tparallel
 func TestParser_Parse(t *testing.T) {
-	backup := internal.TraceLog
+	backup := logs.TraceLog
 	t.Cleanup(func() {
-		internal.TraceLog = backup
+		logs.TraceLog = backup
 	})
-	internal.TraceLog = log.New(os.Stderr, "TRACE: ", log.LstdFlags|log.Lshortfile)
+	logs.TraceLog = log.New(os.Stderr, "TRACE: ", log.LstdFlags|log.Lshortfile)
 
 	successTests := []struct {
 		name    string
@@ -380,10 +380,32 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 func TestParser_parseColumn(t *testing.T) {
 	t.Parallel()
 
+	t.Run("success,TOKEN_COMMA", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer("( id VARCHAR(36),"))
+		p.nextToken()
+		p.nextToken()
+		p.nextToken()
+		_, _, err := p.parseColumn(&Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`})
+		require.NoError(t, err)
+	})
+
 	t.Run("failure,invalid", func(t *testing.T) {
 		t.Parallel()
 
 		_, _, err := NewParser(NewLexer(`NOT`)).parseColumn(&Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`})
+		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
+	})
+
+	t.Run("failure,parseDataType", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer("( id VARCHAR("))
+		p.nextToken()
+		p.nextToken()
+		p.nextToken()
+		_, _, err := p.parseColumn(&Ident{Name: "table_name", QuotationMark: `"`, Raw: `"table_name"`})
 		require.ErrorIs(t, err, ddl.ErrUnexpectedToken)
 	})
 }

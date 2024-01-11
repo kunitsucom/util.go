@@ -102,10 +102,10 @@ func TestCheckConstraint(t *testing.T) {
 
 		checkConstraint := &CheckConstraint{
 			Name: &Ident{Name: "users_check_age", QuotationMark: `"`, Raw: `"users_check_age"`},
-			Expr: []*Ident{{Name: "age", QuotationMark: `"`, Raw: `"age"`}},
+			Expr: &Expr{Idents: []*Ident{{Name: "(", QuotationMark: ``, Raw: `(`}, {Name: "age", QuotationMark: `"`, Raw: `"age"`}, {Name: ">=", QuotationMark: ``, Raw: `>=`}, {Name: "0", QuotationMark: ``, Raw: `0`}, {Name: ")", QuotationMark: ``, Raw: `)`}}},
 		}
 
-		expected := `CONSTRAINT "users_check_age" CHECK ("age")`
+		expected := `CONSTRAINT "users_check_age" CHECK ("age" >= 0)`
 		actual := checkConstraint.String()
 		require.Equal(t, expected, actual)
 
@@ -138,7 +138,7 @@ func TestObjectName_StringForDiff(t *testing.T) {
 	})
 }
 
-func TestDefault_String(t *testing.T) {
+func TestExpr_String(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success,String,nil", func(t *testing.T) {
@@ -168,7 +168,7 @@ func TestDefault_String(t *testing.T) {
 	t.Run("success,DEFAULT_VALUE", func(t *testing.T) {
 		t.Parallel()
 
-		d := &Default{Value: &DefaultValue{[]*Ident{{Name: "now()", Raw: "now()"}}}}
+		d := &Default{Value: &Expr{[]*Ident{{Name: "now()", Raw: "now()"}}}}
 		expected := "DEFAULT now()"
 		actual := d.String()
 		require.Equal(t, expected, actual)
@@ -178,7 +178,7 @@ func TestDefault_String(t *testing.T) {
 	t.Run("success,DEFAULT_VALUE,empty", func(t *testing.T) {
 		t.Parallel()
 
-		d := (*DefaultValue)(nil)
+		d := (*Expr)(nil)
 		expected := ""
 		actual := d.String()
 		require.Equal(t, expected, actual)
@@ -186,7 +186,7 @@ func TestDefault_String(t *testing.T) {
 	t.Run("success,DEFAULT_EXPR", func(t *testing.T) {
 		t.Parallel()
 
-		d := &Default{Value: &DefaultValue{[]*Ident{{Name: "(", Raw: "("}, {Name: "age", Raw: "age"}, {Name: ">=", Raw: ">="}, {Name: "0", Raw: "0"}, {Name: ")", Raw: ")"}}}}
+		d := &Default{Value: &Expr{[]*Ident{{Name: "(", Raw: "("}, {Name: "age", Raw: "age"}, {Name: ">=", Raw: ">="}, {Name: "0", Raw: "0"}, {Name: ")", Raw: ")"}}}}
 		expected := "DEFAULT (age >= 0)"
 		actual := d.String()
 		require.Equal(t, expected, actual)

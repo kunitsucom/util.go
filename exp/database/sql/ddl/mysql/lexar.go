@@ -1,15 +1,10 @@
-package cockroachdb
+package mysql
 
 import (
 	"strings"
 )
 
-// MEMO: https://www.postgresql.jp/docs/11/datatype.html
-
-const (
-	QuotationChar = '"'
-	QuotationStr  = string(QuotationChar)
-)
+// MEMO: https://dev.mysql.com/doc/refman/8.0/ja/data-types.html
 
 // Token はSQL文のトークンを表す型です。
 type Token struct {
@@ -55,7 +50,7 @@ const (
 	TOKEN_SLASH           TokenType = "SLASH"           // /
 	TOKEN_STRING_CONCAT   TokenType = "STRING_CONCAT"   //nolint:gosec // ||
 	TOKEN_TYPECAST        TokenType = "TYPECAST"        // ::
-	TOKEN_TYPE_ANNOTATION TokenType = "TYPE_ANNOTATION" // ::: //diff:ignore-line-postgres-cockroach
+	TOKEN_TYPE_ANNOTATION TokenType = "TYPE_ANNOTATION" // :::
 
 	// VERB.
 	TOKEN_CREATE   TokenType = "CREATE"
@@ -77,10 +72,12 @@ const (
 	TOKEN_TO     TokenType = "TO"
 
 	// DATA TYPE.
-	TOKEN_BOOL              TokenType = "BOOL" //diff:ignore-line-postgres-cockroach
-	TOKEN_INT2              TokenType = "INT2" //diff:ignore-line-postgres-cockroach
-	TOKEN_INT4              TokenType = "INT4" //diff:ignore-line-postgres-cockroach
-	TOKEN_INT8              TokenType = "INT8" //diff:ignore-line-postgres-cockroach
+	TOKEN_BOOLEAN           TokenType = "BOOLEAN"
+	TOKEN_TINYINT           TokenType = "TINYINT"
+	TOKEN_SMALLINT          TokenType = "SMALLINT"
+	TOKEN_MEDIUMINT         TokenType = "MEDIUMINT"
+	TOKEN_INTEGER           TokenType = "INTEGER"
+	TOKEN_BIGINT            TokenType = "BIGINT"
 	TOKEN_DECIMAL           TokenType = "DECIMAL"
 	TOKEN_NUMERIC           TokenType = "NUMERIC"
 	TOKEN_REAL              TokenType = "REAL"
@@ -90,18 +87,17 @@ const (
 	TOKEN_SMALLSERIAL       TokenType = "SMALLSERIAL"
 	TOKEN_SERIAL            TokenType = "SERIAL"
 	TOKEN_BIGSERIAL         TokenType = "BIGSERIAL"
-	TOKEN_UUID              TokenType = "UUID"
-	TOKEN_JSONB             TokenType = "JSONB"
+	TOKEN_JSON              TokenType = "JSON"
 	TOKEN_CHARACTER_VARYING TokenType = "CHARACTER VARYING"
 	TOKEN_CHARACTER         TokenType = "CHARACTER"
 	TOKEN_VARYING           TokenType = "VARYING"
-	TOKEN_VARCHAR           TokenType = "VARCHAR" //diff:ignore-line-postgres-cockroach
-	TOKEN_STRING            TokenType = "STRING"  //diff:ignore-line-postgres-cockroach
-	TOKEN_TIMESTAMPTZ       TokenType = "TIMESTAMPTZ"
+	TOKEN_VARCHAR           TokenType = "VARCHAR"
+	TOKEN_TEXT              TokenType = "TEXT"
+	TOKEN_DATETIME          TokenType = "DATETIME"
 	TOKEN_TIMESTAMP         TokenType = "TIMESTAMP"
-	TOKEN_WITH              TokenType = "WITH"
+	TOKEN_DATE              TokenType = "DATE"
 	TOKEN_TIME              TokenType = "TIME"
-	TOKEN_ZONE              TokenType = "ZONE"
+	TOKEN_ENUM              TokenType = "ENUM"
 
 	// COLUMN.
 	TOKEN_DEFAULT TokenType = "DEFAULT"
@@ -117,6 +113,11 @@ const (
 	TOKEN_REFERENCES TokenType = "REFERENCES"
 	TOKEN_UNIQUE     TokenType = "UNIQUE"
 	TOKEN_CHECK      TokenType = "CHECK"
+
+	// OPTIONS.
+	TOKEN_ENGINE  TokenType = "ENGINE"
+	TOKEN_CHARSET TokenType = "CHARSET"
+	TOKEN_COLLATE TokenType = "COLLATE"
 
 	// FUNCTION.
 	TOKEN_NULLIF TokenType = "NULLIF"
@@ -171,14 +172,18 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_ON
 	case "TO":
 		return TOKEN_TO
-	case "BOOLEAN", "BOOL": //diff:ignore-line-postgres-cockroach
-		return TOKEN_BOOL //diff:ignore-line-postgres-cockroach
-	case "INT2", "SMALLINT": //diff:ignore-line-postgres-cockroach
-		return TOKEN_INT2 //diff:ignore-line-postgres-cockroach
-	case "INT4", "INTEGER", "INT": //diff:ignore-line-postgres-cockroach
-		return TOKEN_INT4 //diff:ignore-line-postgres-cockroach
-	case "INT8", "BIGINT": //diff:ignore-line-postgres-cockroach
-		return TOKEN_INT8 //diff:ignore-line-postgres-cockroach
+	case "BOOLEAN":
+		return TOKEN_BOOLEAN
+	case "TINYINT":
+		return TOKEN_TINYINT
+	case "SMALLINT":
+		return TOKEN_SMALLINT
+	case "MEDIUMINT":
+		return TOKEN_MEDIUMINT
+	case "INTEGER", "INT":
+		return TOKEN_INTEGER
+	case "BIGINT":
+		return TOKEN_BIGINT
 	case "DECIMAL":
 		return TOKEN_DECIMAL
 	case "NUMERIC":
@@ -195,28 +200,26 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_SERIAL
 	case "BIGSERIAL":
 		return TOKEN_BIGSERIAL
-	case "UUID":
-		return TOKEN_UUID
-	case "JSONB":
-		return TOKEN_JSONB
+	case "JSON":
+		return TOKEN_JSON
 	case "CHARACTER":
 		return TOKEN_CHARACTER
-	case "VARYING": //diff:ignore-line-postgres-cockroach
+	case "VARYING":
 		return TOKEN_VARYING
-	case "VARCHAR": //diff:ignore-line-postgres-cockroach
-		return TOKEN_VARCHAR //diff:ignore-line-postgres-cockroach
-	case "TEXT", "STRING": //diff:ignore-line-postgres-cockroach
-		return TOKEN_STRING //diff:ignore-line-postgres-cockroach
+	case "VARCHAR":
+		return TOKEN_VARCHAR
+	case "TEXT":
+		return TOKEN_TEXT
 	case "TIMESTAMP":
 		return TOKEN_TIMESTAMP
-	case "TIMESTAMPTZ":
-		return TOKEN_TIMESTAMPTZ
-	case "WITH":
-		return TOKEN_WITH
+	case "DATETIME":
+		return TOKEN_DATETIME
+	case "DATE":
+		return TOKEN_DATE
 	case "TIME":
 		return TOKEN_TIME
-	case "ZONE":
-		return TOKEN_ZONE
+	case "ENUM":
+		return TOKEN_ENUM
 	case "DEFAULT":
 		return TOKEN_DEFAULT
 	case "NOT":
@@ -239,6 +242,12 @@ func lookupIdent(ident string) TokenType {
 		return TOKEN_UNIQUE
 	case "CHECK":
 		return TOKEN_CHECK
+	case "ENGINE":
+		return TOKEN_ENGINE
+	case "CHARSET":
+		return TOKEN_CHARSET
+	case "COLLATE":
+		return TOKEN_COLLATE
 	case "NULLIF":
 		return TOKEN_NULLIF
 	case "NULL":
@@ -298,30 +307,31 @@ func (l *Lexer) NextToken() Token {
 	}
 
 	switch l.ch {
-	case '"', '\'':
+	case '"', '\'', '`':
 		tok.Type = TOKEN_IDENT
 		tok.Literal = Literal{Str: l.readQuotedLiteral(l.ch)}
-	case '|':
-		if l.peekChar() == '|' {
-			ch := l.ch
-			l.readChar()
-			literal := string(ch) + string(l.ch)
-			tok = Token{Type: TOKEN_STRING_CONCAT, Literal: Literal{Str: literal}}
-		} else {
-			tok = newToken(TOKEN_ILLEGAL, l.ch)
-		}
-	case ':':
-		if l.peekChar() == ':' {
-			l.readChar()
-			if l.peekChar() == ':' { //diff:ignore-line-postgres-cockroach
-				l.readChar()                                                           //diff:ignore-line-postgres-cockroach
-				tok = Token{Type: TOKEN_TYPE_ANNOTATION, Literal: Literal{Str: ":::"}} //diff:ignore-line-postgres-cockroach
-			} else { //diff:ignore-line-postgres-cockroach
-				tok = Token{Type: TOKEN_TYPECAST, Literal: Literal{Str: "::"}}
-			} //diff:ignore-line-postgres-cockroach
-		} else {
-			tok = newToken(TOKEN_ILLEGAL, l.ch)
-		}
+	// MEMO: backup
+	// case '|':
+	// 	if l.peekChar() == '|' {
+	// 		ch := l.ch
+	// 		l.readChar()
+	// 		literal := string(ch) + string(l.ch)
+	// 		tok = Token{Type: TOKEN_STRING_CONCAT, Literal: Literal{Str: literal}}
+	// 	} else {
+	// 		tok = newToken(TOKEN_ILLEGAL, l.ch)
+	// 	}
+	// case ':':
+	// 	if l.peekChar() == ':' {
+	// 		l.readChar()
+	// 		if l.peekChar() == ':' {
+	// 			l.readChar()
+	// 			tok = Token{Type: TOKEN_TYPE_ANNOTATION, Literal: Literal{Str: ":::"}}
+	// 		} else {
+	// 			tok = Token{Type: TOKEN_TYPECAST, Literal: Literal{Str: "::"}}
+	// 		}
+	// 	} else {
+	// 		tok = newToken(TOKEN_ILLEGAL, l.ch)
+	// 	}
 	case '(':
 		tok = newToken(TOKEN_OPEN_PAREN, l.ch)
 	case ')':

@@ -1,4 +1,4 @@
-package cockroachdb
+package mysql
 
 import (
 	"testing"
@@ -71,8 +71,8 @@ func TestDataType_StringForDiff(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
-		dataType := &DataType{Name: "integer", Type: TOKEN_INT4, Expr: &Expr{Idents: []*Ident{}}}
-		expected := string(TOKEN_INT4)
+		dataType := &DataType{Name: "integer", Type: TOKEN_INTEGER}
+		expected := string(TOKEN_INTEGER)
 		actual := dataType.StringForDiff()
 
 		require.Equal(t, expected, actual)
@@ -89,7 +89,7 @@ func TestDataType_StringForDiff(t *testing.T) {
 
 	t.Run("success,TOKEN_ILLEGAL", func(t *testing.T) {
 		t.Parallel()
-		dataType := &DataType{Name: "unknown", Type: TOKEN_ILLEGAL, Expr: &Expr{Idents: []*Ident{}}}
+		dataType := &DataType{Name: "unknown", Type: TOKEN_ILLEGAL}
 		expected := string(TOKEN_ILLEGAL)
 		actual := dataType.StringForDiff()
 
@@ -98,7 +98,7 @@ func TestDataType_StringForDiff(t *testing.T) {
 
 	t.Run("success,empty", func(t *testing.T) {
 		t.Parallel()
-		dataType := &DataType{Name: "unknown", Type: "", Expr: &Expr{Idents: []*Ident{}}}
+		dataType := &DataType{Name: "unknown", Type: ""}
 		expected := string(TOKEN_ILLEGAL)
 		actual := dataType.StringForDiff()
 

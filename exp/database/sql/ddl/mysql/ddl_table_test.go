@@ -1,4 +1,4 @@
-package postgres
+package mysql
 
 import (
 	"testing"
@@ -11,8 +11,24 @@ func Test_isConstraint(t *testing.T) {
 
 	(&PrimaryKeyConstraint{}).isConstraint()
 	(&ForeignKeyConstraint{}).isConstraint()
-	(&UniqueConstraint{}).isConstraint()
+	(&IndexConstraint{}).isConstraint()
 	(&CheckConstraint{}).isConstraint()
+}
+
+func TestConstraints_Append(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success,Constraints,Append", func(t *testing.T) {
+		t.Parallel()
+
+		constraints := Constraints{}
+		constraint := &PrimaryKeyConstraint{Name: &Ident{Name: "pk_users", QuotationMark: `"`, Raw: `"pk_users"`}, Columns: []*ColumnIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}}}
+		constraints = constraints.Append(constraint)
+		constraints = constraints.Append(constraint)
+		expected := Constraints{constraint}
+		actual := constraints
+		require.Equal(t, expected, actual)
+	})
 }
 
 func TestPrimaryKeyConstraint(t *testing.T) {
@@ -22,7 +38,7 @@ func TestPrimaryKeyConstraint(t *testing.T) {
 		t.Parallel()
 
 		primaryKeyConstraint := &PrimaryKeyConstraint{Name: &Ident{Name: "pk_users", QuotationMark: `"`, Raw: `"pk_users"`}, Columns: []*ColumnIdent{{Ident: &Ident{Name: "id", QuotationMark: `"`, Raw: `"id"`}}}}
-		expected := "CONSTRAINT \"pk_users\" PRIMARY KEY (\"id\")"
+		expected := "PRIMARY KEY (\"id\")"
 		actual := primaryKeyConstraint.String()
 		require.Equal(t, expected, actual)
 
@@ -65,16 +81,17 @@ func TestUniqueConstraint(t *testing.T) {
 	t.Run("success,UniqueConstraint", func(t *testing.T) {
 		t.Parallel()
 
-		uniqueConstraint := &UniqueConstraint{
+		indexConstraint := &IndexConstraint{
+			Unique:  true,
 			Name:    &Ident{Name: "uq_users_email", QuotationMark: `"`, Raw: `"uq_users_email"`},
 			Columns: []*ColumnIdent{{Ident: &Ident{Name: "email", QuotationMark: `"`, Raw: `"email"`}}},
 		}
 
-		expected := `CONSTRAINT "uq_users_email" UNIQUE ("email")`
-		actual := uniqueConstraint.String()
+		expected := `UNIQUE KEY "uq_users_email" ("email")`
+		actual := indexConstraint.String()
 		require.Equal(t, expected, actual)
 
-		t.Logf("✅: %s: uniqueConstraint: %#v", t.Name(), uniqueConstraint)
+		t.Logf("✅: %s: uniqueConstraint: %#v", t.Name(), indexConstraint)
 	})
 }
 
@@ -85,8 +102,9 @@ func TestCheckConstraint(t *testing.T) {
 
 		checkConstraint := &CheckConstraint{
 			Name: &Ident{Name: "users_check_age", QuotationMark: `"`, Raw: `"users_check_age"`},
-			Expr: &Expr{Idents: []*Ident{{Name: "(", QuotationMark: ``, Raw: `(`}, {Name: "age", QuotationMark: `"`, Raw: `"age"`}, {Name: ">=", QuotationMark: ``, Raw: `>=`}, {Name: "0", QuotationMark: ``, Raw: `0`}, {Name: ")", QuotationMark: ``, Raw: `)`}}},
+			Expr: &Expr{Idents: []*Ident{{Name: "(", QuotationMark: ``, Raw: `(`}, {Name: "age", QuotationMark: `"`, Raw: `"age"`}, {Name: ">=", QuotationMark: ``, Raw: `>=`}, {Name: "0", QuotationMark: ``, Raw: `0`}}},
 		}
+		checkConstraint.Expr = checkConstraint.Expr.Append(&Ident{Name: ")", QuotationMark: ``, Raw: `)`})
 
 		expected := `CONSTRAINT "users_check_age" CHECK ("age" >= 0)`
 		actual := checkConstraint.String()
@@ -203,9 +221,9 @@ func TestOption(t *testing.T) {
 	t.Run("success,Option", func(t *testing.T) {
 		t.Parallel()
 
-		option := &Option{Name: "TABLESPACE", Value: &Ident{Name: "pg_default", QuotationMark: `"`, Raw: `"pg_default"`}}
+		option := &Option{Name: "ENGINE", Value: &Ident{Name: "InnoDB", QuotationMark: ``, Raw: `InnoDB`}}
 
-		expected := `TABLESPACE "pg_default"`
+		expected := `ENGINE=InnoDB`
 		actual := option.String()
 		require.Equal(t, expected, actual)
 

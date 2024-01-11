@@ -1,4 +1,4 @@
-package postgres
+package mysql
 
 import (
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
@@ -78,17 +78,36 @@ func (i *Ident) StringForDiff() string {
 
 type ColumnIdent struct {
 	Ident *Ident
+	Order *Order
 }
+
+type Order struct{ Desc bool }
 
 func (i *ColumnIdent) GoString() string { return internal.GoString(*i) }
 
 func (i *ColumnIdent) String() string {
 	str := i.Ident.String()
+	if i.Order != nil {
+		if i.Order.Desc {
+			str += " DESC"
+		}
+		// MEMO: If not DESC, it is ASC by default.
+		// else {
+		// str += " ASC"
+		// }
+	}
 	return str
 }
 
 func (i *ColumnIdent) StringForDiff() string {
 	str := i.Ident.StringForDiff()
+	if i.Order != nil && i.Order.Desc {
+		str += " DESC"
+	}
+	// MEMO: If not DESC, it is ASC by default.
+	// else {
+	// str += " ASC"
+	// }
 	return str
 }
 

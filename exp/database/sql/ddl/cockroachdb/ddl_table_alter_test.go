@@ -154,7 +154,7 @@ func TestAlterTableStmt_String(t *testing.T) {
 			Name: &ObjectName{Name: &Ident{Name: "users", QuotationMark: `"`, Raw: `"users"`}},
 			Action: &AlterColumn{
 				Name:   &Ident{Name: "age", QuotationMark: `"`, Raw: `"age"`},
-				Action: &AlterColumnSetDefault{Default: &Default{Value: &DefaultValue{[]*Ident{{Name: "0", Raw: "0"}}}}},
+				Action: &AlterColumnSetDefault{Default: &Default{Value: &Expr{[]*Ident{{Name: "0", Raw: "0"}}}}},
 			},
 		}
 

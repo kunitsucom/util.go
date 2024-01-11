@@ -1,6 +1,7 @@
-package postgres
+package mysql
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/kunitsucom/util.go/exp/database/sql/ddl/internal"
@@ -25,6 +26,17 @@ func (constraints Constraints) Append(constraint Constraint) Constraints {
 		}
 	}
 	constraints = append(constraints, constraint)
+
+	sort.Slice(constraints, func(left, right int) bool {
+		_, leftIsPrimaryKeyConstraint := constraints[left].(*PrimaryKeyConstraint)
+		switch {
+		case leftIsPrimaryKeyConstraint:
+			return true
+		default:
+			return false
+		}
+	})
+
 	return constraints
 }
 
@@ -41,9 +53,10 @@ func (c *PrimaryKeyConstraint) GetName() *Ident  { return c.Name }
 func (c *PrimaryKeyConstraint) GoString() string { return internal.GoString(*c) }
 func (c *PrimaryKeyConstraint) String() string {
 	var str string
-	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.String() + " "
-	}
+	// MEMO: MySQL does not support naming PRIMARY KEY constraints.
+	// if c.Name != nil {
+	// 	str += "CONSTRAINT " + c.Name.String() + " "
+	// }
 	str += "PRIMARY KEY"
 	str += " (" + stringz.JoinStringers(", ", c.Columns...) + ")"
 	return str
@@ -51,9 +64,10 @@ func (c *PrimaryKeyConstraint) String() string {
 
 func (c *PrimaryKeyConstraint) StringForDiff() string {
 	var str string
-	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.StringForDiff() + " "
-	}
+	// MEMO: MySQL does not support naming PRIMARY KEY constraints.
+	// if c.Name != nil {
+	// 	str += "CONSTRAINT " + c.Name.StringForDiff() + " "
+	// }
 	str += "PRIMARY KEY"
 	str += " ("
 	for i, v := range c.Columns {
@@ -117,33 +131,38 @@ func (c *ForeignKeyConstraint) StringForDiff() string {
 	return str
 }
 
-// UniqueConstraint represents a UNIQUE constraint. //diff:ignore-line-postgres-cockroach.
-type UniqueConstraint struct { //diff:ignore-line-postgres-cockroach
+// IndexConstraint represents a UNIQUE constraint..
+type IndexConstraint struct {
 	Name    *Ident
+	Unique  bool
 	Columns []*ColumnIdent
 }
 
-var _ Constraint = (*UniqueConstraint)(nil) //diff:ignore-line-postgres-cockroach
+var _ Constraint = (*IndexConstraint)(nil)
 
-func (*UniqueConstraint) isConstraint()      {}                               //diff:ignore-line-postgres-cockroach
-func (c *UniqueConstraint) GetName() *Ident  { return c.Name }                //diff:ignore-line-postgres-cockroach
-func (c *UniqueConstraint) GoString() string { return internal.GoString(*c) } //diff:ignore-line-postgres-cockroach
-func (c *UniqueConstraint) String() string { //diff:ignore-line-postgres-cockroach
+func (*IndexConstraint) isConstraint()      {}
+func (c *IndexConstraint) GetName() *Ident  { return c.Name }
+func (c *IndexConstraint) GoString() string { return internal.GoString(*c) }
+func (c *IndexConstraint) String() string {
 	var str string
-	if c.Name != nil { //diff:ignore-line-postgres-cockroach
-		str += "CONSTRAINT " + c.Name.String() + " " //diff:ignore-line-postgres-cockroach
+	if c.Unique {
+		str += "UNIQUE "
 	}
-	str += "UNIQUE " //nolint:goconst //diff:ignore-line-postgres-cockroach
+	if c.Name != nil {
+		str += "KEY " + c.Name.String() + " "
+	}
 	str += "(" + stringz.JoinStringers(", ", c.Columns...) + ")"
 	return str
 }
 
-func (c *UniqueConstraint) StringForDiff() string { //diff:ignore-line-postgres-cockroach
+func (c *IndexConstraint) StringForDiff() string {
 	var str string
-	if c.Name != nil {
-		str += "CONSTRAINT " + c.Name.StringForDiff() + " " //diff:ignore-line-postgres-cockroach
+	if c.Unique {
+		str += "UNIQUE "
 	}
-	str += "UNIQUE " //diff:ignore-line-postgres-cockroach
+	if c.Name != nil {
+		str += "KEY " + c.Name.StringForDiff() + " "
+	}
 	str += "("
 	for i, v := range c.Columns {
 		if i != 0 {
@@ -266,12 +285,11 @@ func (d *Expr) String() string {
 	var str string
 	for i := range d.Idents {
 		switch {
-		case i != 0 && (d.Idents[i-1].String() == "||" || d.Idents[i].String() == "||"):
-			str += " "
 		case i == 0 ||
 			d.Idents[i-1].String() == "(" || d.Idents[i].String() == "(" ||
 			d.Idents[i].String() == ")" ||
 			d.Idents[i-1].String() == "::" || d.Idents[i].String() == "::" ||
+			d.Idents[i-1].String() == ":::" || d.Idents[i].String() == ":::" ||
 			d.Idents[i].String() == ",":
 			// noop
 		default:
@@ -315,11 +333,11 @@ func (d *Default) StringForDiff() string {
 func (c *Column) String() string {
 	str := c.Name.String() + " " +
 		c.DataType.String()
-	if c.Default != nil { //diff:ignore-line-postgres-cockroach
-		str += " " + c.Default.String() //diff:ignore-line-postgres-cockroach
-	} //diff:ignore-line-postgres-cockroach
-	if c.NotNull { //diff:ignore-line-postgres-cockroach
-		str += " NOT NULL" //diff:ignore-line-postgres-cockroach
+	if c.NotNull {
+		str += " NOT NULL"
+	}
+	if c.Default != nil {
+		str += " " + c.Default.String()
 	}
 	return str
 }
@@ -335,7 +353,7 @@ func (o *Option) String() string {
 	if o.Value == nil {
 		return ""
 	}
-	return o.Name + " " + o.Value.String()
+	return o.Name + "=" + o.Value.String()
 }
 
 func (o *Option) GoString() string { return internal.GoString(*o) }
