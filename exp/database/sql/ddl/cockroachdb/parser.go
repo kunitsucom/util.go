@@ -386,6 +386,14 @@ LabelExpr:
 			idents = append(idents, NewRawIdent(p.currentToken.Literal.Str))
 			p.nextToken()
 			break LabelExpr
+		case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS:
+			value := p.currentToken.Literal.Str
+			switch p.peekToken.Type { //nolint:exhaustive
+			case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS:
+				value += p.peekToken.Literal.Str
+				p.nextToken()
+			}
+			idents = append(idents, NewRawIdent(value))
 		case TOKEN_EOF:
 			return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
 		default:
@@ -445,29 +453,11 @@ LabelConstraints:
 			constraint := &CheckConstraint{
 				Name: NewRawIdent(fmt.Sprintf("%s_%s_check", tableName.StringForDiff(), column.Name.StringForDiff())),
 			}
-		LabelCheck:
-			for {
-				switch p.currentToken.Type { //nolint:exhaustive
-				case TOKEN_OPEN_PAREN:
-					// do nothing
-				case TOKEN_IDENT:
-					constraint.Expr = constraint.Expr.Append(NewRawIdent(p.currentToken.Literal.Str))
-				case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS:
-					value := p.currentToken.Literal.Str
-					switch p.peekToken.Type { //nolint:exhaustive
-					case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS:
-						value += p.peekToken.Literal.Str
-						p.nextToken()
-					}
-					constraint.Expr = constraint.Expr.Append(NewRawIdent(value))
-				case TOKEN_CLOSE_PAREN:
-					break LabelCheck
-				default:
-					return nil, errorz.Errorf("currentToken=%#v: %w", p.currentToken, ddl.ErrUnexpectedToken)
-				}
-
-				p.nextToken()
+			idents, err := p.parseExpr()
+			if err != nil {
+				return nil, errorz.Errorf("parseExpr: %w", err)
 			}
+			constraint.Expr = constraint.Expr.Append(idents...)
 			constraints = constraints.Append(constraint)
 		case TOKEN_IDENT, TOKEN_COMMA, TOKEN_CLOSE_PAREN:
 			break LabelConstraints
