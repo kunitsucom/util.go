@@ -310,27 +310,28 @@ func (l *Lexer) NextToken() Token {
 	case '"', '\'', '`':
 		tok.Type = TOKEN_IDENT
 		tok.Literal = Literal{Str: l.readQuotedLiteral(l.ch)}
-	case '|':
-		if l.peekChar() == '|' {
-			ch := l.ch
-			l.readChar()
-			literal := string(ch) + string(l.ch)
-			tok = Token{Type: TOKEN_STRING_CONCAT, Literal: Literal{Str: literal}}
-		} else {
-			tok = newToken(TOKEN_ILLEGAL, l.ch)
-		}
-	case ':':
-		if l.peekChar() == ':' {
-			l.readChar()
-			if l.peekChar() == ':' {
-				l.readChar()
-				tok = Token{Type: TOKEN_TYPE_ANNOTATION, Literal: Literal{Str: ":::"}}
-			} else {
-				tok = Token{Type: TOKEN_TYPECAST, Literal: Literal{Str: "::"}}
-			}
-		} else {
-			tok = newToken(TOKEN_ILLEGAL, l.ch)
-		}
+	// MEMO: backup
+	// case '|':
+	// 	if l.peekChar() == '|' {
+	// 		ch := l.ch
+	// 		l.readChar()
+	// 		literal := string(ch) + string(l.ch)
+	// 		tok = Token{Type: TOKEN_STRING_CONCAT, Literal: Literal{Str: literal}}
+	// 	} else {
+	// 		tok = newToken(TOKEN_ILLEGAL, l.ch)
+	// 	}
+	// case ':':
+	// 	if l.peekChar() == ':' {
+	// 		l.readChar()
+	// 		if l.peekChar() == ':' {
+	// 			l.readChar()
+	// 			tok = Token{Type: TOKEN_TYPE_ANNOTATION, Literal: Literal{Str: ":::"}}
+	// 		} else {
+	// 			tok = Token{Type: TOKEN_TYPECAST, Literal: Literal{Str: "::"}}
+	// 		}
+	// 	} else {
+	// 		tok = newToken(TOKEN_ILLEGAL, l.ch)
+	// 	}
 	case '(':
 		tok = newToken(TOKEN_OPEN_PAREN, l.ch)
 	case ')':

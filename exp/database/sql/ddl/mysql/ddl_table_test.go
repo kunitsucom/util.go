@@ -102,10 +102,10 @@ func TestCheckConstraint(t *testing.T) {
 
 		checkConstraint := &CheckConstraint{
 			Name: &Ident{Name: "users_check_age", QuotationMark: `"`, Raw: `"users_check_age"`},
-			Expr: &Expr{Idents: []*Ident{{Name: "age", QuotationMark: `"`, Raw: `"age"`}}},
+			Expr: &Expr{Idents: []*Ident{{Name: "(", QuotationMark: ``, Raw: `(`}, {Name: "age", QuotationMark: `"`, Raw: `"age"`}, {Name: ">=", QuotationMark: ``, Raw: `>=`}, {Name: "0", QuotationMark: ``, Raw: `0`}, {Name: ")", QuotationMark: ``, Raw: `)`}}},
 		}
 
-		expected := `CONSTRAINT "users_check_age" CHECK ("age")`
+		expected := `CONSTRAINT "users_check_age" CHECK ("age" >= 0)`
 		actual := checkConstraint.String()
 		require.Equal(t, expected, actual)
 
@@ -138,7 +138,7 @@ func TestObjectName_StringForDiff(t *testing.T) {
 	})
 }
 
-func TestDefault_String(t *testing.T) {
+func TestExpr_String(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success,String,nil", func(t *testing.T) {

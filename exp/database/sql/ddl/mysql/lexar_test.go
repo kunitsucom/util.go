@@ -36,6 +36,7 @@ func Test_lookupIdent(t *testing.T) {
 		{name: "success,BOOLEAN", input: "BOOLEAN", want: TOKEN_BOOLEAN},
 		{name: "success,TINYINT", input: "TINYINT", want: TOKEN_TINYINT},
 		{name: "success,SMALLINT", input: "SMALLINT", want: TOKEN_SMALLINT},
+		{name: "success,MEDIUMINT", input: "MEDIUMINT", want: TOKEN_MEDIUMINT},
 		{name: "success,INTEGER", input: "INTEGER", want: TOKEN_INTEGER},
 		{name: "success,INT", input: "INT", want: TOKEN_INTEGER},
 		{name: "success,BIGINT", input: "BIGINT", want: TOKEN_BIGINT},
@@ -213,6 +214,14 @@ func TestLexer_NextToken(t *testing.T) {
 		input string
 		want  Token
 	}{
+		{
+			name:  "success,-",
+			input: `-`,
+			want: Token{
+				Type:    TOKEN_MINUS,
+				Literal: Literal{Str: "-"},
+			},
+		},
 		{
 			name:  "failure,|",
 			input: `|`,

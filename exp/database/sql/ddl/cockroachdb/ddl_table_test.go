@@ -138,7 +138,7 @@ func TestObjectName_StringForDiff(t *testing.T) {
 	})
 }
 
-func TestDefault_String(t *testing.T) {
+func TestExpr_String(t *testing.T) {
 	t.Parallel()
 
 	t.Run("success,String,nil", func(t *testing.T) {

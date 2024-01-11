@@ -171,8 +171,8 @@ func (c *CheckConstraint) String() string {
 	if c.Name != nil {
 		str += "CONSTRAINT " + c.Name.String() + " "
 	}
-	str += "CHECK"
-	str += " (" + c.Expr.String() + ")"
+	str += "CHECK "
+	str += c.Expr.String()
 	return str
 }
 
@@ -181,14 +181,13 @@ func (c *CheckConstraint) StringForDiff() string {
 	if c.Name != nil {
 		str += "CONSTRAINT " + c.Name.StringForDiff() + " "
 	}
-	str += "CHECK ("
+	str += "CHECK "
 	for i, v := range c.Expr.Idents {
 		if i != 0 {
 			str += " "
 		}
 		str += v.StringForDiff()
 	}
-	str += ")"
 	return str
 }
 

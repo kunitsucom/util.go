@@ -75,7 +75,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 		if afterConstraint == nil {
 			// ALTER TABLE table_name DROP CONSTRAINT constraint_name;
 			result.Stmts = append(result.Stmts, &AlterTableStmt{
-				Comment: simplediff.Diff(beforeConstraint.StringForDiff(), "").String(),
+				Comment: simplediff.Diff(beforeConstraint.String(), "").String(),
 				Name:    after.Name, // ALTER TABLE RENAME TO で変更された後の可能性があるため after.Name を使用する
 				Action: &DropConstraint{
 					Name: beforeConstraint.GetName(),
@@ -96,14 +96,14 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 				result.Stmts = append(
 					result.Stmts,
 					&AlterTableStmt{
-						Comment: simplediff.Diff(beforeConstraint.StringForDiff(), "").String(),
+						Comment: simplediff.Diff(beforeConstraint.String(), "").String(),
 						Name:    after.Name, // ALTER TABLE RENAME TO で変更された後の可能性があるため after.Name を使用する
 						Action: &DropConstraint{
 							Name: beforeConstraint.GetName(),
 						},
 					},
 					&AlterTableStmt{
-						Comment: simplediff.Diff("", afterConstraint.StringForDiff()).String(),
+						Comment: simplediff.Diff("", afterConstraint.String()).String(),
 						Name:    after.Name,
 						Action: &AddConstraint{
 							Constraint: afterConstraint,
@@ -119,7 +119,7 @@ func DiffCreateTable(before, after *CreateTableStmt, opts ...DiffCreateTableOpti
 	for _, afterConstraint := range onlyLeftConstraint(after.Constraints, before.Constraints) {
 		// ALTER TABLE table_name ADD CONSTRAINT constraint_name constraint;
 		result.Stmts = append(result.Stmts, &AlterTableStmt{
-			Comment: simplediff.Diff("", afterConstraint.StringForDiff()).String(),
+			Comment: simplediff.Diff("", afterConstraint.String()).String(),
 			Name:    after.Name,
 			Action: &AddConstraint{
 				Constraint: afterConstraint,

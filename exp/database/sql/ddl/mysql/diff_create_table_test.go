@@ -57,7 +57,7 @@ func TestDiffCreateTable(t *testing.T) {
 -- +"age" INTEGER NOT NULL DEFAULT 0
 ALTER TABLE "users" ADD COLUMN "age" INTEGER NOT NULL DEFAULT 0;
 -- -
--- +CONSTRAINT users_age_check CHECK (age >= 0)
+-- +CONSTRAINT users_age_check CHECK ("age" >= 0)
 ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" >= 0);
 `
 
@@ -88,7 +88,7 @@ ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" >= 0);
 		expectedStr := `-- -UNIQUE KEY users_unique_name (name)
 -- +
 DROP INDEX users_unique_name;
--- -CONSTRAINT users_age_check CHECK (age >= 0)
+-- -CONSTRAINT users_age_check CHECK ("age" >= 0)
 -- +
 ALTER TABLE "users" DROP CONSTRAINT users_age_check;
 -- -"age" INTEGER NOT NULL DEFAULT 0
@@ -174,11 +174,11 @@ ALTER TABLE "users" ALTER COLUMN "age" DROP DEFAULT;
 		expectedStr := `-- -"age" INT
 -- +"age" INT DEFAULT 0
 ALTER TABLE "users" ALTER COLUMN "age" SET DEFAULT 0;
--- -CONSTRAINT users_age_check CHECK (age >= 0)
+-- -CONSTRAINT users_age_check CHECK ("age" >= 0)
 -- +
 ALTER TABLE "users" DROP CONSTRAINT users_age_check;
 -- -
--- +CONSTRAINT users_age_check CHECK (age <> 0)
+-- +CONSTRAINT users_age_check CHECK ("age" <> 0)
 ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" <> 0);
 `
 
@@ -207,23 +207,23 @@ ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" <> 0);
 		expectedStr := `-- -public.users
 -- +public.app_users
 ALTER TABLE "public.users" RENAME TO "public.app_users";
--- -CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES groups (id)
+-- -CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id")
 -- +
 ALTER TABLE "public.app_users" DROP CONSTRAINT users_group_id_fkey;
 -- -UNIQUE KEY users_unique_name (name)
 -- +
 DROP INDEX public.users_unique_name;
--- -CONSTRAINT users_age_check CHECK (age >= 0)
+-- -CONSTRAINT users_age_check CHECK ("age" >= 0)
 -- +
 ALTER TABLE "public.app_users" DROP CONSTRAINT users_age_check;
 -- -
--- +CONSTRAINT app_users_group_id_fkey FOREIGN KEY (group_id) REFERENCES groups (id)
+-- +CONSTRAINT app_users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id")
 ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id");
 -- -
 -- +UNIQUE KEY app_users_unique_name (name)
 CREATE UNIQUE INDEX public.app_users_unique_name ON "public.app_users" ("name");
 -- -
--- +CONSTRAINT app_users_age_check CHECK (age >= 0)
+-- +CONSTRAINT app_users_age_check CHECK ("age" >= 0)
 ALTER TABLE "public.app_users" ADD CONSTRAINT app_users_age_check CHECK ("age" >= 0);
 `
 
@@ -304,11 +304,11 @@ ALTER TABLE "users" ALTER COLUMN "age" DROP NOT NULL;
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
 
-		expectedStr := `-- -PRIMARY KEY (id)
+		expectedStr := `-- -PRIMARY KEY ("id")
 -- +
 ALTER TABLE "users" DROP PRIMARY KEY;
 -- -
--- +PRIMARY KEY (id, name)
+-- +PRIMARY KEY ("id", name)
 ALTER TABLE "users" ADD PRIMARY KEY ("id", name);
 `
 
@@ -334,11 +334,11 @@ ALTER TABLE "users" ADD PRIMARY KEY ("id", name);
 		afterDDL, err := NewParser(NewLexer(after)).Parse()
 		require.NoError(t, err)
 
-		expectedStr := `-- -CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES groups (id)
+		expectedStr := `-- -CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES "groups" ("id")
 -- +
 ALTER TABLE "users" DROP CONSTRAINT users_group_id_fkey;
 -- -
--- +CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id, name) REFERENCES groups (id, name)
+-- +CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id, name) REFERENCES "groups" ("id", name)
 ALTER TABLE "users" ADD CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id, name) REFERENCES "groups" ("id", name);
 `
 
@@ -463,7 +463,7 @@ ALTER TABLE "users" ALTER COLUMN "age" SET DEFAULT ((0 + 3) - 1 * 4 / 2);
 		require.NoError(t, err)
 
 		expected := `-- -
--- +CONSTRAINT users_age_check CHECK (age >= 0)
+-- +CONSTRAINT users_age_check CHECK ("age" >= 0)
 ALTER TABLE "users" ADD CONSTRAINT users_age_check CHECK ("age" >= 0) NOT VALID;
 `
 		actual, err := DiffCreateTable(

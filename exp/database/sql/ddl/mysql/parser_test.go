@@ -58,16 +58,18 @@ CREATE TABLE ` + "`" + `users` + "`" + ` (
 
 		l := NewLexer(`-- table: complex_defaults
 CREATE TABLE IF NOT EXISTS complex_defaults (
+    -- id is the primary key.
     id INT NOT NULL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     age INT DEFAULT 25,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('Active', 'Inactive') DEFAULT 'Active',
     salary DECIMAL(10, 2) DEFAULT (10000+1),
+    random_number INTEGER DEFAULT (FLOOR(RAND() * 100)),
     notes VARCHAR(1024) DEFAULT 'This is a note for ',
     is_admin BOOLEAN DEFAULT false,
-	PRIMARY KEY (id),
-	KEY complex_defaults_idx_on_name (name)
+    KEY complex_defaults_idx_on_name (name),
+	CONSTRAINT users_age_check CHECK ((age >= 0))
 );
 `)
 		p := NewParser(l)
@@ -81,10 +83,12 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('Active', 'Inactive') DEFAULT 'Active',
     salary DECIMAL(10, 2) DEFAULT (10000 + 1),
+    random_number INTEGER DEFAULT (FLOOR(RAND() * 100)),
     notes VARCHAR(1024) DEFAULT 'This is a note for ',
     is_admin TINYINT(1) DEFAULT false,
     PRIMARY KEY (id),
-    KEY complex_defaults_idx_on_name (name)
+    KEY complex_defaults_idx_on_name (name),
+    CONSTRAINT users_age_check CHECK ((age >= 0))
 );
 `
 		if !assert.Equal(t, expected, actual.String()) {
