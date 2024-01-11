@@ -57,6 +57,7 @@ issues:
         - gocyclo
         - goerr113
         - gosec
+        - ireturn
         - maintidx
         - noctx
         - revive
