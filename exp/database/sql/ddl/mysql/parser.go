@@ -387,6 +387,7 @@ LabelDefault:
 				continue
 			}
 			// MEMO: backup
+			// TODO: check if this is necessary
 			// if isOperator(p.currentToken.Type) {
 			// 	def.Value = def.Value.Append(NewRawIdent(p.currentToken.Literal.Str))
 			// 	p.nextToken()
@@ -751,17 +752,19 @@ LabelIdents:
 	return idents, nil
 }
 
-func isOperator(tokenType TokenType) bool {
-	switch tokenType { //nolint:exhaustive
-	case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS,
-		TOKEN_PLUS, TOKEN_MINUS, TOKEN_ASTERISK, TOKEN_SLASH,
-		TOKEN_TYPE_ANNOTATION,
-		TOKEN_STRING_CONCAT, TOKEN_TYPECAST:
-		return true
-	default:
-		return false
-	}
-}
+// MEMO: backup
+// TODO: check if this is necessary
+// func isOperator(tokenType TokenType) bool {
+// 	switch tokenType { //nolint:exhaustive
+// 	case TOKEN_EQUAL, TOKEN_GREATER, TOKEN_LESS,
+// 		TOKEN_PLUS, TOKEN_MINUS, TOKEN_ASTERISK, TOKEN_SLASH,
+// 		TOKEN_TYPE_ANNOTATION,
+// 		TOKEN_STRING_CONCAT, TOKEN_TYPECAST:
+// 		return true
+// 	default:
+// 		return false
+// 	}
+// }
 
 func isReservedValue(tokenType TokenType) bool {
 	switch tokenType { //nolint:exhaustive

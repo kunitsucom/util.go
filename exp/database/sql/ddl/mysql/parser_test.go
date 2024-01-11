@@ -23,7 +23,7 @@ func TestParser_Parse(t *testing.T) {
 	t.Run("success,CREATE_TABLE", func(t *testing.T) {
 		// t.Parallel()
 
-		l := NewLexer("CREATE TABLE `groups` (`group_id` VARCHAR(36) NOT NULL PRIMARY KEY, description TEXT) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci; CREATE TABLE `users` (user_id VARCHAR(36) NOT NULL, group_id VARCHAR(36) NOT NULL REFERENCES `groups` (`group_id`), `name` VARCHAR(255) NOT NULL UNIQUE, `age` INT DEFAULT 0 CHECK (`age` >= 0), description TEXT, PRIMARY KEY (`user_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;")
+		l := NewLexer("CREATE TABLE `groups` (`group_id` VARCHAR(36) NOT NULL PRIMARY KEY, description TEXT) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci; CREATE TABLE `users` (user_id VARCHAR(36) NOT NULL, group_id VARCHAR(36) NOT NULL REFERENCES `groups` (`group_id`), `name` VARCHAR(255) NOT NULL UNIQUE, `age` INT DEFAULT 0 CHECK (`age` >= 0), birthdate DATE,	description TEXT, PRIMARY KEY (`user_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;")
 		p := NewParser(l)
 		actual, err := p.Parse()
 		require.NoError(t, err)
@@ -38,6 +38,7 @@ CREATE TABLE ` + "`" + `users` + "`" + ` (
     group_id VARCHAR(36) NOT NULL,
     ` + "`" + `name` + "`" + ` VARCHAR(255) NOT NULL,
     ` + "`" + `age` + "`" + ` INT DEFAULT 0,
+    birthdate DATE,
     description TEXT,
     PRIMARY KEY (` + "`" + `user_id` + "`" + `),
     CONSTRAINT users_group_id_fkey FOREIGN KEY (group_id) REFERENCES ` + "`" + `groups` + "`" + ` (` + "`" + `group_id` + "`" + `),
@@ -342,6 +343,21 @@ CREATE TABLE IF NOT EXISTS complex_defaults (
 			wantErr: ddl.ErrUnexpectedToken,
 		},
 		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_IDENTS_CHECK_INVALID",
+			input:   `CREATE TABLE "users" ("id" VARCHAR(36), name TEXT, CHECK INVALID`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_IDENTS_CHECK_OPEN_INVALID",
+			input:   `CREATE TABLE "users" ("id" VARCHAR(36), name TEXT, CHECK (INVALID`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
+			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_IDENTS_CHECK_OPEN_CLOSE_INVALID",
+			input:   `CREATE TABLE "users" ("id" VARCHAR(36), name TEXT, CHECK ("id" NOT NULL)`,
+			wantErr: ddl.ErrUnexpectedToken,
+		},
+		{
 			name:    "failure,CREATE_TABLE_table_name_column_name_CONSTRAINT_UNIQUE_KEY_IDENTS_ENGINE_INVALID",
 			input:   `CREATE TABLE "users" ("id" VARCHAR(36), name TEXT, UNIQUE KEY users_idx_on_id_name ("id", name)) ENGINE`,
 			wantErr: ddl.ErrUnexpectedToken,
@@ -499,6 +515,16 @@ func TestParser_parseExpr(t *testing.T) {
 
 func TestParser_parseDataType(t *testing.T) {
 	t.Parallel()
+
+	t.Run("success,TIME", func(t *testing.T) {
+		t.Parallel()
+
+		p := NewParser(NewLexer(`TIME`))
+		p.nextToken()
+		p.nextToken()
+		_, err := p.parseDataType()
+		require.NoError(t, err)
+	})
 
 	t.Run("failure,DOUBLE_NOT", func(t *testing.T) {
 		t.Parallel()

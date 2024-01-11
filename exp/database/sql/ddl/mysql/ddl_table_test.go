@@ -102,8 +102,9 @@ func TestCheckConstraint(t *testing.T) {
 
 		checkConstraint := &CheckConstraint{
 			Name: &Ident{Name: "users_check_age", QuotationMark: `"`, Raw: `"users_check_age"`},
-			Expr: &Expr{Idents: []*Ident{{Name: "(", QuotationMark: ``, Raw: `(`}, {Name: "age", QuotationMark: `"`, Raw: `"age"`}, {Name: ">=", QuotationMark: ``, Raw: `>=`}, {Name: "0", QuotationMark: ``, Raw: `0`}, {Name: ")", QuotationMark: ``, Raw: `)`}}},
+			Expr: &Expr{Idents: []*Ident{{Name: "(", QuotationMark: ``, Raw: `(`}, {Name: "age", QuotationMark: `"`, Raw: `"age"`}, {Name: ">=", QuotationMark: ``, Raw: `>=`}, {Name: "0", QuotationMark: ``, Raw: `0`}}},
 		}
+		checkConstraint.Expr = checkConstraint.Expr.Append(&Ident{Name: ")", QuotationMark: ``, Raw: `)`})
 
 		expected := `CONSTRAINT "users_check_age" CHECK ("age" >= 0)`
 		actual := checkConstraint.String()
