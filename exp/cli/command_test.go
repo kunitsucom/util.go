@@ -83,8 +83,9 @@ func TestCommand(t *testing.T) {
 								if err != nil {
 									return errorz.Errorf("FromContext: %w", err)
 								}
-								if cmd.GetName() != "sub-sub-cmd" {
-									return errorz.Errorf("unexpected command name: %s", cmd.GetName())
+								called := cmd.GetCalledCommands()
+								if !reflect.DeepEqual(called, []string{"my-cli", "sub-cmd", "sub-sub-cmd"}) {
+									return errorz.Errorf("unexpected command name: %v", called)
 								}
 								return nil
 							},
@@ -333,7 +334,7 @@ func TestCommand(t *testing.T) {
 		if ff != 1.11 {
 			t.Errorf("❌: %v: unexpected value: %s=%f", "baz", args, ff)
 		}
-		if err := c.Run(context.Background(), args[0:]); err != nil {
+		if err := c.Run(context.Background(), args[1:]); err != nil {
 			t.Fatalf("❌: %v: %+v", args, err)
 		}
 	})

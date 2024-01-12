@@ -374,5 +374,5 @@ func (cmd *Command) Run(ctx context.Context, args []string) error {
 		return errorz.Errorf("%s: %w", strings.Join(execCmd.calledCommands, " "), ErrCommandFuncNotSet)
 	}
 
-	return execCmd.RunFunc(WithContext(ctx, execCmd), remainingArgs)
+	return execCmd.RunFunc(WithContext(ctx, cmd), remainingArgs)
 }
