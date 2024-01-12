@@ -323,7 +323,6 @@ func Test_ScanRows(t *testing.T) {
 		var userID int
 		if err := ScanRows(&sqlRowsMock{
 			NextFunc: func() bool { return false },
-			ErrFunc:  func() error { return nil },
 		}, "testdb", &userID); !errors.Is(err, sql.ErrNoRows) {
 			t.Fatalf("❌: queryStructContext: expect(%v) != actual(%v)", sql.ErrNoRows, err)
 		}
