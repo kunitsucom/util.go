@@ -102,6 +102,9 @@ func scanRowsToSlice(rows sqlRows, structTag string, destStructSlice reflect.Val
 				slice.Slice = append(slice.Slice, v)
 			}
 		}
+		if err := rows.Err(); err != nil {
+			return fmt.Errorf("rows.Err: %w", err)
+		}
 		destStructSlice.Set(reflect.Append(destStructSlice, slice.Slice...))
 		return nil
 	default:

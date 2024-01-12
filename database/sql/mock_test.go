@@ -146,5 +146,8 @@ func (m *sqlRowsMock) Scan(dest ...interface{}) error {
 }
 
 func (m *sqlRowsMock) Err() error {
+	if m.ErrFunc == nil {
+		return nil
+	}
 	return m.ErrFunc()
 }
