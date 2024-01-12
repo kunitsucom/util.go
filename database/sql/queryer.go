@@ -60,11 +60,16 @@ func (qc *queryerContext) QueryContext(ctx context.Context, dst interface{}, que
 	return qc.queryContext(rows, err, dst)
 }
 
-func (qc *queryerContext) queryContext(rows sqlRows, queryContextErr error, dst interface{}) error {
+func (qc *queryerContext) queryContext(rows sqlRows, queryContextErr error, dst interface{}) (err error) {
 	if queryContextErr != nil {
 		return fmt.Errorf("QueryContext: %w", queryContextErr)
 	}
-	defer rows.Close()
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil && err == nil {
+			err = fmt.Errorf("rows.Close: %w", closeErr)
+			return
+		}
+	}()
 
 	return ScanRows(rows, qc.structTag, dst)
 }
@@ -74,11 +79,16 @@ func (qc *queryerContext) QueryRowContext(ctx context.Context, dst interface{}, 
 	return qc.queryRowContext(rows, err, dst)
 }
 
-func (qc *queryerContext) queryRowContext(rows sqlRows, queryContextErr error, dst interface{}) error {
+func (qc *queryerContext) queryRowContext(rows sqlRows, queryContextErr error, dst interface{}) (err error) {
 	if queryContextErr != nil {
 		return fmt.Errorf("QueryContext: %w", queryContextErr)
 	}
-	defer rows.Close()
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil && err == nil {
+			err = fmt.Errorf("rows.Close: %w", closeErr)
+			return
+		}
+	}()
 
 	return ScanRows(rows, qc.structTag, dst)
 }
