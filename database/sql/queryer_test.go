@@ -105,7 +105,40 @@ func Test_DB_queryContext(t *testing.T) {
 		}
 	})
 
-	t.Run("failure,ErrFunc", func(t *testing.T) {
+	t.Run("failure,StructSlice,CloseFunc", func(t *testing.T) {
+		t.Parallel()
+		var u []testUser
+		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag("testdb"))
+		i := 0
+		columns := []string{"user_id", "username", "null_string"}
+		rows := &sqlRowsMock{
+			NextFunc:    func() bool { i++; return i < 51 },
+			ColumnsFunc: func() ([]string, error) { return slicez.Copy(columns), nil },
+			ScanFunc: func(dest ...interface{}) error {
+				for dstIdx := range dest {
+					for colIdx := range columns {
+						if dstIdx == colIdx {
+							switch columns[colIdx] {
+							case "user_id":
+								reflect.ValueOf(dest[dstIdx]).Elem().SetInt(int64(i))
+							case "username":
+								reflect.ValueOf(dest[dstIdx]).Elem().SetString(columns[colIdx] + "_" + fmt.Sprintf("%03d", i))
+							case "null_string":
+								reflect.ValueOf(dest[dstIdx]).Elem().Set(reflect.ValueOf(genericz.Pointer(columns[colIdx] + "_" + fmt.Sprintf("%03d", i))))
+							}
+						}
+					}
+				}
+				return nil
+			},
+			ErrFunc: func() error { return sql.ErrNoRows },
+		}
+		if err := db.queryContext(rows, nil, &u); !errors.Is(err, sql.ErrNoRows) {
+			t.Fatalf("❌: queryContext: %v", err)
+		}
+	})
+
+	t.Run("failure,PrimitiveSlice,ErrFunc", func(t *testing.T) {
 		t.Parallel()
 		var u []string
 		db := newDB(&sqlDBMock{}, WithNewDBOptionStructTag("testdb"))
@@ -131,8 +164,7 @@ func Test_DB_queryContext(t *testing.T) {
 				}
 				return nil
 			},
-			CloseFunc: func() error { return nil },
-			ErrFunc:   func() error { return sql.ErrNoRows },
+			ErrFunc: func() error { return sql.ErrNoRows },
 		}
 		if err := db.queryContext(rows, nil, &u); !errors.Is(err, sql.ErrNoRows) {
 			t.Fatalf("❌: queryContext: %v", err)
