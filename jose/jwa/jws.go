@@ -59,6 +59,16 @@ type JWSAlgorithm interface {
 	Verify(key any, signingInput string, signatureEncoded string) (err error)
 }
 
+type (
+	SignFunc   func(key any, signingInput string) (signatureEncoded string, err error)
+	VerifyFunc func(key any, signingInput string, signatureEncoded string) (err error)
+
+	JWSAlgorithmFunc struct {
+		SignFunc   SignFunc
+		VerifyFunc VerifyFunc
+	}
+)
+
 const (
 	HS256 = "HS256"
 	HS384 = "HS384"
@@ -73,6 +83,13 @@ const (
 	PS384 = "PS384"
 	PS512 = "PS512"
 	None  = "none"
+)
+
+var (
+	ErrInvalidKeyReceived          = errors.New("jwa: invalid key received")
+	ErrFailedToVerifySignature     = errors.New("jwa: failed to verify signature")
+	ErrAlgorithmNoneIsNotSupported = errors.New("jwa: algorithm 'none' is not supported")
+	ErrNotImplemented              = errors.New("jwa: not implemented")
 )
 
 //nolint:revive,stylecheck
@@ -94,7 +111,7 @@ type (
 
 //nolint:gochecknoglobals
 var (
-	_JWSAlgorithm = map[string]JWSAlgorithm{
+	_JWSAlgorithmMap = map[string]JWSAlgorithm{
 		HS256: _HS256(HS256),
 		HS384: _HS384(HS384),
 		HS512: _HS512(HS512),
@@ -109,70 +126,51 @@ var (
 		PS512: _PS512(PS512),
 		None:  _None(None),
 	}
-	_JWSAlgorithmMu sync.Mutex
-)
-
-var (
-	ErrInvalidKeyReceived          = errors.New(`jwa: invalid key received`)
-	ErrFailedToVerifySignature     = errors.New(`jwa: failed to verify signature`)
-	ErrAlgorithmNoneIsNotSupported = errors.New(`jwa: algorithm "none" is not supported`)
-	ErrNotImplemented              = errors.New(`jwa: not implemented`)
+	_JWSAlgorithmMapMu sync.RWMutex
 )
 
 func JWS(alg string) JWSAlgorithm { //nolint:cyclop,ireturn
-	if a, ok := _JWSAlgorithm[alg]; ok {
+	if a, ok := _JWSAlgorithmMap[alg]; ok {
 		return a
 	}
 
-	return _JWSAlgorithmFunc{
-		sign:   func(_ any, _ string) (_ string, _ error) { return "", ErrNotImplemented },
-		verify: func(_ any, _, _ string) (_ error) { return ErrNotImplemented },
+	return JWSAlgorithmFunc{
+		SignFunc:   func(_ any, _ string) (_ string, _ error) { return "", ErrNotImplemented },
+		VerifyFunc: func(_ any, _, _ string) (_ error) { return ErrNotImplemented },
 	}
 }
 
-type (
-	sign   = func(key any, signingInput string) (signatureEncoded string, err error)
-	verify = func(key any, signingInput string, signatureEncoded string) (err error)
-)
-
-type _JWSAlgorithmFunc struct {
-	sign   sign
-	verify verify
-}
-
-func (alg _JWSAlgorithmFunc) Sign(key any, signingInput string) (signatureEncoded string, err error) {
-	if alg.sign != nil {
-		return alg.sign(key, signingInput)
+func (alg JWSAlgorithmFunc) Sign(key any, signingInput string) (signatureEncoded string, err error) {
+	if alg.SignFunc != nil {
+		return alg.SignFunc(key, signingInput)
 	}
 	return "", ErrNotImplemented
 }
 
-func (alg _JWSAlgorithmFunc) Verify(key any, signingInput string, signatureEncoded string) (err error) {
-	if alg.verify != nil {
-		return alg.verify(key, signingInput, signatureEncoded)
+func (alg JWSAlgorithmFunc) Verify(key any, signingInput string, signatureEncoded string) (err error) {
+	if alg.VerifyFunc != nil {
+		return alg.VerifyFunc(key, signingInput, signatureEncoded)
 	}
 	return ErrNotImplemented
 }
 
 func RegisterJWSAlgorithm(alg string, jwsAlgorithm JWSAlgorithm) {
-	_JWSAlgorithmMu.Lock()
-	defer _JWSAlgorithmMu.Unlock()
-	_JWSAlgorithm[alg] = jwsAlgorithm
+	_JWSAlgorithmMapMu.RLock()
+	defer _JWSAlgorithmMapMu.RUnlock()
+	_JWSAlgorithmMap[alg] = jwsAlgorithm
 }
 
-func RegisterJWSAlgorithmFunc(alg string, sign sign, verify verify) {
-	_JWSAlgorithmMu.Lock()
-	defer _JWSAlgorithmMu.Unlock()
-	_JWSAlgorithm[alg] = _JWSAlgorithmFunc{
-		sign:   sign,
-		verify: verify,
-	}
+func RegisterJWSAlgorithmFunc(alg string, sign SignFunc, verify VerifyFunc) {
+	RegisterJWSAlgorithm(alg, JWSAlgorithmFunc{
+		SignFunc:   sign,
+		VerifyFunc: verify,
+	})
 }
 
-func DeleteJWSAlgorithm(alg string) {
-	_JWSAlgorithmMu.Lock()
-	defer _JWSAlgorithmMu.Unlock()
-	delete(_JWSAlgorithm, alg)
+func DeregisterJWSAlgorithm(alg string) {
+	_JWSAlgorithmMapMu.Lock()
+	defer _JWSAlgorithmMapMu.Unlock()
+	delete(_JWSAlgorithmMap, alg)
 }
 
 //

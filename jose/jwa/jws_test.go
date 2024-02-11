@@ -11,7 +11,7 @@ func TestRegisterJWSAlgorithm(t *testing.T) { //nolint:paralleltest
 	t.Run("success()", func(t *testing.T) {
 		const none2 = "none2"
 		jwa.RegisterJWSAlgorithmFunc(none2, jwa.JWS(none2).Sign, jwa.JWS(none2).Verify)
-		jwa.DeleteJWSAlgorithm(none2)
+		jwa.DeregisterJWSAlgorithm(none2)
 		jwa.RegisterJWSAlgorithm(none2, jwa.JWS(none2))
 		jwa.RegisterJWSAlgorithmFunc("TEST", func(key any, signingInput string) (signatureEncoded string, err error) { return "TEST", nil }, func(key any, signingInput, signatureEncoded string) (err error) { return nil })
 		if _, err := jwa.JWS("TEST").Sign(0, "TEST"); err != nil {
