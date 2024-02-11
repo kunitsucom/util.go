@@ -22,8 +22,10 @@ CREATE TABLE IF NOT EXISTS test_user (
 	null_string  STRING(255)
 ) PRIMARY KEY (id)
 `
+	// SpannerInsertTestUser = `
+	// INSERT IGNORE INTO test_user.
 	SpannerInsertTestUser = `
-INSERT IGNORE INTO test_user
+INSERT INTO test_user
 	(id, name, profile, null_string)
 VALUES
 	(1,   'test_user_001', 'hello', NULL),
