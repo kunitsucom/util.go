@@ -14,7 +14,7 @@ type (
 	JitterOption func(j *jitter)
 )
 
-func WithJitterRand(rnd *rand.Rand) JitterOption {
+func WithDefaultJitterRand(rnd *rand.Rand) JitterOption {
 	return func(j *jitter) {
 		j.rnd = rnd
 	}
@@ -29,9 +29,9 @@ func DefaultJitter(minJitter, maxJitter time.Duration, opts ...JitterOption) Jit
 
 	return func(duration time.Duration) (durationWithJitter time.Duration) {
 		if j.rnd == nil {
-			return time.Duration(rand.Int63n(int64(minJitter)+int64(maxJitter)) - int64(minJitter)) //nolint:gosec
+			return time.Duration(int64(duration) + rand.Int63n(int64(minJitter)+int64(maxJitter)) - int64(minJitter)) //nolint:gosec
 		}
-		return time.Duration(j.rnd.Int63n(int64(minJitter)+int64(maxJitter)) - int64(minJitter))
+		return time.Duration(int64(duration) + j.rnd.Int63n(int64(minJitter)+int64(maxJitter)) - int64(minJitter))
 	}
 }
 

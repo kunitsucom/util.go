@@ -1,6 +1,7 @@
 package netz
 
 import (
+	"errors"
 	"fmt"
 	"net"
 )
@@ -14,7 +15,7 @@ var (
 	_, PrivateIPAddressClassC, _ = net.ParseCIDR("192.168.0.0/16")
 )
 
-var ErrCIDRsIsEmpty = fmt.Errorf("cidrs is empty")
+var ErrCIDRsIsEmpty = errors.New("cidrs is empty")
 
 func ParseCIDR(cidr string) (*net.IPNet, error) {
 	ip, ipNet, err := net.ParseCIDR(cidr)

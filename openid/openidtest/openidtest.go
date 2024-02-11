@@ -47,7 +47,7 @@ func StartOpenIDProvider() (
 		SubjectTypesSupported:            []string{"public"},
 		IDTokenSigningAlgValuesSupported: []string{"RS256"},
 	}
-	mux.HandleFunc(discovery.ProviderMetadataURLPath, func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc(discovery.ProviderMetadataURLPath, func(w http.ResponseWriter, _ *http.Request) {
 		must.Must(json.NewEncoder(w).Encode(metadata))
 	})
 
@@ -65,7 +65,7 @@ func StartOpenIDProvider() (
 			},
 		},
 	}
-	mux.HandleFunc("/certs", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/certs", func(w http.ResponseWriter, _ *http.Request) {
 		must.Must(json.NewEncoder(w).Encode(jwks))
 	})
 
