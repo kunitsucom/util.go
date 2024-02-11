@@ -2,6 +2,7 @@ package errorz
 
 import (
 	"errors"
+	"net"
 	"strings"
 )
 
@@ -17,26 +18,9 @@ func Contains(err error, substr string) bool {
 	return err != nil && strings.Contains(err.Error(), substr)
 }
 
-type retryableError struct {
-	error
-	retryable bool
-}
-
-func (e *retryableError) IsRetryable() bool {
-	return e.retryable
-}
-
-func WithRetryable(err error, retryable bool) error {
-	return &retryableError{
-		error:     err,
-		retryable: retryable,
-	}
-}
-
-func IsRetryable(err error) bool {
-	var target interface{ IsRetryable() bool }
-	if errors.As(err, &target) {
-		return target.IsRetryable()
+func IsNetTimeout(err error) bool {
+	if netErr := (net.Error)(nil); errors.As(err, &netErr) {
+		return netErr.Timeout()
 	}
 
 	return false

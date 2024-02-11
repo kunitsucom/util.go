@@ -1,6 +1,8 @@
 package errorz_test
 
 import (
+	"io"
+	"net"
 	"testing"
 
 	errorz "github.com/kunitsucom/util.go/errors"
@@ -64,29 +66,47 @@ func TestHasSuffix(t *testing.T) {
 	})
 }
 
-func TestIsRetryable(t *testing.T) {
+type testTimeoutError struct {
+	err     error
+	timeout bool
+}
+
+func (e testTimeoutError) Error() string {
+	return e.err.Error()
+}
+
+func (e testTimeoutError) Timeout() bool {
+	return e.timeout
+}
+
+func (e testTimeoutError) Temporary() bool {
+	return false
+}
+
+func TestIsNetTimeout(t *testing.T) {
 	t.Parallel()
-	t.Run("success,nil", func(t *testing.T) {
+
+	t.Run("success,true", func(t *testing.T) {
 		t.Parallel()
-		err := (error)(nil)
-		if errorz.IsRetryable(err) {
-			t.Errorf("❌: err is retryable: %v", err)
+		err := testTimeoutError{err: net.ErrClosed, timeout: true}
+		if !errorz.IsNetTimeout(err) {
+			t.Errorf("❌: err is net timeout: %v", err)
 		}
 	})
 
-	t.Run("success,testingz.ErrTestError", func(t *testing.T) {
+	t.Run("success,false,net.Error", func(t *testing.T) {
 		t.Parallel()
-		err := testingz.ErrTestError
-		if errorz.IsRetryable(err) {
-			t.Errorf("❌: err is retryable: %v", err)
+		err := testTimeoutError{err: net.ErrClosed, timeout: false}
+		if errorz.IsNetTimeout(err) {
+			t.Errorf("❌: err is net timeout: %v", err)
 		}
 	})
 
-	t.Run("success,IsRetryable", func(t *testing.T) {
+	t.Run("success,false,error", func(t *testing.T) {
 		t.Parallel()
-		err := errorz.WithRetryable(testingz.ErrTestError, true)
-		if !errorz.IsRetryable(err) {
-			t.Errorf("❌: err is not retryable: %v", err)
+		err := io.EOF
+		if errorz.IsNetTimeout(err) {
+			t.Errorf("❌: err is not net timeout: %v", err)
 		}
 	})
 }
