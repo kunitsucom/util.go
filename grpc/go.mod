@@ -6,7 +6,7 @@ require (
 	github.com/kunitsucom/util.go v0.0.0-00010101000000-000000000000
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231106174013-bbf56f31fb17
 	google.golang.org/grpc v1.61.0
-	google.golang.org/protobuf v1.32.0
+	google.golang.org/protobuf v1.33.0
 )
 
 replace github.com/kunitsucom/util.go => ../../util.go
