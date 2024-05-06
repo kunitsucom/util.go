@@ -11,9 +11,4 @@ require (
 
 replace github.com/kunitsucom/util.go => ../../util.go
 
-require (
-	github.com/golang/protobuf v1.5.4 // indirect
-	golang.org/x/net v0.21.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
-)
+require golang.org/x/sys v0.17.0 // indirect
