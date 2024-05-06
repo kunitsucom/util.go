@@ -10,9 +10,20 @@ import (
 
 type (
 	Jitter       func(duration time.Duration) (durationWithJitter time.Duration)
-	jitterConfig struct{ rnd *rand.Rand }
+	jitterConfig struct {
+		minJitter time.Duration
+		maxJitter time.Duration
+		rnd       *rand.Rand
+	}
 	JitterOption func(j *jitterConfig)
 )
+
+func WithDefaultJitterRange(minJitter, maxJitter time.Duration) JitterOption {
+	return func(j *jitterConfig) {
+		j.minJitter = minJitter
+		j.maxJitter = maxJitter
+	}
+}
 
 func WithDefaultJitterRand(rnd *rand.Rand) JitterOption {
 	return func(j *jitterConfig) {
@@ -20,8 +31,16 @@ func WithDefaultJitterRand(rnd *rand.Rand) JitterOption {
 	}
 }
 
-func DefaultJitter(minJitter, maxJitter time.Duration, opts ...JitterOption) Jitter {
-	j := &jitterConfig{}
+func DefaultJitter(opts ...JitterOption) Jitter {
+	const (
+		defaultMinJitter = 1 * time.Millisecond
+		defaultMaxJitter = 100 * time.Millisecond
+	)
+
+	j := &jitterConfig{
+		minJitter: defaultMinJitter,
+		maxJitter: defaultMaxJitter,
+	}
 
 	for _, opt := range opts {
 		opt(j)
@@ -29,9 +48,9 @@ func DefaultJitter(minJitter, maxJitter time.Duration, opts ...JitterOption) Jit
 
 	return func(duration time.Duration) (durationWithJitter time.Duration) {
 		if j.rnd == nil {
-			return time.Duration(int64(duration) + rand.Int63n(int64(minJitter)+int64(maxJitter)) - int64(minJitter)) //nolint:gosec
+			return time.Duration(int64(duration) + rand.Int63n(int64(j.minJitter)+int64(j.maxJitter)) - int64(j.minJitter)) //nolint:gosec
 		}
-		return time.Duration(int64(duration) + j.rnd.Int63n(int64(minJitter)+int64(maxJitter)) - int64(minJitter))
+		return time.Duration(int64(duration) + j.rnd.Int63n(int64(j.minJitter)+int64(j.maxJitter)) - int64(j.minJitter))
 	}
 }
 
@@ -185,9 +204,10 @@ func (r *Retryer) increment() {
 
 	r.interval = r.truncateAtMaxInterval(r.config.backoff(r.getInitialInterval(), r.retries))
 
-	if r.config.jitter != nil {
-		r.interval = r.config.jitter(r.interval)
+	if r.config.jitter == nil {
+		r.config.jitter = DefaultJitter()
 	}
+	r.interval = r.config.jitter(r.interval)
 
 	r.retries++
 }
