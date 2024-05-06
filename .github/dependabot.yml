@@ -9,7 +9,8 @@ updates:
   - package-ecosystem: "github-actions" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
       time: "11:00"
       timezone: "Asia/Tokyo"
     commit-message:
@@ -22,11 +23,16 @@ updates:
       - "ginokent"
     reviewers:
       - "ginokent"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
       time: "11:00"
       timezone: "Asia/Tokyo"
     commit-message:
@@ -39,11 +45,16 @@ updates:
       - "ginokent"
     reviewers:
       - "ginokent"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "gomod"
     directory: "/grpc"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
       time: "11:00"
       timezone: "Asia/Tokyo"
     commit-message:
@@ -56,11 +67,16 @@ updates:
       - "ginokent"
     reviewers:
       - "ginokent"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
 
   - package-ecosystem: "gomod"
     directory: "/integrationtest"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
       time: "11:00"
       timezone: "Asia/Tokyo"
     commit-message:
@@ -73,3 +89,7 @@ updates:
       - "ginokent"
     reviewers:
       - "ginokent"
+    groups:
+      dependencies:
+        patterns:
+          - "*"
