@@ -10,18 +10,18 @@ import (
 
 type (
 	Jitter       func(duration time.Duration) (durationWithJitter time.Duration)
-	jitter       struct{ rnd *rand.Rand }
-	JitterOption func(j *jitter)
+	jitterConfig struct{ rnd *rand.Rand }
+	JitterOption func(j *jitterConfig)
 )
 
 func WithDefaultJitterRand(rnd *rand.Rand) JitterOption {
-	return func(j *jitter) {
+	return func(j *jitterConfig) {
 		j.rnd = rnd
 	}
 }
 
 func DefaultJitter(minJitter, maxJitter time.Duration, opts ...JitterOption) Jitter {
-	j := &jitter{}
+	j := &jitterConfig{}
 
 	for _, opt := range opts {
 		opt(j)
@@ -166,6 +166,10 @@ func (r *Retryer) truncateAtMaxInterval(d time.Duration) time.Duration {
 	return d
 }
 
+func (r *Retryer) MaxRetries() (retries int) {
+	return r.config.maxRetries
+}
+
 func (r *Retryer) Retries() (retries int) {
 	return r.retries - 1
 }
@@ -198,7 +202,7 @@ var (
 )
 
 func (r *Retryer) Retry(ctx context.Context) bool {
-	if 0 <= r.config.maxRetries && r.config.maxRetries <= r.Retries() {
+	if 0 <= r.MaxRetries() && r.MaxRetries() <= r.Retries() {
 		r.reason = ErrReachedMaxRetries
 		return false
 	}
@@ -214,43 +218,67 @@ func (r *Retryer) Retry(ctx context.Context) bool {
 }
 
 type doConfig struct {
-	unretryableErrors     []error
-	retryableErrorHandler func(ctx context.Context, r *Retryer, err error)
+	errorHandler func(ctx context.Context, r *Retryer, err error)
+	// If UnretryableErrors and RetryableErrors are both applied, UnretryableErrors will be prioritized.
+	unretryableErrors []error
+	retryableErrors   []error
 }
 
 type DoOption func(c *doConfig)
 
-func WithUnretryableErrors(errs []error) DoOption {
+func WithErrorHandler(f func(ctx context.Context, r *Retryer, err error)) DoOption {
 	return func(c *doConfig) {
-		c.unretryableErrors = errs
+		c.errorHandler = f
 	}
 }
 
-func WithRetryableErrorHandler(f func(ctx context.Context, r *Retryer, err error)) DoOption {
+// If UnretryableErrors and RetryableErrors are both applied, UnretryableErrors will be prioritized.
+func WithUnretryableErrors(errs ...error) DoOption {
 	return func(c *doConfig) {
-		c.retryableErrorHandler = f
+		c.unretryableErrors = append(c.unretryableErrors, errs...)
 	}
 }
 
-func (r *Retryer) Do(ctx context.Context, do func(ctx context.Context) error, opts ...DoOption) (err error) {
+// If UnretryableErrors and RetryableErrors are both applied, UnretryableErrors will be prioritized.
+func WithRetryableErrors(errs ...error) DoOption {
+	return func(c *doConfig) {
+		c.retryableErrors = append(c.retryableErrors, errs...)
+	}
+}
+
+//nolint:cyclop
+func (r *Retryer) Do(ctx context.Context, do func(ctx context.Context) error, opts ...DoOption) error {
 	c := &doConfig{}
 
 	for _, opt := range opts {
 		opt(c)
 	}
 
+	var err error
+LabelRetry:
 	for r.Retry(ctx) {
 		err = do(ctx)
 		if errors.Is(err, nil) {
 			return nil
 		}
-		for _, unretryableError := range c.unretryableErrors {
-			if errors.Is(err, unretryableError) {
-				return fmt.Errorf("%w: %w", ErrUnretryableError, err)
-			}
+		if c.errorHandler != nil {
+			c.errorHandler(ctx, r, err)
 		}
-		if c.retryableErrorHandler != nil {
-			c.retryableErrorHandler(ctx, r, err)
+		if len(c.unretryableErrors) > 0 {
+			for _, unretryableErr := range c.unretryableErrors {
+				if errors.Is(err, unretryableErr) {
+					return fmt.Errorf("%w: %w", ErrUnretryableError, err)
+				}
+			}
+			continue LabelRetry
+		}
+		if len(c.retryableErrors) > 0 {
+			for _, retryableErr := range c.retryableErrors {
+				if errors.Is(err, retryableErr) {
+					continue LabelRetry
+				}
+			}
+			return fmt.Errorf("%w: %w", ErrUnretryableError, err)
 		}
 	}
 
