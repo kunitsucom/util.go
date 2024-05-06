@@ -6,10 +6,12 @@ import (
 	"testing"
 	"time"
 
+	errorz "github.com/kunitsucom/util.go/errors"
 	"github.com/kunitsucom/util.go/jose"
 	"github.com/kunitsucom/util.go/jose/jwa"
 	"github.com/kunitsucom/util.go/jose/jws"
 	"github.com/kunitsucom/util.go/jose/jwt"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 func TestVerify(t *testing.T) {
@@ -94,7 +96,7 @@ func TestVerify(t *testing.T) {
 		if _, _, err := jwt.Verify(jws.UseKey(testHS256Key), signingInput+"."+signatureEncoded, jwt.VerifyPrivateClaims(func(privateClaims jwt.PrivateClaims) error {
 			_, ok := privateClaims["privateClaimDoesNotExist"]
 			if !ok {
-				return errors.New(expect)
+				return errorz.Errorf("%s: %w", expect, testingz.ErrTestError)
 			}
 			return nil
 		})); err == nil || !strings.Contains(err.Error(), expect) {

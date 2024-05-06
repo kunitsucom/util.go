@@ -1,6 +1,4 @@
 run:
-  skip-files:
-    - cmd/sandbox/main.go
   modules-download-mode: readonly
   allow-parallel-runners: true
 
@@ -17,7 +15,7 @@ linters:
     - goconst # unnecessary
     - godox # unnecessary
     - golint # deprecated https://github.com/golang/lint
-    - gomnd # https://github.com/tommy-muehle/go-mnd
+    - gomnd # deprecated https://github.com/tommy-muehle/go-mnd
     - ifshort # for readability
     - interfacer # deprecated https://github.com/mvdan/interfacer
     - interfacebloat # unnecessary

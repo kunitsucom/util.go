@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	fsz "github.com/kunitsucom/util.go/io/fs"
 	osz "github.com/kunitsucom/util.go/os"
 )
 
@@ -119,7 +120,7 @@ func UnzipFile(srcZipFilePath, dstDir string, opts ...UnzipFileOption) (paths []
 	}
 
 	if !osz.IsDir(dstDir) {
-		if err := os.MkdirAll(dstDir, 0o755); err != nil {
+		if err := os.MkdirAll(dstDir, fsz.Perm755); err != nil {
 			return nil, fmt.Errorf("os.MkdirAll: path=%s: %w", dstDir, err)
 		}
 	}
@@ -169,7 +170,7 @@ func unzip(fileInZip *zip.File, dstDir string) (path string, err error) {
 	}
 
 	if dir := filepath.Dir(path); !osz.IsDir(dir) {
-		if err := os.MkdirAll(dir, 0o755); err != nil {
+		if err := os.MkdirAll(dir, fsz.Perm755); err != nil {
 			return "", fmt.Errorf("os.MkdirAll: path=%s: %w", dir, err)
 		}
 	}
@@ -181,7 +182,8 @@ func unzip(fileInZip *zip.File, dstDir string) (path string, err error) {
 	defer w.Close()
 
 	for {
-		if _, err := io.CopyN(w, r, 2048); err != nil {
+		const size = 2048
+		if _, err := io.CopyN(w, r, size); err != nil {
 			if errors.Is(err, io.EOF) {
 				break
 			}

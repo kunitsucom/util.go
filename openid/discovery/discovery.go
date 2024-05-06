@@ -77,9 +77,10 @@ type Client struct {
 }
 
 func New(ctx context.Context, opts ...ClientOption) *Client {
+	const defaultCacheMapCleanerInterval = 10 * time.Minute
 	c := &Client{
 		client:   http.DefaultClient,
-		cacheMap: syncz.NewMap[*ProviderMetadata](ctx, syncz.WithNewMapOptionCleanerInterval(10*time.Minute)),
+		cacheMap: syncz.NewMap[*ProviderMetadata](ctx, syncz.WithNewMapOptionCleanerInterval(defaultCacheMapCleanerInterval)),
 	}
 
 	for _, opt := range opts {
@@ -123,7 +124,8 @@ func (d *Client) GetProviderMetadata(ctx context.Context, providerMetadataURL Pr
 
 	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
 		body, _ := io.ReadAll(resp.Body)
-		bodyCutOff := slicez.CutOff(body, 100)
+		const cutOffSize = 100
+		bodyCutOff := slicez.CutOff(body, cutOffSize)
 		return nil, fmt.Errorf("code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
 	}
 

@@ -6,10 +6,12 @@ import (
 	"testing"
 	"time"
 
+	errorz "github.com/kunitsucom/util.go/errors"
 	"github.com/kunitsucom/util.go/jose"
 	"github.com/kunitsucom/util.go/jose/jwa"
 	"github.com/kunitsucom/util.go/jose/jws"
 	"github.com/kunitsucom/util.go/jose/jwt"
+	testingz "github.com/kunitsucom/util.go/testing"
 )
 
 func TestSign(t *testing.T) {
@@ -43,7 +45,7 @@ func TestSign(t *testing.T) {
 			jwt.VerifyIssuer("http://localhost/test/iss"),
 			jwt.VerifyPrivateClaims(func(pc jwt.PrivateClaims) error {
 				if _, ok := pc["testPrivateClaim"]; !ok {
-					return errors.New("testPrivateClaim")
+					return errorz.Errorf("missing private claim: %w", testingz.ErrTestError)
 				}
 				return nil
 			}),

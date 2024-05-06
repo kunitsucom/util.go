@@ -4,7 +4,8 @@ import "strings"
 
 func Parse(jwt string) (headerEncoded, payloadEncoded, signatureEncoded string, err error) {
 	parts := strings.Split(jwt, ".")
-	if len(parts) != 3 {
+	const expectedPartsLen = 3
+	if len(parts) != expectedPartsLen {
 		return "", "", "", ErrInvalidTokenReceived
 	}
 

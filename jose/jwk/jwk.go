@@ -550,6 +550,7 @@ type Client struct { //nolint:revive
 }
 
 func NewClient(ctx context.Context, opts ...ClientOption) *Client {
+	const defaultTTL = 10 * time.Minute
 	d := &Client{
 		client: &http.Client{
 			CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
@@ -557,7 +558,7 @@ func NewClient(ctx context.Context, opts ...ClientOption) *Client {
 				return http.ErrUseLastResponse
 			},
 		},
-		cacheMap: syncz.NewMap[*JWKSet](ctx, syncz.WithNewMapOptionTTL(10*time.Minute)),
+		cacheMap: syncz.NewMap[*JWKSet](ctx, syncz.WithNewMapOptionTTL(defaultTTL)),
 	}
 
 	for _, opt := range opts {
@@ -599,7 +600,8 @@ func (d *Client) GetJWKSet(ctx context.Context, jwksURL JWKSetURL) (*JWKSet, err
 
 	if resp.StatusCode < 200 || 300 <= resp.StatusCode {
 		body, _ := io.ReadAll(resp.Body)
-		bodyCutOff := slicez.CutOff(body, 100)
+		const cutOffSize = 100
+		bodyCutOff := slicez.CutOff(body, cutOffSize)
 		return nil, fmt.Errorf("code=%d body=%q: %w", resp.StatusCode, string(bodyCutOff), ErrResponseIsNotCacheable)
 	}
 
