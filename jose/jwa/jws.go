@@ -289,7 +289,8 @@ func (a _RS512) Verify(key any, signingInput string, signatureEncoded string) (e
 
 // Sign for ES256.
 func (a _ES256) Sign(key any, signingInput string) (signatureEncoded string, err error) {
-	signatureEncoded, err = signES(key, signingInput, crypto.SHA256, 32)
+	const keySize = 32
+	signatureEncoded, err = signES(key, signingInput, crypto.SHA256, keySize)
 	if err != nil {
 		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
 	}
@@ -298,7 +299,8 @@ func (a _ES256) Sign(key any, signingInput string) (signatureEncoded string, err
 
 // Verify for ES256.
 func (a _ES256) Verify(key any, signingInput string, signatureEncoded string) (err error) {
-	if err := verifyES(key, signingInput, signatureEncoded, crypto.SHA256, 32); err != nil {
+	const keySize = 32
+	if err := verifyES(key, signingInput, signatureEncoded, crypto.SHA256, keySize); err != nil {
 		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
@@ -306,7 +308,8 @@ func (a _ES256) Verify(key any, signingInput string, signatureEncoded string) (e
 
 // Sign for ES384.
 func (a _ES384) Sign(key any, signingInput string) (signatureEncoded string, err error) {
-	signatureEncoded, err = signES(key, signingInput, crypto.SHA384, 48)
+	const keySize = 48
+	signatureEncoded, err = signES(key, signingInput, crypto.SHA384, keySize)
 	if err != nil {
 		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
 	}
@@ -315,7 +318,8 @@ func (a _ES384) Sign(key any, signingInput string) (signatureEncoded string, err
 
 // Verify for ES384.
 func (a _ES384) Verify(key any, signingInput string, signatureEncoded string) (err error) {
-	if err := verifyES(key, signingInput, signatureEncoded, crypto.SHA384, 48); err != nil {
+	const keySize = 48
+	if err := verifyES(key, signingInput, signatureEncoded, crypto.SHA384, keySize); err != nil {
 		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
 	}
 	return nil
@@ -323,7 +327,8 @@ func (a _ES384) Verify(key any, signingInput string, signatureEncoded string) (e
 
 // Sign for ES512.
 func (a _ES512) Sign(key any, signingInput string) (signatureEncoded string, err error) {
-	signatureEncoded, err = signES(key, signingInput, crypto.SHA512, 66)
+	const keySize = 66
+	signatureEncoded, err = signES(key, signingInput, crypto.SHA512, keySize)
 	if err != nil {
 		return "", fmt.Errorf("alg=%s key=%T: %w", a, key, err)
 	}
@@ -332,7 +337,8 @@ func (a _ES512) Sign(key any, signingInput string) (signatureEncoded string, err
 
 // Verify for ES512.
 func (a _ES512) Verify(key any, signingInput string, signatureEncoded string) (err error) {
-	if err := verifyES(key, signingInput, signatureEncoded, crypto.SHA512, 66); err != nil {
+	const keySize = 66
+	if err := verifyES(key, signingInput, signatureEncoded, crypto.SHA512, keySize); err != nil {
 		return fmt.Errorf("alg=%s key=%T: %w", a, key, err)
 	}
 	return nil

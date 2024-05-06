@@ -54,12 +54,17 @@ type Config struct {
 const Infinite = -1
 
 func NewConfig(initialInterval, maxInterval time.Duration, opts ...Option) *Config {
+	const (
+		defaultInitialInterval = 1 * time.Second
+		defaultMaxInterval     = 30 * time.Second
+	)
+
 	if initialInterval == 0 {
-		initialInterval = 1 * time.Second
+		initialInterval = defaultInitialInterval
 	}
 
 	if maxInterval == 0 {
-		maxInterval = 30 * time.Second
+		maxInterval = defaultMaxInterval
 	}
 
 	c := &Config{

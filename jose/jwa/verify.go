@@ -54,8 +54,10 @@ func verifyES(key crypto.PublicKey, signingInput string, signatureEncoded string
 	if err != nil {
 		return fmt.Errorf("base64.RawURLEncoding.DecodeString: %w", err)
 	}
-	if len(signature) != keySize*2 {
-		return fmt.Errorf("len(signature)=%d != keySize*2=%d: %w", len(signature), keySize*2, ErrFailedToVerifySignature)
+	// signature length = twice the key length
+	const twice = 2
+	if len(signature) != keySize*twice {
+		return fmt.Errorf("len(signature)=%d != keySize*2=%d: %w", len(signature), keySize*twice, ErrFailedToVerifySignature)
 	}
 	h := cryptoHash.New()
 	h.Write([]byte(signingInput))

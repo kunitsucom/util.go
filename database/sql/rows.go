@@ -183,7 +183,10 @@ type (
 )
 
 //nolint:gochecknoglobals
-var _ReflectValueSlicePool = &sync.Pool{New: func() interface{} { return &_ReflectValueSlice{make(_ReflectValueSliceType, 0, 128)} }} // NOTE: both len and cap are needed.
+var _ReflectValueSlicePool = &sync.Pool{New: func() interface{} {
+	const sliceCap = 128
+	return &_ReflectValueSlice{make(_ReflectValueSliceType, 0, sliceCap)}
+}} // NOTE: both len and cap are needed.
 
 func getReflectValueSlice() (v *_ReflectValueSlice, put func()) {
 	b := _ReflectValueSlicePool.Get().(*_ReflectValueSlice) //nolint:forcetypeassert
