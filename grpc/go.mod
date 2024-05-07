@@ -3,6 +3,7 @@ module github.com/kunitsucom/util.go/grpc
 go 1.21
 
 require (
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/kunitsucom/util.go v0.0.0-00010101000000-000000000000
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240227224415-6ceb2ff114de
 	google.golang.org/grpc v1.63.2
@@ -11,4 +12,9 @@ require (
 
 replace github.com/kunitsucom/util.go => ../../util.go
 
-require golang.org/x/sys v0.17.0 // indirect
+require (
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240227224415-6ceb2ff114de // indirect
+)
