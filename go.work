@@ -4,4 +4,6 @@ use (
 	.
 	./grpc
 	./integrationtest
+	./log/ilog/implementations/zap
+	./log/ilog/implementations/zerolog
 )
