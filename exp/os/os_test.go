@@ -8,7 +8,7 @@ import (
 	osz "github.com/kunitsucom/util.go/exp/os"
 )
 
-var _, callerFile, _, _ = runtime.Caller(1)
+var _, callerFile, _, _ = runtime.Caller(0)
 
 //nolint:paralleltest
 func TestReadlinkAndReadFile(t *testing.T) {
