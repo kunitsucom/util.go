@@ -102,6 +102,7 @@ func NotEqual(tb testing.TB, printf func(format string, args ...any), expected, 
 func Nil(tb testing.TB, printf func(format string, args ...any), value interface{}) (success bool) {
 	tb.Helper()
 	defer func() {
+		tb.Helper()
 		if r := recover(); r != nil {
 			printf("❌: %s: value != nil:\n--- EXPECTED\n+++ ACTUAL\n%s", tb.Name(), simplediff.Diff(fmt.Sprintf("%+v", nil), fmt.Sprintf("%+v", value)))
 			success = false
@@ -118,14 +119,15 @@ func Nil(tb testing.TB, printf func(format string, args ...any), value interface
 func NotNil(tb testing.TB, printf func(format string, args ...any), value interface{}) (success bool) {
 	tb.Helper()
 	defer func() {
+		tb.Helper()
 		if r := recover(); r != nil {
-			printf("❌: %s: value == nil:\n--- EXPECTED\n+++ ACTUAL\n%s", tb.Name(), simplediff.Diff(fmt.Sprintf("%+v", nil), fmt.Sprintf("%+v", value)))
+			printf("❌: %s: value == nil:\n--- EXPECTED\n+++ ACTUAL\n%s", tb.Name(), simplediff.Diff("NOT <nil>", fmt.Sprintf("%+v", value)))
 			success = false
 		}
 	}()
 
 	if value == nil || reflect.ValueOf(value).IsNil() {
-		printf("❌: %s: value == nil:\n--- EXPECTED\n+++ ACTUAL\n%s", tb.Name(), simplediff.Diff(fmt.Sprintf("%+v", nil), fmt.Sprintf("%+v", value)))
+		printf("❌: %s: value == nil:\n--- EXPECTED\n+++ ACTUAL\n%s", tb.Name(), simplediff.Diff("NOT <nil>", fmt.Sprintf("%+v", value)))
 		return false
 	}
 	return true
