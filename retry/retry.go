@@ -273,7 +273,7 @@ func WithRetryableErrors(errs ...error) DoOption {
 }
 
 //nolint:cyclop
-func (r *Retryer) Do(do func() error, opts ...DoOption) error {
+func (r *Retryer) Do(f func(ctx context.Context) error, opts ...DoOption) error {
 	c := &doConfig{}
 
 	for _, opt := range opts {
@@ -283,7 +283,7 @@ func (r *Retryer) Do(do func() error, opts ...DoOption) error {
 	var err error
 LabelRetry:
 	for r.Retry() {
-		err = do()
+		err = f(r.ctx)
 		if errors.Is(err, nil) {
 			return nil
 		}
