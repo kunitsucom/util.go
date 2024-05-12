@@ -106,7 +106,7 @@ func TestRetryer_Do(t *testing.T) {
 		ctx := context.Background()
 		r := retry.New(ctx, retry.NewConfig(1*time.Microsecond, 999*time.Microsecond, retry.WithMaxRetries(maxRetries), retry.WithJitter(retry.DefaultJitter(retry.WithDefaultJitterRange(1*time.Millisecond, 10*time.Millisecond), retry.WithDefaultJitterRand(rand.New(rand.NewSource(0))))))) //nolint:gosec
 		buf := bytes.NewBuffer(nil)
-		err := r.Do(func() error {
+		err := r.Do(func(_ context.Context) error {
 			fmt.Fprintf(buf, "retries=%d/%d retryAfter=%s; ", r.Retries(), r.MaxRetries(), r.RetryAfter())
 			return nil
 		})
@@ -131,7 +131,7 @@ func TestRetryer_Do(t *testing.T) {
 		ctx := context.Background()
 		r := retry.New(ctx, retry.NewConfig(1*time.Microsecond, 999*time.Microsecond, retry.WithMaxRetries(maxRetries), retry.WithJitter(retry.DefaultJitter(retry.WithDefaultJitterRange(1*time.Millisecond, 10*time.Millisecond), retry.WithDefaultJitterRand(rand.New(rand.NewSource(0))))))) //nolint:gosec
 		buf := bytes.NewBuffer(nil)
-		err := r.Do(func() error {
+		err := r.Do(func(_ context.Context) error {
 			fmt.Fprintf(buf, "retries=%d/%d retryAfter=%s; ", r.Retries(), r.MaxRetries(), r.RetryAfter())
 			return io.EOF
 		}, retry.WithUnretryableErrors(io.ErrUnexpectedEOF))
@@ -156,7 +156,7 @@ func TestRetryer_Do(t *testing.T) {
 		ctx := context.Background()
 		r := retry.New(ctx, retry.NewConfig(1*time.Microsecond, 999*time.Microsecond, retry.WithMaxRetries(maxRetries), retry.WithJitter(retry.DefaultJitter(retry.WithDefaultJitterRange(1*time.Millisecond, 10*time.Millisecond), retry.WithDefaultJitterRand(rand.New(rand.NewSource(0))))))) //nolint:gosec
 		buf := bytes.NewBuffer(nil)
-		err := r.Do(func() error {
+		err := r.Do(func(_ context.Context) error {
 			fmt.Fprintf(buf, "retries=%d/%d retryAfter=%s; ", r.Retries(), r.MaxRetries(), r.RetryAfter())
 			return io.EOF
 		}, retry.WithRetryableErrors(io.EOF))
@@ -181,7 +181,7 @@ func TestRetryer_Do(t *testing.T) {
 		ctx := context.Background()
 		r := retry.New(ctx, retry.NewConfig(1*time.Microsecond, 999*time.Microsecond, retry.WithMaxRetries(maxRetries), retry.WithJitter(retry.DefaultJitter(retry.WithDefaultJitterRange(1*time.Millisecond, 10*time.Millisecond), retry.WithDefaultJitterRand(rand.New(rand.NewSource(0))))))) //nolint:gosec
 		buf := bytes.NewBuffer(nil)
-		err := r.Do(func() error {
+		err := r.Do(func(_ context.Context) error {
 			return io.ErrUnexpectedEOF
 		}, retry.WithErrorHandler(func(_ context.Context, r *retry.Retryer, err error) {
 			fmt.Fprintf(buf, "retries=%d/%d retryAfter=%s; ", r.Retries(), r.MaxRetries(), r.RetryAfter())
@@ -211,7 +211,7 @@ func TestRetryer_Do(t *testing.T) {
 		ctx := context.Background()
 		r := retry.New(ctx, retry.NewConfig(1*time.Microsecond, 999*time.Microsecond, retry.WithMaxRetries(maxRetries), retry.WithJitter(retry.DefaultJitter(retry.WithDefaultJitterRange(1*time.Millisecond, 10*time.Millisecond), retry.WithDefaultJitterRand(rand.New(rand.NewSource(0))))))) //nolint:gosec
 		buf := bytes.NewBuffer(nil)
-		err := r.Do(func() error {
+		err := r.Do(func(_ context.Context) error {
 			fmt.Fprintf(buf, "retries=%d/%d retryAfter=%s; ", r.Retries(), r.MaxRetries(), r.RetryAfter())
 			return io.ErrUnexpectedEOF
 		}, retry.WithUnretryableErrors(io.ErrUnexpectedEOF))
@@ -240,7 +240,7 @@ func TestRetryer_Do(t *testing.T) {
 		ctx := context.Background()
 		r := retry.New(ctx, retry.NewConfig(1*time.Microsecond, 999*time.Microsecond, retry.WithMaxRetries(maxRetries), retry.WithJitter(retry.DefaultJitter(retry.WithDefaultJitterRange(1*time.Millisecond, 10*time.Millisecond), retry.WithDefaultJitterRand(rand.New(rand.NewSource(0))))))) //nolint:gosec
 		buf := bytes.NewBuffer(nil)
-		err := r.Do(func() error {
+		err := r.Do(func(_ context.Context) error {
 			fmt.Fprintf(buf, "retries=%d/%d retryAfter=%s; ", r.Retries(), r.MaxRetries(), r.RetryAfter())
 			return io.ErrUnexpectedEOF
 		}, retry.WithRetryableErrors(io.EOF))
