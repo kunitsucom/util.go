@@ -119,7 +119,9 @@ func WithMaxRetries(maxRetries int) Option {
 	}
 }
 
+// WARNING: Retryer should not be used across goroutines. Generate Retryer from Config for each goroutine.
 type Retryer struct {
+	ctx    context.Context //nolint:containedctx // WARNING: Retryer should not be used across goroutines. Generate Retryer from Config for each goroutine.
 	config *Config
 	// variables
 	interval time.Duration
@@ -127,17 +129,20 @@ type Retryer struct {
 	reason   error
 }
 
-func (c *Config) Build() *Retryer {
+func (c *Config) Build(ctx context.Context) *Retryer {
 	copied := *c
-	return New(&copied)
+	return New(ctx, &copied)
 }
 
 // New returns *retry.Retryer. *retry.Retryer provides methods to facilitate retry execution.
 //
-// Is used as follows ( https://go.dev/play/p/nIWIWq-ib6b ):
+// WARNING: Retryer should not be used across goroutines. Generate Retryer from Config for each goroutine.
 //
+// Is used as follows:
+//
+//	ctx := context.Background()
 //	c := retry.NewConfig(10*time.Millisecond, 500*time.Millisecond, retry.WithMaxRetries(10))
-//	r := retry.New(c)
+//	r := retry.New(ctx, c)
 //
 //	for r.Retry() {
 //		if r.Retries() == 0 {
@@ -165,10 +170,11 @@ func (c *Config) Build() *Retryer {
 //
 // If the maximum count of attempts is not given via retry.WithMaxRetries(),
 // *retry.Retryer that retry.New() returned will retry infinitely many times.
-func New(config *Config) *Retryer {
+func New(ctx context.Context, config *Config) *Retryer {
 	copied := *config
 
 	return &Retryer{
+		ctx:    ctx,
 		config: &copied,
 	}
 }
@@ -221,15 +227,15 @@ var (
 	ErrUnretryableError  = errors.New("retry: unretryable error")
 )
 
-func (r *Retryer) Retry(ctx context.Context) bool {
+func (r *Retryer) Retry() bool {
 	if 0 <= r.MaxRetries() && r.MaxRetries() <= r.Retries() {
 		r.reason = ErrReachedMaxRetries
 		return false
 	}
 
 	select {
-	case <-ctx.Done():
-		r.reason = ctx.Err()
+	case <-r.ctx.Done():
+		r.reason = r.ctx.Err()
 		return false
 	case <-time.After(r.RetryAfter()):
 		r.increment()
@@ -267,7 +273,7 @@ func WithRetryableErrors(errs ...error) DoOption {
 }
 
 //nolint:cyclop
-func (r *Retryer) Do(ctx context.Context, do func(ctx context.Context) error, opts ...DoOption) error {
+func (r *Retryer) Do(do func() error, opts ...DoOption) error {
 	c := &doConfig{}
 
 	for _, opt := range opts {
@@ -276,13 +282,13 @@ func (r *Retryer) Do(ctx context.Context, do func(ctx context.Context) error, op
 
 	var err error
 LabelRetry:
-	for r.Retry(ctx) {
-		err = do(ctx)
+	for r.Retry() {
+		err = do()
 		if errors.Is(err, nil) {
 			return nil
 		}
 		if c.errorHandler != nil {
-			c.errorHandler(ctx, r, err)
+			c.errorHandler(r.ctx, r, err)
 		}
 		if len(c.unretryableErrors) > 0 {
 			for _, unretryableErr := range c.unretryableErrors {
