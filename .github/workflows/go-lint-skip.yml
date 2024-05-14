@@ -1,0 +1,52 @@
+name: go-lint
+#     ^^^^^^^
+# https://github.com/organization/repository/workflows/go-lint/badge.svg
+#                                                      ^^^^^^^
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/dependabot.yml'
+      - '.github/pull_request_template.md'
+      - '.github/release.yml'
+      - '.github/workflows/label-checker.yml'
+      - '.github/workflows/task-list-checker.yml'
+      - '**.md'
+  pull_request:
+    paths:
+      - '.github/dependabot.yml'
+      - '.github/pull_request_template.md'
+      - '.github/release.yml'
+      - '.github/workflows/label-checker.yml'
+      - '.github/workflows/task-list-checker.yml'
+      - '**.md'
+  workflow_dispatch:
+    inputs: {}
+
+# NOTE: If commit & push continuously, cancel the workflow other than the latest commit.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  WORKDIR: .
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  go-lint: # NOTE: for Branch protection rule `Status checks that are required.`
+    name: Run golangci-lint
+    runs-on: ubuntu-latest # ref. https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    steps:
+      - name: Not required # ref. https://stackoverflow.com/questions/70927785/skip-required-check-if-its-not-applicable-in-github-actions
+        shell: bash
+        run: |
+          echo "Not required"
