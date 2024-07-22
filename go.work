@@ -6,4 +6,5 @@ use (
 	./integrationtest
 	./log/ilog/implementations/zap
 	./log/ilog/implementations/zerolog
+	./x/oauth2
 )

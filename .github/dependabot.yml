@@ -93,3 +93,25 @@ updates:
       dependencies:
         patterns:
           - "*"
+
+  - package-ecosystem: "gomod"
+    directory: "/x/oauth2"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "11:00"
+      timezone: "Asia/Tokyo"
+    commit-message:
+      prefix: "build(go): "
+    labels:
+      - "build"
+      - "dependencies"
+      - "go"
+    assignees:
+      - "ginokent"
+    reviewers:
+      - "ginokent"
+    groups:
+      dependencies:
+        patterns:
+          - "*"

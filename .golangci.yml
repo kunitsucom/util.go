@@ -13,6 +13,7 @@ linters:
     - exhaustivestruct # https://github.com/mbilski/exhaustivestruct
     - gci # unnecessary
     - goconst # unnecessary
+    - godot # unnecessary
     - godox # unnecessary
     - golint # deprecated https://github.com/golang/lint
     - gomnd # deprecated https://github.com/tommy-muehle/go-mnd
@@ -45,6 +46,7 @@ issues:
   exclude-rules:
     - path: _test\.go
       linters:
+        - canonicalheader
         - containedctx
         - cyclop
         - dupl
