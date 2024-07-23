@@ -17,3 +17,4 @@ coverage.html
 
 # go
 /cmd/sandbox/**
+go.work.sum
