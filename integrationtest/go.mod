@@ -9,7 +9,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/kunitsucom/util.go v0.0.0-00010101000000-000000000000
 	github.com/ory/dockertest v3.3.5+incompatible
-	google.golang.org/grpc v1.64.1
+	google.golang.org/grpc v1.65.0
 )
 
 replace github.com/kunitsucom/util.go => ../../util.go
