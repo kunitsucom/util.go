@@ -9,7 +9,7 @@ import (
 
 func TestDiscard(t *testing.T) {
 	t.Parallel()
-	t.Run("success()", func(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		discard.Discard(io.EOF)
 	})
@@ -17,7 +17,7 @@ func TestDiscard(t *testing.T) {
 
 func TestOne(t *testing.T) {
 	t.Parallel()
-	t.Run("success()", func(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		const e1 = 1
 		a1 := discard.One(e1, io.EOF)
@@ -29,7 +29,7 @@ func TestOne(t *testing.T) {
 
 func TestTwo(t *testing.T) {
 	t.Parallel()
-	t.Run("success()", func(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		const (
 			e1 = 1
@@ -47,7 +47,7 @@ func TestTwo(t *testing.T) {
 
 func TestThree(t *testing.T) {
 	t.Parallel()
-	t.Run("success()", func(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		const (
 			e1 = 1
@@ -69,7 +69,7 @@ func TestThree(t *testing.T) {
 
 func TestFour(t *testing.T) {
 	t.Parallel()
-	t.Run("success()", func(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		const (
 			e1 = 1
@@ -95,7 +95,7 @@ func TestFour(t *testing.T) {
 
 func TestFive(t *testing.T) {
 	t.Parallel()
-	t.Run("success()", func(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 		const (
 			e1 = 1
