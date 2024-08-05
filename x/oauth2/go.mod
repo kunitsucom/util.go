@@ -6,7 +6,7 @@ replace github.com/kunitsucom/util.go => ../../../util.go
 
 require (
 	github.com/kunitsucom/util.go v0.0.0-00010101000000-000000000000
-	golang.org/x/oauth2 v0.21.0
+	golang.org/x/oauth2 v0.22.0
 )
 
 require (
