@@ -30,8 +30,8 @@ type (
 	Command struct {
 		// Name is the name of the command.
 		Name string
-		// Short is the short name of the command.
-		Short string
+		// Aliases is the alias names of the command.
+		Aliases []string
 		// Usage is the usage of the command.
 		//
 		// If you want to use the default usage, remain empty.
@@ -46,8 +46,12 @@ type (
 		Description string
 		// Options is the options of the command.
 		Options []Option
+		// PreRunFunc is the function to be executed before RunFunc.
+		PreRunFunc func(ctx context.Context, cmd *Command, remainingArgs []string) error
 		// RunFunc is the function to be executed when (*Command).Run is executed.
-		RunFunc func(ctx context.Context, remainingArgs []string) error
+		RunFunc func(ctx context.Context, cmd *Command, remainingArgs []string) error
+		// PostRunFunc is the function to be executed after RunFunc.
+		PostRunFunc func(ctx context.Context, cmd *Command, remainingArgs []string) error
 		// SubCommands is the subcommands of the command.
 		SubCommands []*Command
 
@@ -91,8 +95,10 @@ func (cmd *Command) IsCommand(cmdName string) bool {
 	if cmd.Name == cmdName {
 		return true
 	}
-	if cmd.Short == cmdName {
-		return true
+	for _, alias := range cmd.Aliases {
+		if alias == cmdName {
+			return true
+		}
 	}
 	return false
 }
@@ -153,15 +159,17 @@ func (cmd *Command) getSubcommand(arg string) (subcmd *Command) {
 	return nil
 }
 
-func equalOptionArg(o Option, arg string) bool {
+// --long or -s
+func argIsHyphenOption(o Option, arg string) bool {
 	return longOptionPrefix+o.GetName() == arg || shortOptionPrefix+o.GetShort() == arg
 }
 
-func hasPrefixOptionEqualArg(o Option, arg string) bool {
+// --long=value or -s=value
+func argIsHyphenOptionEqual(o Option, arg string) bool {
 	return strings.HasPrefix(arg, longOptionPrefix+o.GetName()+"=") || strings.HasPrefix(arg, shortOptionPrefix+o.GetShort()+"=")
 }
 
-func extractValueOptionEqualArg(arg string) string {
+func extractValueFromHyphenOptionEqual(arg string) string {
 	return strings.Join(strings.Split(arg, "=")[1:], "=")
 }
 
@@ -189,7 +197,7 @@ argsLoop:
 				switch o := opt.(type) {
 				case *StringOption:
 					switch {
-					case equalOptionArg(o, arg):
+					case argIsHyphenOption(o, arg):
 						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
 						if hasOptionValue(args, i) {
 							return nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
@@ -198,22 +206,22 @@ argsLoop:
 						i++
 						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
-					case hasPrefixOptionEqualArg(o, arg):
+					case argIsHyphenOptionEqual(o, arg):
 						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
-						o.value = ptr(extractValueOptionEqualArg(arg))
+						o.value = ptr(extractValueFromHyphenOptionEqual(arg))
 						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
 					}
 				case *BoolOption:
 					switch {
-					case equalOptionArg(o, arg):
+					case argIsHyphenOption(o, arg):
 						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
 						o.value = ptr(true)
 						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
-					case hasPrefixOptionEqualArg(o, arg):
+					case argIsHyphenOptionEqual(o, arg):
 						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
-						optVal, err := strconv.ParseBool(extractValueOptionEqualArg(arg))
+						optVal, err := strconv.ParseBool(extractValueFromHyphenOptionEqual(arg))
 						if err != nil {
 							return nil, errorz.Errorf("%s: %w", arg, err)
 						}
@@ -223,7 +231,7 @@ argsLoop:
 					}
 				case *IntOption:
 					switch {
-					case equalOptionArg(o, arg):
+					case argIsHyphenOption(o, arg):
 						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
 						if hasOptionValue(args, i) {
 							return nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
@@ -236,9 +244,9 @@ argsLoop:
 						i++
 						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
-					case hasPrefixOptionEqualArg(o, arg):
+					case argIsHyphenOptionEqual(o, arg):
 						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
-						optVal, err := strconv.Atoi(extractValueOptionEqualArg(arg))
+						optVal, err := strconv.Atoi(extractValueFromHyphenOptionEqual(arg))
 						if err != nil {
 							return nil, errorz.Errorf("%s: %w", arg, err)
 						}
@@ -248,7 +256,7 @@ argsLoop:
 					}
 				case *Float64Option:
 					switch {
-					case equalOptionArg(o, arg):
+					case argIsHyphenOption(o, arg):
 						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
 						if hasOptionValue(args, i) {
 							return nil, errorz.Errorf("%s: %w", arg, ErrMissingOptionValue)
@@ -261,9 +269,9 @@ argsLoop:
 						i++
 						TraceLog.Printf("%s: parsed option: %s: %v", cmd.GetName(), o.Name, *o.value)
 						continue argsLoop
-					case hasPrefixOptionEqualArg(o, arg):
+					case argIsHyphenOptionEqual(o, arg):
 						DebugLog.Printf("%s: option: %s: %s", cmd.GetName(), o.Name, arg)
-						optVal, err := strconv.ParseFloat(extractValueOptionEqualArg(arg), 64)
+						optVal, err := strconv.ParseFloat(extractValueFromHyphenOptionEqual(arg), 64)
 						if err != nil {
 							return nil, errorz.Errorf("%s: %w", arg, err)
 						}
@@ -316,9 +324,10 @@ func (cmd *Command) initCommand() {
 // This function is idempotent. If the conditions are the same, the same result will be returned no matter how many times it is called.
 //
 //nolint:cyclop
-func (cmd *Command) Parse(args []string) (remainingArgs []string, err error) {
-	if len(args) > 0 && (args[0] == os.Args[0] || cmd.IsCommand(args[0])) {
-		args = args[1:]
+func (cmd *Command) Parse(osArgs []string) (remainingArgs []string, err error) {
+	cmdArgs := osArgs
+	if len(osArgs) > 0 && (osArgs[0] == os.Args[0] || cmd.IsCommand(osArgs[0])) {
+		cmdArgs = osArgs[1:]
 	}
 
 	cmd.initCommand()
@@ -340,7 +349,7 @@ func (cmd *Command) Parse(args []string) (remainingArgs []string, err error) {
 		return nil, errorz.Errorf("failed to load environment: %w", err)
 	}
 
-	remaining, err := cmd.parseArgs(args)
+	remaining, err := cmd.parseArgs(cmdArgs)
 	if err != nil {
 		return nil, errorz.Errorf("failed to parse commands and options: %w", err)
 	}
@@ -359,8 +368,8 @@ func (cmd *Command) Parse(args []string) (remainingArgs []string, err error) {
 // Run executes (*Command).RunFunc of the specified command or subcommand.
 //
 // If you only want to parse the options, use Parse instead of this.
-func (cmd *Command) Run(ctx context.Context, args []string) error {
-	remainingArgs, err := cmd.Parse(args)
+func (cmd *Command) Run(ctx context.Context, osArgs []string) error {
+	remainingArgs, err := cmd.Parse(osArgs)
 	if err != nil {
 		return errorz.Errorf("%s: %w", cmd.GetName(), err)
 	}
@@ -370,9 +379,25 @@ func (cmd *Command) Run(ctx context.Context, args []string) error {
 		execCmd = execCmd.Next()
 	}
 
+	if execCmd.PreRunFunc != nil {
+		if err := execCmd.PreRunFunc(ctx, execCmd, remainingArgs); err != nil {
+			return errorz.Errorf("%s: PreRunFunc: %w", strings.Join(execCmd.calledCommands, " "), err)
+		}
+	}
+
 	if execCmd.RunFunc == nil {
 		return errorz.Errorf("%s: %w", strings.Join(execCmd.calledCommands, " "), ErrCommandFuncNotSet)
 	}
 
-	return execCmd.RunFunc(WithContext(ctx, cmd), remainingArgs)
+	if err := execCmd.RunFunc(ctx, execCmd, remainingArgs); err != nil {
+		return errorz.Errorf("%s: RunFunc: %w", strings.Join(execCmd.calledCommands, " "), err)
+	}
+
+	if execCmd.PostRunFunc != nil {
+		if err := execCmd.PostRunFunc(ctx, execCmd, remainingArgs); err != nil {
+			return errorz.Errorf("%s: PostRunFunc: %w", strings.Join(execCmd.calledCommands, " "), err)
+		}
+	}
+
+	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"reflect"
 	"strings"
 	"testing"
@@ -78,11 +79,7 @@ func TestCommand(t *testing.T) {
 					SubCommands: []*Command{
 						{
 							Name: "sub-sub-cmd",
-							RunFunc: func(ctx context.Context, remainingArgs []string) error {
-								cmd, err := FromContext(ctx)
-								if err != nil {
-									return errorz.Errorf("FromContext: %w", err)
-								}
+							RunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
 								called := cmd.GetCalledCommands()
 								if !reflect.DeepEqual(called, []string{"my-cli", "sub-cmd", "sub-sub-cmd"}) {
 									return errorz.Errorf("unexpected command name: %v", called)
@@ -585,8 +582,8 @@ func TestCommand_IsCommand(t *testing.T) {
 		t.Parallel()
 		alias := "short"
 		cmd := &Command{
-			Name:  "my-cli",
-			Short: "short",
+			Name:    "my-cli",
+			Aliases: []string{"short"},
 		}
 		expected := true
 		actual := cmd.IsCommand(alias)
@@ -655,10 +652,10 @@ func TestCommand_GetCalledCommands(t *testing.T) {
 	})
 }
 
-func TestCommand_Exec(t *testing.T) {
+func TestCommand_Run(t *testing.T) {
 	t.Parallel()
 
-	t.Run("success,Exec,ErrHelp", func(t *testing.T) {
+	t.Run("success,Run,ErrHelp", func(t *testing.T) {
 		t.Parallel()
 		args := []string{"my-cli", "--help"}
 		c := &Command{}
@@ -667,11 +664,17 @@ func TestCommand_Exec(t *testing.T) {
 		}
 	})
 
-	t.Run("success,Exec,", func(t *testing.T) {
+	t.Run("success,Run,", func(t *testing.T) {
 		t.Parallel()
 		c := &Command{
 			Name: "my-cli",
-			RunFunc: func(ctx context.Context, remainingArgs []string) error {
+			PreRunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
+				return nil
+			},
+			RunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
+				return nil
+			},
+			PostRunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
 				return nil
 			},
 			SubCommands: []*Command{
@@ -685,6 +688,63 @@ func TestCommand_Exec(t *testing.T) {
 		}
 		if err := c.Run(context.Background(), []string{"my-cli"}[1:]); err != nil {
 			t.Errorf("❌: err != nil: %v != %+v", nil, err)
+		}
+	})
+
+	t.Run("failure,Run,PreRunFunc", func(t *testing.T) {
+		t.Parallel()
+		c := &Command{
+			Name: "my-cli",
+			PreRunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
+				return io.ErrUnexpectedEOF
+			},
+			RunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
+				return nil
+			},
+			PostRunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
+				return nil
+			},
+		}
+		if err := c.Run(context.Background(), []string{"my-cli"}[1:]); !errors.Is(err, io.ErrUnexpectedEOF) {
+			t.Errorf("❌: expect != actual: %v != %+v", io.ErrUnexpectedEOF, err)
+		}
+	})
+
+	t.Run("failure,Run,RunFunc", func(t *testing.T) {
+		t.Parallel()
+		c := &Command{
+			Name: "my-cli",
+			PreRunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
+				return nil
+			},
+			RunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
+				return io.ErrUnexpectedEOF
+			},
+			PostRunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
+				return nil
+			},
+		}
+		if err := c.Run(context.Background(), []string{"my-cli"}[1:]); !errors.Is(err, io.ErrUnexpectedEOF) {
+			t.Errorf("❌: expect != actual: %v != %+v", io.ErrUnexpectedEOF, err)
+		}
+	})
+
+	t.Run("failure,Run,PostRunFunc", func(t *testing.T) {
+		t.Parallel()
+		c := &Command{
+			Name: "my-cli",
+			PreRunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
+				return nil
+			},
+			RunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
+				return nil
+			},
+			PostRunFunc: func(ctx context.Context, cmd *Command, remainingArgs []string) error {
+				return io.ErrUnexpectedEOF
+			},
+		}
+		if err := c.Run(context.Background(), []string{"my-cli"}[1:]); !errors.Is(err, io.ErrUnexpectedEOF) {
+			t.Errorf("❌: expect != actual: %v != %+v", io.ErrUnexpectedEOF, err)
 		}
 	})
 }

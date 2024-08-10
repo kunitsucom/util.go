@@ -4,6 +4,7 @@ import "errors"
 
 var (
 	ErrHelp                   = errors.New("help requested")
+	ErrNilContext             = errors.New("nil context")
 	ErrCommandNotSetInContext = errors.New("command not set in context")
 	ErrCommandFuncNotSet      = errors.New("command func not set")
 	ErrMissingOptionValue     = errors.New("missing option value")
