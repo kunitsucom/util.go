@@ -406,11 +406,11 @@ func (jwk *JSONWebKey) DecodeRSAPublicKey() (*rsa.PublicKey, error) {
 	if err != nil {
 		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.E=%s: %w", jwk.E, err)
 	}
-	eBigInt := big.NewInt(0).SetBytes(eByte)
-	if eBigInt.Uint64() > math.MaxInt {
-		return nil, fmt.Errorf("e=%d: %w", eBigInt.Uint64(), ErrInvalidKey)
+	eUint := big.NewInt(0).SetBytes(eByte).Uint64()
+	if eUint > math.MaxInt {
+		return nil, fmt.Errorf("e=%d: %w", eUint, ErrInvalidKey)
 	}
-	e := int(eBigInt.Uint64())
+	e := int(eUint)
 
 	return &rsa.PublicKey{
 		N: n,

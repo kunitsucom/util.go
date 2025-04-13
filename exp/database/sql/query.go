@@ -35,7 +35,7 @@ func Columns(tableStruct interface{}, structTag string) []string {
 	}
 
 	var columns []string
-	for i := 0; i < structType.NumField(); i++ {
+	for i := range structType.NumField() {
 		structField := structType.Field(i)
 		if structField.Anonymous {
 			continue

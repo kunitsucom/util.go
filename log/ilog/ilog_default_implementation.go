@@ -675,7 +675,7 @@ const null = "null"
 // nolint: cyclop
 // appendJSONEscapedString.
 func appendJSONEscapedString(dst []byte, s string) []byte {
-	for i := 0; i < len(s); i++ {
+	for i := range len(s) {
 		if s[i] != '"' && s[i] != '\\' && s[i] > 0x1F {
 			dst = append(dst, s[i])
 
