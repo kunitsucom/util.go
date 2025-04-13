@@ -169,7 +169,7 @@ func getStructTags(structType reflect.Type, structTag string) []string {
 	}
 
 	tags := make([]string, structType.NumField())
-	for i := 0; structType.NumField() > i; i++ {
+	for i := range structType.NumField() {
 		rawTag := structType.Field(i).Tag.Get(structTag)
 		tags[i] = strings.Split(rawTag, ",")[0]
 	}

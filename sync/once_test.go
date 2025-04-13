@@ -49,7 +49,6 @@ func TestOnce_Do(t *testing.T) {
 		actual := 0
 		const expect = 10
 		for i := 1; i <= 10; i++ {
-			i := i
 			if err := once.Do(func() error {
 				actual = i
 				return io.EOF // any error

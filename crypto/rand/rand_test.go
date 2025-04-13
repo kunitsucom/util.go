@@ -95,7 +95,7 @@ func BenchmarkGenerateRandomString(b *testing.B) {
 		r := randz.NewReader(randz.WithNewReaderOptionRandomReader(mrand.New(mrand.NewSource(0))))
 		buf := make([]byte, 128)
 
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			_, _ = r.Read(buf)
 		}
 	})
@@ -104,7 +104,7 @@ func BenchmarkGenerateRandomString(b *testing.B) {
 		r := randz.NewReader(randz.WithNewReaderOptionRandomReader(crypto_rand.Reader))
 		buf := make([]byte, 128)
 
-		for i := 0; i < b.N; i++ {
+		for range b.N {
 			_, _ = r.Read(buf)
 		}
 	})
