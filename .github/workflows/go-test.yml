@@ -127,7 +127,7 @@ jobs:
           set -Eeu -o pipefail -x
           direnv allow .
           direnv exec . make test
-      - uses: codecov/codecov-action@v4 # ref. https://github.com/codecov/codecov-action#example-workflowyml-with-codecov-action
+      - uses: codecov/codecov-action@v5 # ref. https://github.com/codecov/codecov-action#example-workflowyml-with-codecov-action
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ env.WORKDIR }}/coverage.txt
