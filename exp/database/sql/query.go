@@ -34,7 +34,7 @@ func Columns(tableStruct interface{}, structTag string) []string {
 		return columns //nolint:forcetypeassert
 	}
 
-	var columns []string
+	columns := make([]string, 0, structType.NumField())
 	for i := range structType.NumField() {
 		structField := structType.Field(i)
 		if structField.Anonymous {

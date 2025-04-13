@@ -240,7 +240,7 @@ func (c *ClaimsSet) UnmarshalJSON(data []byte) (err error) {
 	err = json.Unmarshal(data, &privateClaims)
 	if err == nil {
 		typ := reflect.TypeOf(_claims)
-		for i := 0; i < typ.NumField(); i++ {
+		for i := range typ.NumField() {
 			delete(privateClaims, strings.Split(typ.Field(i).Tag.Get("json"), ",")[0])
 		}
 

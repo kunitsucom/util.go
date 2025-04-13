@@ -16,7 +16,7 @@ func TestOnce_Do(t *testing.T) {
 		var once syncz.Once
 		actual := 0
 		const expect1 = 1
-		for i := 0; i <= 10; i++ {
+		for range 10 {
 			if err := once.Do(func() error {
 				actual++
 				return nil
@@ -30,7 +30,7 @@ func TestOnce_Do(t *testing.T) {
 
 		once.Reset()
 		const expect2 = 2
-		for i := 0; i <= 10; i++ {
+		for range 10 {
 			if err := once.Do(func() error {
 				actual++
 				return nil

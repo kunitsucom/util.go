@@ -689,7 +689,7 @@ func (h *Header) UnmarshalJSON(data []byte) (err error) {
 	err = json.Unmarshal(data, &privateHeaderParameters)
 	if err == nil {
 		typ := reflect.TypeOf(_header)
-		for i := 0; i < typ.NumField(); i++ {
+		for i := range typ.NumField() {
 			delete(privateHeaderParameters, strings.Split(typ.Field(i).Tag.Get("json"), ",")[0])
 		}
 
