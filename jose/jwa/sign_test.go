@@ -500,7 +500,6 @@ var signTestCases = map[string]struct {
 func TestJWSAlgorithm_Sign(t *testing.T) {
 	t.Parallel()
 	for name, testCase := range signTestCases {
-		t, name, testCase := t, name, testCase
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			actual, err := jwa.JWS(testCase.alg).Sign(testCase.key, testCase.signingInput)

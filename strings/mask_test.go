@@ -26,7 +26,6 @@ func TestMaskPrefix(t *testing.T) {
 		{"mask 4", args{"abcd", "*", 4}, "****"},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := stringz.MaskPrefix(tt.args.s, tt.args.mask, tt.args.unmaskSuffix); got != tt.want {
@@ -56,7 +55,6 @@ func TestMaskSuffix(t *testing.T) {
 		{"mask 4", args{"abcd", "*", 4}, "abcd"},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if got := stringz.MaskSuffix(tt.args.s, tt.args.mask, tt.args.unmaskPrefix); got != tt.want {

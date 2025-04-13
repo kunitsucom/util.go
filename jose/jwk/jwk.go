@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"math/big"
 	"net/http"
 	"time"
@@ -23,6 +24,7 @@ var (
 	ErrCurveNotSupported      = errors.New("jwk: specified curve parameter is not supported")
 	ErrKeyIsNotForAlgorithm   = errors.New("jwk: key is not for algorithm")
 	ErrResponseIsNotCacheable = errors.New("jwk: response is not cacheable")
+	ErrInvalidKey             = errors.New("jwk: invalid key")
 )
 
 // ref. JSON Web Key (JWK) https://www.rfc-editor.org/rfc/rfc7517
@@ -394,19 +396,25 @@ func (jwk *JSONWebKey) EncodeRSAPublicKey(key *rsa.PublicKey, opts ...JSONWebKey
 }
 
 func (jwk *JSONWebKey) DecodeRSAPublicKey() (*rsa.PublicKey, error) {
-	n, err := base64.RawURLEncoding.DecodeString(jwk.N)
+	nByte, err := base64.RawURLEncoding.DecodeString(jwk.N)
 	if err != nil {
 		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.N=%s: %w", jwk.N, err)
 	}
+	n := big.NewInt(0).SetBytes(nByte)
 
-	e, err := base64.RawURLEncoding.DecodeString(jwk.E)
+	eByte, err := base64.RawURLEncoding.DecodeString(jwk.E)
 	if err != nil {
 		return nil, fmt.Errorf("base64.RawURLEncoding.DecodeString: JSONWebKey.E=%s: %w", jwk.E, err)
 	}
+	eUint := big.NewInt(0).SetBytes(eByte).Uint64()
+	if eUint > math.MaxInt {
+		return nil, fmt.Errorf("e=%d: %w", eUint, ErrInvalidKey)
+	}
+	e := int(eUint)
 
 	return &rsa.PublicKey{
-		N: big.NewInt(0).SetBytes(n),
-		E: int(big.NewInt(0).SetBytes(e).Uint64()),
+		N: n,
+		E: e,
 	}, nil
 }
 

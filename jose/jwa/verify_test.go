@@ -435,7 +435,6 @@ var verifyTestCases = map[string]struct {
 func TestJWSAlgorithm_Verify(t *testing.T) {
 	t.Parallel()
 	for name, testCase := range verifyTestCases {
-		t, name, testCase := t, name, testCase
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			testCase.errHandler(t, jwa.JWS(testCase.alg).Verify(testCase.key, testCase.signingInput, testCase.signatureEncoded))
