@@ -46,7 +46,7 @@ jobs:
     name: Run go test
     runs-on: ubuntu-latest # ref. https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: DEBUG
         shell: bash
         run: |
@@ -83,7 +83,7 @@ jobs:
           # Setup versenv
           direnv allow ${{ env.WORKDIR }}
           make versenv
-      - uses: actions/setup-go@v5 # ref. https://github.com/actions/setup-go#usage
+      - uses: actions/setup-go@v6 # ref. https://github.com/actions/setup-go#usage
         id: setup-go
         with:
           cache: false
@@ -127,7 +127,7 @@ jobs:
           set -Eeu -o pipefail -x
           direnv allow .
           direnv exec . make test
-      - uses: codecov/codecov-action@v4 # ref. https://github.com/codecov/codecov-action#example-workflowyml-with-codecov-action
+      - uses: codecov/codecov-action@v5 # ref. https://github.com/codecov/codecov-action#example-workflowyml-with-codecov-action
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ env.WORKDIR }}/coverage.txt
